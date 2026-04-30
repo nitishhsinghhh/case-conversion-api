@@ -18,6 +18,9 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)
 ![CI/CD](https://img.shields.io/badge/Pipeline-Verified-green.svg)
 ![Telemetry](https://img.shields.io/badge/Telemetry-OpenTelemetry-orange.svg)
+![Code Base](https://img.shields.io/badge/Code_Base-84k_Lines-blue)
+![Languages](https://img.shields.io/badge/Languages-Polyglot-orange)
+![Top Language](https://img.shields.io/badge/Main_Tech-JS%20%7C%20C%2B%2B-green)
 ![License](https://img.shields.io/github/license/nitishhsinghhh/case-conversion-api?style=flat-square&color=blue)
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=nitishhsinghhh/CaseConversionAPI&label=Project%20Views&countColor=%232088ff&style=flat-square)
@@ -38,16 +41,13 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
   * [3. Defensive Interop Design](#3-defensive-interop-design)
   * [4. Telemetry & Observability](#4-telemetry--observability)
   * [5. Hardware-Specific Optimization (Apple M2)](#5-hardware-specific-optimization-apple-m2)
-  * [6. Strict Memory Ownership: The Marshalling Contract](#6-strict-memory-ownership-the-marshalling-contract)
-  * [7. Reliability and Fault Tolerance](#7-reliability-and-fault-tolerance)
-  * [8. Memory Sovereignty and The Interop Lifecycle](#8-memory-sovereignty-and-the-interop-lifecycle)
-* [Performance Metrics and Insights RAII](#performance-metrics-and-insights-raii)
+  * [6. Reliability and Fault Tolerance](#6-reliability-and-fault-tolerance)
+  * [7. Memory Sovereignty and The Interop Lifecycle](#7-memory-sovereignty-and-the-interop-lifecycle)
 * [Quick Start](#quick-start)
   * [Run the Load-Balanced Cluster](#run-the-load-balanced-cluster)
-  * [Endurance & Stress Validation](#endurance--stress-validation)
-* [Performance Metrics and Insights](#performance-metrics-and-insights)
+  * [Performance Metrics and Insights RAII](#performance-metrics-and-insights-raii)
 * [Technical Significance](#technical-significance)
-* [License](#license)
+* [Project Vitality and Scale](#project-vitality-and-scale)
 * [Project Timeline and Roadmap](#project-timeline-and-roadmap)
 * [Summary](#summary)
 
@@ -186,21 +186,7 @@ Please note that if this runs in a Docker container on an Intel Xeon or AMD EPYC
   * Local: 5MB native limit prevents buffer overflows in unmanaged memory.
 * Contention-Free Buffering:** Utilizes `ConcurrentBag<T>` to allow parallel P-Cores to flush data back to managed memory without the lock-contention overhead of traditional `List<T>` synchronization.
 
-### 6. Strict Memory Ownership: The Marshalling Contract
-
-To achieve a "Zero-Leak" policy, the project strictly adheres to the "Callee-Allocates, Caller-Frees" pattern:
-
-* Allocation: The C++ engine uses std::malloc to allocate a buffer for the result string on the unmanaged heap.
-
-* Transfer: The pointer is passed across the ABI as a const char*.
-
-* Managed Reception: .NET receives this as an IntPtr and marshals it into a managed System.String.
-
-* Deterministic Cleanup: The .NET layer is then obligated to call the exported freeString(char* str) function inside a finally block.
-
-Technical Note: This approach avoids the common pitfalls of CoTaskMemFree which can be unreliable in cross-platform (Linux/macOS) environments, favoring the standard C library's free() for maximum portability.
-
-### 7. Reliability and Fault Tolerance
+### 6. Reliability and Fault Tolerance
 
 | Scenario            | Native C++ Sentinel              | Managed .NET Response   | Architectural Significance                                  |
 |-------------------- |----------------------------------|-------------------------|-------------------------------------------------------------|
@@ -210,7 +196,7 @@ Technical Note: This approach avoids the common pitfalls of CoTaskMemFree which 
 | Heap Exhaustion     | FATAL_ALLOCATION_FAILURE         | 500 Internal Error      | Traps std::bad_alloc before process termination.            |
 | Malformed ID        | ERROR_MALFORMED_TRACE_ID         | 400 Bad Request         | Protects telemetry buffers from overflow.                   |
 
-### 8. Memory Sovereignty and The Interop Lifecycle
+### 7. Memory Sovereignty and The Interop Lifecycle
 
 To achieve a "Zero-Leak" footprint under extreme concurrency (validated by the 1M request soak test), the system implements a Tiered Memory Ownership Protocol. This ensures deterministic cleanup across the ABI boundary while maintaining high-performance move semantics within the core.
 
@@ -244,21 +230,9 @@ Engineering Insight: This architecture eliminates the "Double-Delete" risk. C++ 
 
 ---
 
-## Performance Metrics and Insights RAII
-
-The project reached a major engineering milestone with the implementation of RAII and the Rule of Five in the native core. Below is the comparative data from a 1,000,000 request stress test conducted on Apple M2 hardware, demonstrating the massive efficiency gains in the polyglot bridge.
-
-| Metric                 | Pre-RAII Baseline | Post-RAII (Optimized)  | Net Improvement           |
-|----------------------- |-------------------|------------------------|---------------------------|
-| Throughput             | 2,262.54 req/s    | 2,827.97 req/s         | +25% Gain                 |
-| Mean Latency           | 44.19 ms          | 35.36 ms               | 20% Reduction             |
-| Median Latency (P50)   | 38.00 ms          | 22.00 ms               | 42% Snappier              |
-| Tail Latency (P99)     | 102.00 ms         | 134.00 ms              | Thermal / TCP Overhead    |
-| Success Rate           | 99.996%           | 99.998%                | Near-Perfect Reliability  |
+[↑ Back to Top](#high-performance-string-processing-a-polyglot-architecture)
 
 ---
-
-[↑ Back to Top](#high-performance-string-processing-a-polyglot-architecture)
 
 ## Quick Start
 
@@ -292,17 +266,17 @@ docker compose -f docker-compose-load.yml up --scale backend=4 -d
 
 * Telemetry: <http://localhost:16686>
 
-### Endurance & Stress Validation
+### Performance Metrics and Insights RAII
 
-The architecture was subjected to a 1,000,000-request ultra-stress test to validate long-term stability and memory integrity across the native boundary.
+The project reached a major engineering milestone with the implementation of RAII and the Rule of Five in the native core. Below is the comparative data from a 1,000,000 request stress test conducted on Apple M2 hardware, demonstrating the massive efficiency gains in the polyglot bridge.
 
-* Result: 100% Success Rate (0 failures).
-
-* Sustained Throughput: ~2,511 req/s under 50 VU (Virtual User) concurrency.
-
-* Stability: Zero native memory growth or heap fragmentation observed, confirming the efficacy of the Aggregate Memory Guard and RAII patterns in the C++ core.
-
-* Tail Latency Control: Even at 1M iterations, the P(95) remained stable at 58.8ms, proving the system handles high-volume Garbage Collection (GC) pressure without process degradation.
+| Metric                 | Pre-RAII Baseline | Post-RAII (Optimized)  | Net Improvement           |
+|----------------------- |-------------------|------------------------|---------------------------|
+| Throughput             | 2,262.54 req/s    | 2,827.97 req/s         | +25% Gain                 |
+| Mean Latency           | 44.19 ms          | 35.36 ms               | 20% Reduction             |
+| Median Latency (P50)   | 38.00 ms          | 22.00 ms               | 42% Snappier              |
+| Tail Latency (P99)     | 102.00 ms         | 134.00 ms              | Thermal / TCP Overhead    |
+| Success Rate           | 99.996%           | 99.998%                | Near-Perfect Reliability  |
 
 ---
 
@@ -314,19 +288,23 @@ The architecture was subjected to a 1,000,000-request ultra-stress test to valid
 
 * Hardware Efficiency: Optimized for Apple Silicon (arm64), leveraging unified memory to minimize data copy overhead during managed-to-unmanaged transitions.
 
-### Performance Metrics and Insights
-
-* ABI Latency: Verification that data marshalling between System.String and char* remains under 1ms.
-
-* Security Gate Logging: Native 5MB buffer violations are automatically tagged as Error status in the trace, allowing for instant debugging of failed payloads.
-
-* Context Propagation: The W3C Trace ID is passed into the C++ engine, ensuring that native logs can be correlated back to specific API calls.
-
 ---
 
-## License
+## Project Vitality and Scale
 
-Distributed under the Apache-2.0 License. See LICENSE for more information.
+The codebase is a significant polyglot undertaking, engineered for high-performance across multiple domains (Native, Managed, and Frontend). Below is a snapshot of the source lines of code (SLOC) excluding build artifacts and dependencies:
+
+| Language | Files | Code (Lines) | Role in Ecosystem |
+| :--- | :--- | :--- | :--- |
+| **C++ / Headers** | 202 | **55,608** | High-performance Strategy Engine & Core ABI |
+| **Python** | 32 | 3,839 | Performance testing & Stress-test automation |
+| **YAML / Docker** | 26 | 2,781 | Multi-stage CI/CD & Cluster Orchestration |
+| **CMake / Make** | 58 | 2,936 | Cross-platform Native Build System |
+| **C# (.NET 8)** | 12 | 664 | High-concurrency Managed Gateway |
+| **Web (TS/JS/SCSS)** | 16 | 427 | Type-safe Presentation Layer |
+| **TOTAL** | **448** | **84,268** | **Core Source Lines** |
+
+> **Engineering Insight:** While the project environment handles over 190k lines, the core logic is concentrated in ~84k lines of optimized source. The C++ dominance (approx. 66% of core) underscores the focus on raw native efficiency.
 
 ---
 
