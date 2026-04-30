@@ -228,8 +228,6 @@ The .NET 8 layer acts as the ultimate orchestrator of the memory lifecycle.
 
 Engineering Insight: This architecture eliminates the "Double-Delete" risk. C++ governs the object state, while C# governs the result buffer after the native execution context has exited.
 
----
-
 [↑ Back to Top](#high-performance-string-processing-a-polyglot-architecture)
 
 ---
