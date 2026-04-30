@@ -31,7 +31,10 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
 ## Table of Contents
 
 * [System Architecture](#system-architecture)
+* [Governance and Decision Tracking](#governance-and-decision-tracking)
 * [CI/CD & Deployment Pipeline](#cicd--deployment-pipeline)
+* [Horizontal Scaling and Orchestration](#horizontal-scaling-and-orchestration)
+* [Technical Documentation](#technical-documentation)
 * [Components](#components)
   * [1. Core Logic: Native Conversion Engine](#1-core-logic-native-conversion-engine)
   * [2. Managed Gateway: .NET REST API](#2-managed-gateway-net-rest-api)
@@ -46,9 +49,9 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
   * [7. Memory Sovereignty and The Interop Lifecycle](#7-memory-sovereignty-and-the-interop-lifecycle)
 * [Quick Start](#quick-start)
   * [Run the Load-Balanced Cluster](#run-the-load-balanced-cluster)
-  * [Performance Metrics and Insights RAII](#performance-metrics-and-insights-raii)
 * [Technical Significance](#technical-significance)
 * [Project Timeline and Roadmap](#project-timeline-and-roadmap)
+* [Release and Versioning](#release-and-versioning)
 * [Summary](#summary)
 
 ---
@@ -64,6 +67,21 @@ The architecture addresses the inherent challenges of exposing unmanaged perform
 * The DevOps: A multi-stage Docker orchestration supporting Artifact Promotion (Dev → Staging → Prod) to ensure environmental parity.
 
 ![alt text](assets/API.png)
+
+---
+
+## Governance and Decision Tracking
+
+This project follows a strict **Architectural Decision Log (ADL)** to document the strategic reasoning behind our technical choices. This ensures long-term maintainability and provides a clear audit trail for the system's evolution.
+
+**[View the Full Architectural Decision Log (ADL) →](docs/adr/DECISION_LOG.md)**
+
+### Key Decisions at a Glance
+
+* **Interop Strategy (ADR 001):** In-process **P/Invoke** selected over gRPC/Sockets to achieve sub-microsecond in-process latency.
+* **Memory Safety (ADR 002):** **Callee-Allocated** contract ensures C++ governs buffer creation while .NET handles lifecycle disposal via exported `free` delegates.
+* **Hardware Alignment (ADR 003):** Threading model explicitly tuned for **Apple M2 P-Core saturation**, avoiding efficiency core overhead.
+* **Performance (ADR 013):** Implemented **SustainedLowLatency GC** to eliminate tail-latency spikes during 1M+ request stress tests.
 
 ---
 
@@ -93,7 +111,34 @@ graph TD
     end
 ```
 
-[↑ Back to Top](#high-performance-string-processing-a-polyglot-architecture)
+**[Read the Full Deployment & Infrastructure Guide→](docs/deployment/deployment.md)**
+
+---
+
+## Horizontal Scaling and Orchestration
+
+To achieve a sustained 2,800+ req/s, the system utilizes an NGINX Layer 7 Load Balancer to distribute traffic across a pool of isolated .NET replicas.
+
+Strategy: Round-Robin distribution across 4 performance-tuned containers.
+
+Optimization: Configured to saturate the Apple M2 P-Core architecture.
+
+Resilience: Automatic failover and connection pooling to mitigate "Stop-the-World" GC pauses.
+
+[Read the Load Balancing & Orchestration Guide →](docs/LoadBalancer/LOAD_BALANCER.md)
+
+---
+
+## Technical Documentation
+
+| Document                                                  | Focus                                              | Target Audience        |
+|-----------------------                                    |----------------------------------------------------|----------------------- |
+| [Architecture Decisions](docs/adr/DECISION_LOG.md)        | The "Why" behind P/Invoke & NGINX                  | Architects / Leads     |
+| [Performance Report](docs/performance/PERFORMANCE.md)     | 1M Request Stress Test & Soak Results              | QA / DevOps            |
+| [Deployment Guide](docs/deployment/deployment.md)         | Multi-stage Docker & Orchestration                 | SREs / Devs            |
+| [Release Process](docs/releases/RELEASING.md)             | SemVer logic & Hardware optimization               | Release Managers       |
+| [Load Balancer Guide](docs/LoadBalancer/LOAD_BALANCER.md) | NGINX Layer 7 routing, scaling, and orchestration  | SREs / Devs            |
+| [DLL Internals](docs/DLL_INTERNALS/README.md)             | Native interop, DLL lifecycle, and memory model    | Systems / Backend Engs |
 
 ---
 
@@ -264,18 +309,6 @@ docker compose -f docker-compose-load.yml up --scale backend=4 -d
 
 * Telemetry: <http://localhost:16686>
 
-### Performance Metrics and Insights RAII
-
-The project reached a major engineering milestone with the implementation of RAII and the Rule of Five in the native core. Below is the comparative data from a 1,000,000 request stress test conducted on Apple M2 hardware, demonstrating the massive efficiency gains in the polyglot bridge.
-
-| Metric                 | Pre-RAII Baseline | Post-RAII (Optimized)  | Net Improvement           |
-|----------------------- |-------------------|------------------------|---------------------------|
-| Throughput             | 2,262.54 req/s    | 2,827.97 req/s         | +25% Gain                 |
-| Mean Latency           | 44.19 ms          | 35.36 ms               | 20% Reduction             |
-| Median Latency (P50)   | 38.00 ms          | 22.00 ms               | 42% Snappier              |
-| Tail Latency (P99)     | 102.00 ms         | 134.00 ms              | Thermal / TCP Overhead    |
-| Success Rate           | 99.996%           | 99.998%                | Near-Perfect Reliability  |
-
 ---
 
 ### Technical Significance
@@ -299,6 +332,20 @@ The project reached a major engineering milestone with the implementation of RAI
 | v2.0.0 Release     | April 23, 2026  | The "Millionaire" Milestone: Integrated NGINX Layer 7 Load Balancing and passed the 1M request endurance test.              |
 | v2.1.0 Release     | April 25, 2026  | Industrial Hardening: Full OpenTelemetry integration, CI/CD pipeline domain-standardization, and CodeQL security alignment. |
 | v2.2.0 Release     | April 30, 2026  | Achieved a 25% throughput increase (2,827 req/s) and 42% median latency reduction by implementing RAII.                     |
+
+---
+
+## Release and Versioning
+
+This project adheres to Semantic Versioning (SemVer) and utilizes an automated CI/CD pipeline for artifact distribution.
+
+Platform-Specific Builds: All releases are compiled on ARM64 runners to ensure binary optimization for Apple Silicon.
+
+Artifact Promotion: We use a "Build Once, Promote Anywhere" strategy to maintain environmental parity.
+
+Traceability: Every release is tagged and accompanied by a detailed Architectural Decision Log entry.
+
+[Read the Full Release & Versioning Guide →](docs/releases/RELEASING.md)
 
 ---
 

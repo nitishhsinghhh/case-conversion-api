@@ -12,22 +12,33 @@
 ---
 
 ## Table of Contents
+
 * [Overview](#overview)
 * [Goals & Non-Goals](#goals)
+  * [Goals](#goals)
+  * [Non-Goals](#non-goals)
 * [High-Level Architecture](#high-level-architecture)
 * [Component Design](#component-design)
-    * [C++ Conversion Engine](#c-conversion-engine-native-layer)
-    * [.NET Interop & Service Layer](#net-interop-and-service-layer)
-    * [REST API Layer](#rest-api-layer)
-    * [Frontend UI](#frontend-ui)
+  * [C++ Conversion Engine (Native Layer)](#c-conversion-engine-native-layer)
+  * [.NET Interop and Service Layer](#net-interop-and-service-layer)
+  * [.NET Interop Layer](#net-interop-layer)
+  * [REST API Layer](#rest-api-layer)
+  * [Frontend UI](#frontend-ui)
 * [Hardware Optimization (Apple M2)](#m2-hardware-optimization-v13)
-* [Observability & Security](#17-observability--telemetry-architecture)
-    * [Telemetry Architecture](#17-observability--telemetry-architecture)
-    * [Security & Boundary Hardening](#18-security--boundary-hardening)
-* [Performance & Evolution](#architectural-evolution)
-    * [Benchmark Results](#9-performance-considerations)
-    * [Architectural Evolution](#architectural-evolution)
-* [Testing & Deployment](#11-testing-strategy)
+* [Build & Deployment Architecture](#build--deployment-architecture)
+* [Runtime Flow](#7-runtime-flow)
+* [Error Handling](#8-error-handling)
+* [Performance Considerations](#9-performance-considerations)
+* [Extensibility](#10-extensibility)
+* [Testing Strategy](#11-testing-strategy)
+* [Deployment](#12-deployment)
+* [Future Improvements](#13-future-improvements)
+* [Tech Stack](#14-tech-stack)
+* [Key Design Decisions](#15-key-design-decisions)
+* [Tradeoffs](#16-tradeoffs)
+* [Observability & Telemetry Architecture](#17-observability--telemetry-architecture)
+* [Security & Boundary Hardening](#18-security--boundary-hardening)
+* [Architectural Evolution](#architectural-evolution)
 
 ---
 
@@ -41,19 +52,19 @@ The system uses native C++ for efficient string transformations, .NET for servic
 
 ## Goals
 
-- Performance: Utilize native C++ for O(n) string transformations.
-- Scalability: Saturate M2 Performance Cores via parallel orchestration.
-- Observability: Provide full-stack trace propagation across the ABI boundary.
-- Security: Enforce a strict 5MB security gate for native memory protection.
+* Performance: Utilize native C++ for O(n) string transformations.
+* Scalability: Saturate M2 Performance Cores via parallel orchestration.
+* Observability: Provide full*stack trace propagation across the ABI boundary.
+* Security: Enforce a strict 5MB security gate for native memory protection.
 
 ---
 
 ## Non-Goals
 
-- Persistent storage
-- Authentication/authorization
-- Distributed scaling
-- Streaming or batch processing
+* Persistent storage
+* Authentication/authorization
+* Distributed scaling
+* Streaming or batch processing
 
 ---
 
@@ -83,25 +94,25 @@ The system uses native C++ for efficient string transformations, .NET for servic
 
 Responsibilities:
 
-- Implement conversion strategies
-- Dispatch based on user choice
-- Return processed string
+* Implement conversion strategies
+* Dispatch based on user choice
+* Return processed string
 
 Design Patterns:
 
-- Strategy Pattern: Each conversion (SnakeCase, LeetSpeak, etc.) is an isolated strategy class.
-- Factory Pattern: A central factory dispatches the input string to the correct strategy based on an integer `choice`.
-- Memory Ownership: Follows the **"Callee-Allocates, Caller-Frees"** contract. The native engine allocates the result on the heap, and .NET is responsible for calling a `freeString` delegate.
+* Strategy Pattern: Each conversion (SnakeCase, LeetSpeak, etc.) is an isolated strategy class.
+* Factory Pattern: A central factory dispatches the input string to the correct strategy based on an integer `choice`.
+* Memory Ownership: Follows the **"Callee-Allocates, Caller-Frees"** contract. The native engine allocates the result on the heap, and .NET is responsible for calling a `freeString` delegate.
 
 Example Strategies:
 
-- AlternatingCase
-- CapitalizeWords
-- SnakeCase
-- KebabCase
-- LeetSpeak
-- Reverse
-- ToggleCase
+* AlternatingCase
+* CapitalizeWords
+* SnakeCase
+* KebabCase
+* LeetSpeak
+* Reverse
+* ToggleCase
 
 Factory selects strategy:
 Input Choice → Factory → Strategy → Execute
@@ -118,9 +129,9 @@ extern "C" const char* processStringDLL(const char* input, int choice);
 
 Responsibilities:
 
-- Bridge C++ and C#
-- Dispatch conversion request
-- Return C-style string pointer
+* Bridge C++ and C#
+* Dispatch conversion request
+* Return C-style string pointer
 
 #### Memory Ownership Policy
 
@@ -143,9 +154,9 @@ private static extern IntPtr processStringDLL(string input, int choice);
 
 Responsibilities:
 
-- Marshal strings
-- Convert IntPtr to managed string
-- Handle API-level validation
+* Marshal strings
+* Convert IntPtr to managed string
+* Handle API-level validation
 
 ---
 
@@ -167,17 +178,17 @@ Response:
 
 Responsibilities:
 
-- Input validation
-- Call service layer
-- Return JSON response
+* Input validation
+* Call service layer
+* Return JSON response
 
 ### M2 Hardware Optimization (v1.3)
 
 To maximize throughput on Apple Silicon:
 
-- P-Core Saturation: The system targets the 4 Performance Cores (P-Cores) of the M2.
-- Parallel Orchestration: The `convert-batch` endpoint uses `Parallel.ForEachAsync` with a `MaxDegreeOfParallelism` of 4.
-- N+1 Queueing: A `SemaphoreSlim` ensures that a 5th concurrent request is queued correctly, preventing the system from offloading high-priority work to the slower E-Cores (Efficiency Cores).
+* P-Core Saturation: The system targets the 4 Performance Cores (P-Cores) of the M2.
+* Parallel Orchestration: The `convert-batch` endpoint uses `Parallel.ForEachAsync` with a `MaxDegreeOfParallelism` of 4.
+* N+1 Queueing: A `SemaphoreSlim` ensures that a 5th concurrent request is queued correctly, preventing the system from offloading high-priority work to the slower E-Cores (Efficiency Cores).
 
 ---
 
@@ -185,16 +196,16 @@ To maximize throughput on Apple Silicon:
 
 Technology:
 
-- React
-- TypeScript
-- Vite
+* React
+* TypeScript
+* Vite
 
 Responsibilities:
 
-- Collect input
-- Provide conversion selection
-- Call REST API
-- Display results
+* Collect input
+* Provide conversion selection
+* Call REST API
+* Display results
 
 ---
 
@@ -204,13 +215,13 @@ Responsibilities:
 
 Stage 1:
 
-- Build C++ shared library
-- Publish .NET API
+* Build C++ shared library
+* Publish .NET API
 
 Stage 2:
 
-- Copy artifacts
-- Run ASP.NET runtime
+* Copy artifacts
+* Run ASP.NET runtime
 
 ---
 
@@ -244,19 +255,19 @@ Stage 2:
 
 ## 8. Error Handling
 
-- Invalid choice → return lower case of string
-- Null input → return empty string
-- DLL load failure → HTTP 500
-- API validation failure → HTTP 400
+* Invalid choice → return lower case of string
+* Null input → return empty string
+* DLL load failure → HTTP 500
+* API validation failure → HTTP 400
 
 ---
 
 ## 9. Performance Considerations
 
-- Native C++ for string processing
-- No heap allocations in critical path
-- Static buffer reuse
-- Minimal interop overhead
+* Native C++ for string processing
+* No heap allocations in critical path
+* Static buffer reuse
+* Minimal interop overhead
 
 ---
 
@@ -277,16 +288,16 @@ No API changes required.
 
 C++:
 
-- GoogleTest unit tests
-- Strategy validation
+* GoogleTest unit tests
+* Strategy validation
 
 .NET:
 
-- Service layer tests
+* Service layer tests
 
 Integration:
 
-- API endpoint tests
+* API endpoint tests
 
 ---
 
@@ -300,18 +311,18 @@ Docker container on port 5173
 
 Docker Compose orchestrates:
 
-- frontend
-- backend
+* frontend
+* backend
 
 ---
 
 ## 13. Future Improvements
 
-- SIMD optimizations
-- Async API calls
-- Plugin-based strategies
-- Benchmark endpoints
-- WASM build of C++ engine
+* SIMD optimizations
+* Async API calls
+* Plugin-based strategies
+* Benchmark endpoints
+* WASM build of C++ engine
 
 ---
 
@@ -352,15 +363,15 @@ Reason: Ensures that errors occurring deep in the C++ engine are correlated to t
 
 Pros:
 
-- High performance
-- Modular design
-- Extensible architecture
+* High performance
+* Modular design
+* Extensible architecture
 
 Cons:
 
-- Native interop complexity
-- Memory management risks
-- Cross-platform build complexity
+* Native interop complexity
+* Memory management risks
+* Cross-platform build complexity
 
 ---
 
@@ -368,36 +379,36 @@ Cons:
 
 To ensure the polyglot boundary is transparent, the system implements:
 
-- Trace Context Propagation: The .NET Gateway extracts the W3C traceparent and passes it to the native engine.
+* Trace Context Propagation: The .NET Gateway extracts the W3C traceparent and passes it to the native engine.
 
-- Granular Spans: We track ABI Latency (the time spent converting data between managed and unmanaged memory) separately from Logic Latency (the time the C++ engine takes to run the strategy).
+* Granular Spans: We track ABI Latency (the time spent converting data between managed and unmanaged memory) separately from Logic Latency (the time the C++ engine takes to run the strategy).
 
-- Visualizer: All traces are exported via OTLP to a Jaeger/Zipkin backend.
+* Visualizer: All traces are exported via OTLP to a Jaeger/Zipkin backend.
 
 ## 18. Security & Boundary Hardening
 
-- Buffer Overflow Protection: The managed API validates the input length against a MAX_BUFFER_SIZE before the P/Invoke call.
+* Buffer Overflow Protection: The managed API validates the input length against a MAX_BUFFER_SIZE before the P/Invoke call.
 
-- Sanitization: The C++ engine uses std::string_view or bound-checked iterators to ensure it never reads past the memory allocated by the managed environment.
+* Sanitization: The C++ engine uses std::string_view or bound-checked iterators to ensure it never reads past the memory allocated by the managed environment.
 
-- Managed Handling**: The .NET layer detects this sentinel and throws a controlled `ArgumentException`, returning a `400 Bad Request` to the user instead of crashing the native process.
+* Managed Handling**: The .NET layer detects this sentinel and throws a controlled `ArgumentException`, returning a `400 Bad Request` to the user instead of crashing the native process.
 
 ## Architectural Evolution
 
 ### v1.x: The Foundation (Single Instance)
 
-- Architecture: Monolithic REST API wrapper over a Native Engine.
+* Architecture: Monolithic REST API wrapper over a Native Engine.
 
-- Focus: Perfecting the ABI boundary and manual memory management.
+* Focus: Perfecting the ABI boundary and manual memory management.
 
-- Limit: P(95) latency spikes during Garbage Collection (GC) events under high load.
+* Limit: P(95) latency spikes during Garbage Collection (GC) events under high load.
 
 ### v2.0.0: Generation 2 (HA Cluster)
 
-- Architecture: Layer 7 Load-Balanced Micro-Cluster.
+* Architecture: Layer 7 Load-Balanced Micro-Cluster.
 
-- Mechanism: NGINX Reverse Proxy distributing traffic across 4 hardware-optimized replicas.
+* Mechanism: NGINX Reverse Proxy distributing traffic across 4 hardware-optimized replicas.
 
-- Justification: Necessary to survive the 1,000,000 request endurance test.
+* Justification: Necessary to survive the 1,000,000 request endurance test.
 
-- Result: Stabilized tail latency and 100% success rate by offloading pressure from single-process GC cycles.
+* Result: Stabilized tail latency and 100% success rate by offloading pressure from single-process GC cycles.

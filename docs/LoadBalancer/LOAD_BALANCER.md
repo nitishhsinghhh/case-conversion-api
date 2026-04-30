@@ -89,9 +89,9 @@ During the 1,000,000 request stress test, the load balancer played a critical ro
 
 | Feature        | Implementation                                  |
 |----------------|-------------------------------------------------|
-| Software       | NGINX (Alpine-based ARM64 image)               |
+| Software       | NGINX (Alpine-based ARM64 image)                |
 | Strategy       | Round Robin                                     |
-| Max Replicas   | 4 (Hardware-optimized for M2)                  |
-| Health Checks  | Automatic (NGINX failure detection)            |
+| Max Replicas   | 4 (Hardware-optimized for M2)                   |
+| Health Checks  | Automatic (NGINX failure detection)             |
 
 ---

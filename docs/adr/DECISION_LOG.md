@@ -1,7 +1,6 @@
 # Architectural Decision Log: Polyglot String Engine
 
-> **"The important thing about a problem is not its solution, but the strength we gain in finding the solution."**
-> 
+> **"The important thing about a problem is not its solution, but the strength we gain in finding the solution."**  
 > This log serves as the authoritative record for the architectural evolution of the Case Conversion Engine. It documents the trade-offs, constraints, and strategic reasoning behind the system's current state.
 
 ---
