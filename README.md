@@ -22,7 +22,7 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
 ![Telemetry](https://img.shields.io/badge/Telemetry-OpenTelemetry-F48420?style=flat-square&logo=opentelemetry&logoColor=white)
 ![License](https://img.shields.io/github/license/nitishhsinghhh/case-conversion-api?style=flat-square&color=blue)
 
-![Code Base](https://img.shields.io/badge/Code_Base-84k_Lines-blueviolet?style=flat-square)
+![Code Base](https://img.shields.io/badge/Code_Base-194k_Lines-blueviolet?style=flat-square)
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=nitishhsinghhh/CaseConversionAPI&label=Project%20Views&countColor=%232088ff&style=flat-square)
 
