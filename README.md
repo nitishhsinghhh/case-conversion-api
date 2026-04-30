@@ -288,7 +288,7 @@ The project reached a major engineering milestone with the implementation of RAI
 
 * Hardware Efficiency: Optimized for Apple Silicon (arm64), leveraging unified memory to minimize data copy overhead during managed-to-unmanaged transitions.
 
-**Engineering Insight:** While the total project environment spans 194k lines, the functional core is a highly massive native C++ engine (representing 60% of authored logic), prioritizing custom high-performance algorithms over external libraries.
+**Engineering Insight:** While the total project environment spans 194k lines, the architecture is anchored by a massive native C++ engine representing 60% of the authored functional logic. This reflects a strategic commitment to custom, high-performance algorithms over off-the-shelf libraries, ensuring maximum execution efficiency and long-term ABI stability.
 
 ---
 
