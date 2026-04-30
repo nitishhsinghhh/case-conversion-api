@@ -16,6 +16,7 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=dotnet&logoColor=white)
 ![React](https://img.shields.io/badge/React-TS-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![YAML](https://img.shields.io/badge/YAML-Config-CB171E?style=flat-square&logo=yaml&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-GoogleTest-007ACC?style=flat-square&logo=google&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=flat-square&logo=docker&logoColor=white)
 ![CI/CD](https://img.shields.io/badge/CI/CD-GitHub%20Actions-2088FF?style=flat-square&logo=github-actions&logoColor=white)
 ![Telemetry](https://img.shields.io/badge/Telemetry-OpenTelemetry-F48420?style=flat-square&logo=opentelemetry&logoColor=white)
