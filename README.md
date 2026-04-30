@@ -48,7 +48,6 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
   * [Run the Load-Balanced Cluster](#run-the-load-balanced-cluster)
   * [Performance Metrics and Insights RAII](#performance-metrics-and-insights-raii)
 * [Technical Significance](#technical-significance)
-* [Project Vitality and Scale](#project-vitality-and-scale)
 * [Project Timeline and Roadmap](#project-timeline-and-roadmap)
 * [Summary](#summary)
 
@@ -289,22 +288,7 @@ The project reached a major engineering milestone with the implementation of RAI
 
 * Hardware Efficiency: Optimized for Apple Silicon (arm64), leveraging unified memory to minimize data copy overhead during managed-to-unmanaged transitions.
 
----
-
-## Project Vitality and Scale
-
-The codebase is a significant polyglot undertaking, engineered for high-performance across multiple domains (Native, Managed, and Frontend). Below is a snapshot of the source lines of code (SLOC) excluding build artifacts and dependencies:
-
-| Category              | Files | Code (Lines) | Role in Ecosystem                                      |
-|----------------------|------:|-------------:|--------------------------------------------------------|
-| C++ / C / Headers    |   203 |       56,319 | High-performance Strategy Engine & Core ABI            |
-| Build Systems        |    65 |        3,839 | CMake, Make, Bazel, & Starlark                         |
-| DevOps & Config      |    40 |        4,120 | YAML, Docker, & JSON Configuration                     |
-| C# (.NET 8)          |    12 |          664 | High-concurrency Managed Gateway                       |
-| Web & Scripting      |    16 |          987 | UI (TS/SCSS) & Bourne Shell Utilities                  |
-| **TOTAL**            | **336** |   **65,929** | **Core Functional Codebase**                          |
-
-> **Engineering Insight:** While the total project environment spans 194k lines, the functional core is a highly concentrated 66k LOC system authored entirely from the ground up. The architecture is anchored by a massive 56k-line native C++ engine (representing 85% of authored logic), prioritizing custom high-performance algorithms over external libraries. This lean, unmanaged core is supported by a sophisticated 128k-line surrounding ecosystem of automated testing, multi-platform build orchestration, and technical documentation, ensuring the engine remains production-ready and portable.
+**Engineering Insight:** While the total project environment spans 194k lines, the functional core is a highly massive native C++ engine (representing 60% of authored logic), prioritizing custom high-performance algorithms over external libraries.
 
 ---
 
