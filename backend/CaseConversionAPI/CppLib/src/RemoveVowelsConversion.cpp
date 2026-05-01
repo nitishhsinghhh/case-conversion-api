@@ -26,7 +26,8 @@
 #include "RemoveVowelsConversion.hpp"
 #include "LowerCaseConversion.hpp"
 
-ConversionResult RemoveVowelsConversion::convert(const std::string &input) const {
+ConversionResult
+RemoveVowelsConversion::convert(const std::string &input) const {
   LowerCaseConversion lowerConv;
   std::string lower = ConversionResult(lowerConv.convert(input)).get_c_str();
   std::string result;

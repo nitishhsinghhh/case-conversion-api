@@ -26,11 +26,12 @@
 /*********************************************************************/
 
 #include "AlternatingCaseConversion.hpp"
+#include "ConversionResult.hpp"
 #include "LowerCaseConversion.hpp"
 #include "UpperCaseConversion.hpp"
-#include "ConversionResult.hpp"
 
-ConversionResult AlternatingCaseConversion::convert(const std::string &input) const {
+ConversionResult
+AlternatingCaseConversion::convert(const std::string &input) const {
   LowerCaseConversion lowerConv;
   UpperCaseConversion upperConv;
 
@@ -44,17 +45,17 @@ ConversionResult AlternatingCaseConversion::convert(const std::string &input) co
 
       if (upper) {
         auto resObj = upperConv.convert(temp);
-        finalResult += resObj.get_c_str(); 
+        finalResult += resObj.get_c_str();
       } else {
         auto resObj = lowerConv.convert(temp);
-        finalResult += resObj.get_c_str(); 
+        finalResult += resObj.get_c_str();
       }
 
       upper = !upper;
     } else {
-      finalResult += c; 
+      finalResult += c;
       if (c == ' ') {
-        upper = true; 
+        upper = true;
       }
     }
   }

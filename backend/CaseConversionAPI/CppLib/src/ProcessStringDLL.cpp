@@ -130,61 +130,59 @@ static bool mapConversionType(ConversionChoice choice, ConversionType &type) {
 
 extern "C" {
 
-API const char *processStringDLL(const char *input, int choiceInt, const char *traceId) {
-    try {
-        if (!input) return safeError("ERROR_NULL_INPUT");
+API const char *processStringDLL(const char *input, int choiceInt,
+                                 const char *traceId) {
+  try {
+    if (!input)
+      return safeError("ERROR_NULL_INPUT");
 
-        size_t inputLength = std::strlen(input);
-        if (inputLength > MAX_INPUT_SIZE) {
-            return safeError("ERROR_BUFFER_OVERFLOW_LIMIT_5MB");
-        }
-
-        if (choiceInt < 0) {
-            return safeError("ERROR_NEGATIVE_CONVERSION_CHOICE");
-        }
-
-        ConversionChoice choice = static_cast<ConversionChoice>(choiceInt);
-        ConversionType type;
-
-        if (!mapConversionType(choice, type)) {
-            return safeError("ERROR_INVALID_CONVERSION_CHOICE");
-        }
-
-        Client client;
-        if (traceId) {
-            client.setTraceId(traceId);
-        }
-
-        // 1. Create the engine and execute
-        client.setStrategy(StringConversionFactory::create(type));
-        
-        // 2. Capture the result in a local scope to ensure its lifetime
-        ConversionResult result = client.execute(std::string(input));
-        const char* rawPtr = result.get_c_str();
-
-        if (!rawPtr) 
-          return safeError("ERROR_ENGINE_RETURNED_NULL");
-
-        // 3. Perform a DEEP COPY immediately into malloc'd memory
-        size_t resLen = std::strlen(rawPtr);
-        char *output = static_cast<char *>(std::malloc(resLen + 1));
-        
-        if (!output) 
-          return safeError("FATAL_ALLOCATION_FAILURE");
-
-        std::memcpy(output, rawPtr, resLen + 1);
-
-        // 4. The 'result' object will be destroyed after this return, 
-        // but 'output' is now independent on the heap.
-        return output;
-
-    } catch (...) {
-        return safeError("ERROR_INTERNAL_EXCEPTION");
+    size_t inputLength = std::strlen(input);
+    if (inputLength > MAX_INPUT_SIZE) {
+      return safeError("ERROR_BUFFER_OVERFLOW_LIMIT_5MB");
     }
+
+    if (choiceInt < 0) {
+      return safeError("ERROR_NEGATIVE_CONVERSION_CHOICE");
+    }
+
+    ConversionChoice choice = static_cast<ConversionChoice>(choiceInt);
+    ConversionType type;
+
+    if (!mapConversionType(choice, type)) {
+      return safeError("ERROR_INVALID_CONVERSION_CHOICE");
+    }
+
+    Client client;
+    if (traceId) {
+      client.setTraceId(traceId);
+    }
+
+    client.setStrategy(StringConversionFactory::create(type));
+
+    ConversionResult result = client.execute(std::string(input));
+    const char *rawPtr = result.get_c_str();
+
+    if (!rawPtr)
+      return safeError("ERROR_ENGINE_RETURNED_NULL");
+
+    size_t resLen = std::strlen(rawPtr);
+    char *output = static_cast<char *>(std::malloc(resLen + 1));
+
+    if (!output)
+      return safeError("FATAL_ALLOCATION_FAILURE");
+
+    std::memcpy(output, rawPtr, resLen + 1);
+
+    return output;
+
+  } catch (...) {
+    return safeError("ERROR_INTERNAL_EXCEPTION");
+  }
 }
 
-API void freeString(char *str) { 
-    if (str) std::free(str); 
+API void freeString(char *str) {
+  if (str)
+    std::free(str);
 }
 
 } // extern "C"

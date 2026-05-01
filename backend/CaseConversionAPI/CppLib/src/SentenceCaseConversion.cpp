@@ -29,7 +29,8 @@
 #include "LowerCaseConversion.hpp"
 #include "UpperCaseConversion.hpp"
 
-ConversionResult SentenceCaseConversion::convert(const std::string &input) const {
+ConversionResult
+SentenceCaseConversion::convert(const std::string &input) const {
   if (input.empty()) {
     return ConversionResult(input.c_str());
   }

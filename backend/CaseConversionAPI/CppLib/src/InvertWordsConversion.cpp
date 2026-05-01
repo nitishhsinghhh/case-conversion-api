@@ -27,7 +27,8 @@
 #include <algorithm>
 #include <sstream>
 
-ConversionResult InvertWordsConversion::convert(const std::string &input) const {
+ConversionResult
+InvertWordsConversion::convert(const std::string &input) const {
   std::istringstream iss(input);
   std::ostringstream oss;
   std::string word;

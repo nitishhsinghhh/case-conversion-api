@@ -26,7 +26,8 @@
 #include "RemoveSpacesConversion.hpp"
 #include <algorithm>
 
-ConversionResult RemoveSpacesConversion::convert(const std::string &input) const {
+ConversionResult
+RemoveSpacesConversion::convert(const std::string &input) const {
   std::string result = input;
   result.erase(std::remove(result.begin(), result.end(), ' '), result.end());
   return ConversionResult(result.c_str());

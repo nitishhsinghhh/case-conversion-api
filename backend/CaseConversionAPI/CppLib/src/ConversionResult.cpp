@@ -34,80 +34,81 @@
 /* Constructor                                                       */
 /*********************************************************************/
 
-ConversionResult::ConversionResult(const char* input) {
-    if (input) {
-        data = new char[std::strlen(input) + 1];
-        std::strcpy(data, input);
-    } else {
-        data = nullptr;
-    }
+ConversionResult::ConversionResult(const char *input) {
+  if (input) {
+    data = new char[std::strlen(input) + 1];
+    size_t length = std::strlen(input);
+    std::memcpy(data, input, length + 1);
+  } else {
+    data = nullptr;
+  }
 }
 
 /*********************************************************************/
 /* Destructor                                                        */
 /*********************************************************************/
 
-ConversionResult::~ConversionResult() {
-    delete[] data;
-}
+ConversionResult::~ConversionResult() { delete[] data; }
 
 /*********************************************************************/
 /* Copy Constructor                                                  */
 /*********************************************************************/
 
-ConversionResult::ConversionResult(const ConversionResult& other) {
-    if (other.data) {
-        data = new char[std::strlen(other.data) + 1];
-        std::strcpy(data, other.data);
-    } else {
-        data = nullptr;
-    }
+ConversionResult::ConversionResult(const ConversionResult &other) {
+  if (other.data) {
+    size_t length = std::strlen(other.data);
+    data = new char[length + 1];
+    std::memcpy(data, other.data, length + 1);
+  } else {
+    data = nullptr;
+  }
 }
 
 /*********************************************************************/
 /* Copy Assignment                                                   */
 /*********************************************************************/
 
-ConversionResult& ConversionResult::operator=(const ConversionResult& other) {
-    if (this != &other) {
-        delete[] data;
-
-        if (other.data) {
-            data = new char[std::strlen(other.data) + 1];
-            std::strcpy(data, other.data);
-        } else {
-            data = nullptr;
-        }
+ConversionResult &ConversionResult::operator=(const ConversionResult &other) {
+  if (this != &other) {
+    char *new_data = nullptr;
+    if (other.data) {
+      size_t length = std::strlen(other.data);
+      new_data = new char[length + 1];
+      std::memcpy(new_data, other.data, length + 1);
     }
-    return *this;
+
+    // Clean up old data and assign new
+    delete[] data;
+    data = new_data;
+  }
+  return *this;
 }
 
 /*********************************************************************/
 /* Move Constructor                                                  */
 /*********************************************************************/
 
-ConversionResult::ConversionResult(ConversionResult&& other) noexcept
+ConversionResult::ConversionResult(ConversionResult &&other) noexcept
     : data(other.data) {
-    other.data = nullptr;
+  other.data = nullptr;
 }
 
 /*********************************************************************/
 /* Move Assignment                                                   */
 /*********************************************************************/
 
-ConversionResult& ConversionResult::operator=(ConversionResult&& other) noexcept {
-    if (this != &other) {
-        delete[] data;
-        data = other.data;
-        other.data = nullptr;
-    }
-    return *this;
+ConversionResult &
+ConversionResult::operator=(ConversionResult &&other) noexcept {
+  if (this != &other) {
+    delete[] data;
+    data = other.data;
+    other.data = nullptr;
+  }
+  return *this;
 }
 
 /*********************************************************************/
 /* Accessor                                                          */
 /*********************************************************************/
 
-const char* ConversionResult::get_c_str() const {
-    return data;
-}
+const char *ConversionResult::get_c_str() const { return data; }
