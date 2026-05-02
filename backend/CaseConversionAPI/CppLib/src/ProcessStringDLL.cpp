@@ -181,8 +181,9 @@ API const char *processStringDLL(const char *input, int choiceInt,
 }
 
 API void freeString(char *str) {
-  if (str)
+  if (str) {
     std::free(str);
+  }
 }
 
 } // extern "C"
