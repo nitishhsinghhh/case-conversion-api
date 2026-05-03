@@ -34,36 +34,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ------------------------------------------------------------
-      # Install GitHub CLI Cache Extension
-      # ------------------------------------------------------------
       - name: Install Cache Extension
         run: |
           gh extension install actions/gh-actions-cache
 
-      # ------------------------------------------------------------
-      # Cleanup Stale Caches (>7 days old)
-      # ------------------------------------------------------------
       - name: Delete Old Caches
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.SECRET_GITHUB_TOKEN }}
         run: |
           REPO=${{ github.repository }}
 
-          echo "Fetching cache list..."
+          echo "Fetching cache list for $REPO..."
+          # Fetch the list of caches
           gh actions-cache list -R $REPO --limit 1000 > caches.txt
 
           while read -r line; do
+            # Extract Cache Key and Last Used Timestamp
             KEY=$(echo $line | awk '{print $1}')
             LAST_USED=$(echo $line | awk '{print $3" "$4}')
 
+            # Convert to Timestamps
             LAST_USED_TS=$(date -d "$LAST_USED" +%s || echo 0)
             NOW_TS=$(date +%s)
 
+            # Calculate Age in Days
             AGE=$(( (NOW_TS - LAST_USED_TS) / 86400 ))
 
             if [ "$AGE" -gt 7 ]; then
-              echo "Deleting cache: $KEY (Age: $AGE days)"
+              echo "Deleting stale cache: $KEY (Age: $AGE days)"
               gh actions-cache delete "$KEY" -R $REPO --confirm
+            else
+              echo "Skipping active cache: $KEY (Age: $AGE days)"
             fi
           done < caches.txt
