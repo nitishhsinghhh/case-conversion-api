@@ -1,0 +1,69 @@
+#*********************************************************************/
+#  CI Maintenance - GitHub Cache Cleanup                             */
+#                                                                    */
+# Purpose   : Automatically removes stale GitHub Actions caches      */
+#             to prevent storage limit exhaustion (10GB cap).        */
+#                                                                    */
+# Trigger   : Scheduled (Daily) + Manual Invocation                  */
+# Runtime   : Ubuntu Latest                                          */
+#                                                                    */
+# Notes     : - Uses GitHub CLI cache extension.                     */
+#             - Deletes caches older than 7 days.                    */
+#             - Prevents cache explosion from dynamic keys.          */
+#                                                                    */
+# Revision History:                                                  */
+# ------------------------------------------------------------------ */
+# Version    Date        Author          Description                 */
+# ------------------------------------------------------------------ */
+# 1.0        2026-05-03  Nitish Singh    Initial Cache Cleanup Job   */
+#*********************************************************************/
+
+name: Cache Cleanup
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily at midnight UTC
+  workflow_dispatch: {}
+
+permissions:
+  actions: write    # Required to delete caches
+  contents: read   # Required to read repository metadata
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ------------------------------------------------------------
+      # Install GitHub CLI Cache Extension
+      # ------------------------------------------------------------
+      - name: Install Cache Extension
+        run: |
+          gh extension install actions/gh-actions-cache
+
+      # ------------------------------------------------------------
+      # Cleanup Stale Caches (>7 days old)
+      # ------------------------------------------------------------
+      - name: Delete Old Caches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO=${{ github.repository }}
+
+          echo "Fetching cache list..."
+          gh actions-cache list -R $REPO --limit 1000 > caches.txt
+
+          while read -r line; do
+            KEY=$(echo $line | awk '{print $1}')
+            LAST_USED=$(echo $line | awk '{print $3" "$4}')
+
+            LAST_USED_TS=$(date -d "$LAST_USED" +%s || echo 0)
+            NOW_TS=$(date +%s)
+
+            AGE=$(( (NOW_TS - LAST_USED_TS) / 86400 ))
+
+            if [ "$AGE" -gt 7 ]; then
+              echo "Deleting cache: $KEY (Age: $AGE days)"
+              gh actions-cache delete "$KEY" -R $REPO --confirm
+            fi
+          done < caches.txt
