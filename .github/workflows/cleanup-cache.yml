@@ -26,8 +26,8 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  actions: write    # Required to delete caches
-  contents: read   # Required to read repository metadata
+  actions: write    
+  contents: read  
 
 jobs:
   cleanup:
