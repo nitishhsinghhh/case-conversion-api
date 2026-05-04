@@ -78,7 +78,8 @@ static const char *safeError(const char *msg) {
 // Conversion Mapping (Internal - C++ only)
 //===================================================================
 
-static bool mapConversionType(ConversionChoice choice, ConversionType &type) {
+static bool mapConversionType(ConversionChoice choice,
+                              ConversionType &type) noexcept {
   switch (choice) {
   case ConversionChoice::Alternating:
     type = ConversionType::Alternating;
@@ -133,8 +134,9 @@ extern "C" {
 API const char *processStringDLL(const char *input, int choiceInt,
                                  const char *traceId) {
   try {
-    if (!input)
+    if (!input) {
       return safeError("ERROR_NULL_INPUT");
+    }
 
     size_t inputLength = std::strlen(input);
     if (inputLength > MAX_INPUT_SIZE) {
@@ -162,14 +164,16 @@ API const char *processStringDLL(const char *input, int choiceInt,
     ConversionResult result = client.execute(std::string(input));
     const char *rawPtr = result.get_c_str();
 
-    if (!rawPtr)
+    if (!rawPtr) {
       return safeError("ERROR_ENGINE_RETURNED_NULL");
+    }
 
     size_t resLen = std::strlen(rawPtr);
     char *output = static_cast<char *>(std::malloc(resLen + 1));
 
-    if (!output)
+    if (!output) {
       return safeError("FATAL_ALLOCATION_FAILURE");
+    }
 
     std::memcpy(output, rawPtr, resLen + 1);
 

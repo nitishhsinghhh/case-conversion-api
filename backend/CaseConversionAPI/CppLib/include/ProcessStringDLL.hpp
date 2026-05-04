@@ -47,7 +47,7 @@ extern "C" {
 #endif
 
 /**
- * @brief COnverts input string based on choice and returns a newly allocated
+ * @brief Converts input string based on choice and returns a newly allocated
  * C-string.
  *
  * @param input  C-string input.
