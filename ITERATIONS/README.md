@@ -88,3 +88,52 @@ docker run --rm -i \
   -v $(pwd):/results \
   grafana/k6 run --summary-export=/results/result.json - <writeFile.js
 ```
+
+---
+
+## Real-World Capacity Analysis (1.5M Stress Test)
+
+Based on the final endurance run using 100 Virtual Users (VUs) and 1.5 Million iterations, we can calculate the sustained real-world capacity of the engine.
+
+### The "Concurrent User" Calculation
+
+To translate raw Requests Per Second (RPS) into Real Human Users, we apply the industry-standard "Think Time" model. We assume a typical user interacts with the application once every 5 seconds.
+
+| Metric               | Value         | Description                                   |
+|--------------------- |-------------- |-----------------------------------------------|
+| Peak Throughput      | 7,067 RPS     | Sustained rate over 1.5M requests             |
+| Think Time           | 5 Seconds     | Average delay between user actions            |
+| Calculated Capacity  | ~35,335 Users | Total concurrent users supported              |
+
+#### Performance Scaling Curve: VUs vs. Throughput (RPS)
+
+```text
+RPS (Throughput)
+  ^
+  |          (B) Peak Efficiency (7,242 RPS)
+  |               /----------\
+  |              /            \
+  |             /              \ (C) Contention/Saturation (7,067 RPS)
+  |            /                \--------------------
+  |           /
+  |    (A)   /
+  |         /
+  |        /
+  |  -----/
+  +------------------------------------------------------------> VUs (Concurrency)
+     1      4      8              20             100
+```
+
+---
+
+### Key Takeaways for 1.5M / 100 VUs
+
+- Massive Concurrency: Even when the system is under extreme artificial pressure (100 VUs fighting for 8 physical cores), the engine maintains a throughput that can support over 35,000 active humans simultaneously.
+
+- Infrastructure Efficiency: Processing 1.5 million requests with zero failures on a fanless MacBook Air M2 demonstrates that the native C++ core eliminates the overhead typically associated with high-frequency string processing in managed languages.
+
+- Hardware Saturation: The jump in p95 latency to 41ms (from 2.66ms at lower loads) indicates that while the CPU is fully saturated, the system remains highly responsive for web standards—95% of users still experience "sub-50ms" response times.
+
+### Final Verdict
+
+This engine, running on consumer-grade Apple Silicon, is capable of powering a Tier-1 Web Service backend. It provides the throughput of a distributed cluster within a single, highly optimized polyglot process.

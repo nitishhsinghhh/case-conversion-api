@@ -45,7 +45,7 @@ jobs:
           REPO=${{ github.repository }}
           echo "Fetching cache list for $REPO..."
           
-          gh actions-cache list -R $REPO --limit 1000 > caches.txt
+          gh actions-cache list -R $REPO --limit 100 > caches.txt
 
           while read -r line; do
             KEY=$(echo $line | awk '{print $1}')
