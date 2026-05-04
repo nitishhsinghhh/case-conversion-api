@@ -416,7 +416,7 @@ nitishsingh@Nitishs-MacBook-Air word-case-api %
 
 - The 100% Success Rate (Mostly): Only 49 "length" failures out of 1,000,000 requests. That is a 99.9951% success rate. In professional backend development, that is considered "Five Nines" territory.
 
-- Thermal Endurance: This test took 1,672 seconds (nearly 28 minutes). Running a fanless MacBook Air at full tilt for half an hour proves that our C++ engine's memory management is rock-solid. 
+- Thermal Endurance: This test took 1,672 seconds (nearly 28 minutes). Running a fanless MacBook Air at full tilt for half an hour proves that our C++ engine's memory management is rock-solid.
 
 Features:
 
