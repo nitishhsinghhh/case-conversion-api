@@ -349,6 +349,7 @@ To support massive horizontal scaling, the system utilizes an NGINX Reverse Prox
 | v2.0.0 Release     | April 23, 2026  | The "Millionaire" Milestone: Integrated NGINX Layer 7 Load Balancing and passed the 1M request endurance test.              |
 | v2.1.0 Release     | April 25, 2026  | Industrial Hardening: Full OpenTelemetry integration, CI/CD pipeline domain-standardization, and CodeQL security alignment. |
 | v2.2.0 Release     | April 30, 2026  | Achieved a 25% throughput increase (2,827 req/s) and 42% median latency reduction by implementing RAII.                     |
+| v3.0.0 Release     | May 7, 2026     | Finalized 1.5M request stress test (7,067 RPS), ARM64 native releases, and automated artifact promotion.                    |
 
 ---
 
