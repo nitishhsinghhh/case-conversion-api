@@ -4,8 +4,6 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
 
 <img width="1024" height="384" alt="API" src="https://github.com/user-attachments/assets/2c1def71-630a-4721-808a-4ed2aeb7d1c2" />
 
-
-
 ![C++ CI](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/native-engine-ci.yml?branch=main&label=Engine%3A%20Native&style=flat-square)
 ![.NET API Status](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/dotnet-tests.yml?branch=main&label=Gateway%3A%20.NET%208&style=flat-square)
 ![.NET API Integeration Tests](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/dotnet-integration-tests.yml?branch=main&label=Integeration%20Tests&style=flat-square)
@@ -51,6 +49,7 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
   * [5. Hardware-Specific Optimization (Apple M2)](#5-hardware-specific-optimization-apple-m2)
   * [6. Reliability and Fault Tolerance](#6-reliability-and-fault-tolerance)
   * [7. Memory Sovereignty and The Interop Lifecycle](#7-memory-sovereignty-and-the-interop-lifecycle)
+  * [8. Performance Benchmarks (1.5M Request Stress Test)](#8-performance-benchmarks-15m-request-stress-test)
 * [Quick Start](#quick-start)
   * [Run the Load-Balanced Cluster](#run-the-load-balanced-cluster)
 * [Technical Significance](#technical-significance)
@@ -281,7 +280,7 @@ Engineering Insight: This architecture eliminates the "Double-Delete" risk. C++ 
 
 ### 8. Performance Benchmarks (1.5M Request Stress Test)
 
-| Iterations | VUs | RPS   | p95 Latency | Status                                      |
+| Iterations | VUs | RPS    | p95 Latency  | Status                                      |
 |------------|-----|--------|--------------|---------------------------------------------|
 | 1,000      | 4   | 4,526  | 1.82ms       | Baseline: Perfect core alignment            |
 | 100,000    | 8   | 7,242  | 2.66ms       | Peak Efficiency: Full hardware saturation   |
@@ -289,19 +288,19 @@ Engineering Insight: This architecture eliminates the "Double-Delete" risk. C++ 
 
 #### High-Speed Criteria
 
-- The 60-Second Sprint: The engine successfully processed ~425,000 requests in under 60 seconds, demonstrating its ability to handle sudden, massive traffic spikes without degradation.
+* The 60-Second Sprint: The engine successfully processed ~425,000 requests in under 60 seconds, demonstrating its ability to handle sudden, massive traffic spikes without degradation.
 
-- The 10-Minute Endurance: Even with a 1.5M request load (the "Millionaire Milestone"), the engine finished in 3.6 minutes—well under the 10-minute industrial benchmark—maintaining a 100% success rate.
+* The 10-Minute Endurance: Even with a 1.5M request load (the "Millionaire Milestone"), the engine finished in 3.6 minutes—well under the 10-minute industrial benchmark—maintaining a 100% success rate.
 
 #### Key Engineering Insights
 
-- Hardware "Sweet Spot" (8 VUs): Maximum throughput aligns perfectly with the 8 physical cores of the M2. Beyond 8 VUs, context-switching overhead causes a latency plateau.
+* Hardware "Sweet Spot" (8 VUs): Maximum throughput aligns perfectly with the 8 physical cores of the M2. Beyond 8 VUs, context*switching overhead causes a latency plateau.
 
-- Real-World Capacity: At a sustained 7,067 RPS, a single M2 instance supports ~35,300 concurrent human users (based on a 5s industry-standard "think time").
+* Real-World Capacity: At a sustained 7,067 RPS, a single M2 instance supports ~35,300 concurrent human users (based on a 5s industry-standard "think time").
 
-- Zero-Failure Reliability: Maintained a 100% success rate across 3 million+ total requests, proving the stability of the C++/C# memory bridge under extreme contention.
+* Zero-Failure Reliability: Maintained a 100% success rate across 3 million+ total requests, proving the stability of the C++/C# memory bridge under extreme contention.
 
-- Elite Latency: Average response time (1.13ms) is 40x faster than a human blink, with 95% of requests remaining "instant" (<50ms) even under 100-thread load.
+* Elite Latency: Average response time (1.13ms) is 40x faster than a human blink, with 95% of requests remaining "instant" (<50ms) even under 100-thread load.
 
 **Temporal Density:** The engine achieves a Data Density of ~425k operations per minute. In a production context, this allows for near-real-time ETL processing without the overhead of a distributed Spark/Flink cluster.
 
@@ -326,7 +325,6 @@ To support massive horizontal scaling, the system utilizes an NGINX Reverse Prox
 * Health-Aware Routing: NGINX ensures traffic is only routed to "Ready" .NET instances, facilitating zero-downtime updates and maintenance.
 
 * Latency Smoothing: By distributing requests, the P(95) latency is stabilized at 56ms, significantly reducing the "Tail Latency" spikes caused by parallel Garbage Collection events in managed memory.
-
 
 ---
 
