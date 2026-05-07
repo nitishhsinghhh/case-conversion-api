@@ -18,6 +18,8 @@
 # 1.1        2026-04-15  Nitish Singh    Updated for /backend path   */
 # 1.2        2026-04-17  Nitish Singh    Multi-Platform Matrix Fix   */
 # 1.3        2026-04-24  Nitish Singh    Standardized Header & Env   */
+# 1.4        2026-05-01  Nitish Singh    Added path filters          */
+# 1.5        2026-05-07  Nitish Singh    Path Var Hoisting & Cleanup */
 #*********************************************************************/
 
 name: ".NET Integration Tests"
@@ -25,8 +27,20 @@ name: ".NET Integration Tests"
 on:
   push:
     branches: [ "main" ]
+    paths: &shared_paths
+      - 'backend/CaseConversionAPI/CppLib/**'
+      - 'backend/CaseConversionAPI/DotNetAPI/**'       # Main API Project
+      - 'backend/CaseConversionAPI/tests/DotNetTests/**'
+      - '.github/workflows/dotnet-integration-tests.yml' # Trigger on workflow changes
   pull_request:
     branches: [ "main" ]
+    paths: *shared_paths
+
+# Single Source of Truth for Path Management
+env:
+  CPP_LIB_DIR: "backend/CaseConversionAPI/CppLib"
+  DOTNET_TEST_DIR: "backend/CaseConversionAPI/tests/DotNetTests"
+  DOTNET_BIN_REL: "bin/Release/net8.0"
 
 jobs:
   test:
@@ -34,7 +48,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            lib_ext: "*.so"
+            target_name: "libProcessStringDLL.so"
+          - os: macos-latest
+            lib_ext: "*.dylib"
+            target_name: "libProcessStringDLL.dylib"
+          - os: windows-latest
+            lib_ext: "*.dll"
+            target_name: "ProcessStringDLL.dll"
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -49,20 +72,27 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }} 
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       # ======================================================
       # 2. NATIVE LAYER BUILD (C++17)
       # ======================================================
       - name: Build C++ Library (Unix)
         if: runner.os != 'Windows'
-        working-directory: backend/CaseConversionAPI/CppLib
+        working-directory: ${{ env.CPP_LIB_DIR }}
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release --parallel
 
       - name: Build C++ Library (Windows)
         if: runner.os == 'Windows'
-        working-directory: backend/CaseConversionAPI/CppLib
-        # Using ` symbols for line breaks in PowerShell
+        working-directory: ${{ env.CPP_LIB_DIR }}
         run: |
           cmake -S . -B build `
                 -DCMAKE_BUILD_TYPE=Release `
@@ -75,7 +105,7 @@ jobs:
       # 3. MANAGED LAYER BUILD (.NET 8)
       # ======================================================
       - name: Build .NET Tests
-        working-directory: backend/CaseConversionAPI/tests/DotNetTests
+        working-directory: ${{ env.DOTNET_TEST_DIR }}
         run: |
           dotnet restore
           dotnet build --configuration Release
@@ -83,37 +113,36 @@ jobs:
       # ======================================================
       # 4. ARTIFACT INJECTION (ABI BRIDGE PREP)
       # ======================================================
+      
       - name: Inject Native Library to Test Folder
         shell: bash
         run: |
           # Define target directory for the compiled .NET binaries
-          DEST_PATH="backend/CaseConversionAPI/tests/DotNetTests/bin/Release/net8.0/"
-          mkdir -p "$DEST_PATH"
-
-          # Locate and rename the binary based on the OS
-          if [ "${{ runner.os }}" == "Windows" ]; then
-            LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.dll" | head -n 1)
-            TARGET_NAME="ProcessStringDLL.dll"
-          elif [ "${{ runner.os }}" == "macOS" ]; then
-            LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.dylib" | head -n 1)
-            TARGET_NAME="libProcessStringDLL.dylib"
-          else
-            LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.so" | head -n 1)
-            TARGET_NAME="libProcessStringDLL.so"
-          fi
-
-          echo "Injecting $LIB_FILE -> $DEST_PATH$TARGET_NAME"
-          cp "$LIB_FILE" "$DEST_PATH$TARGET_NAME"
+          FULL_DEST="${{ env.DOTNET_TEST_DIR }}/${{ env.DOTNET_BIN_REL }}/"
+          mkdir -p "$FULL_DEST"
           
-          # Also place in working directory for local execution context
-          cp "$LIB_FILE" "backend/CaseConversionAPI/tests/DotNetTests/$TARGET_NAME"
+          # Use matrix variables to find and name the library
+          LIB_FILE=$(find ${{ env.CPP_LIB_DIR }}/build -type f -name "${{ matrix.lib_ext }}" | head -n 1)
+            
+          if [ -z "$LIB_FILE" ]; then
+            echo "::error::Native library not found!"
+            exit 1
+          fi
+          
+          echo "Injecting $LIB_FILE -> $FULL_DEST${{ matrix.target_name }}"
+ 
+          # 1. Copy to the actual build output directory
+          cp "$LIB_FILE" "$FULL_DEST${{ matrix.target_name }}"
+
+          # 2. Copy to the test project root for local execution context
+          cp "$LIB_FILE" "${{ env.DOTNET_TEST_DIR }}/${{ matrix.target_name }}"
 
       # ======================================================
       # 5. TEST EXECUTION
       # ======================================================
 
       - name: Run Integration Tests
-        working-directory: backend/CaseConversionAPI/tests/DotNetTests
+        working-directory: ${{ env.DOTNET_TEST_DIR }}
         shell: bash
         run: |
           if [ "${{ runner.os }}" == "Windows" ]; then

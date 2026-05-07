@@ -28,16 +28,13 @@ on:
     branches: ["main"]
     # Only trigger on changes to backend, frontend, 
     # or this workflow file to avoid unnecessary builds
-    paths:
+    paths: &shared_paths
       - "backend/**"
       - "frontend/**"
       - ".github/workflows/docker-hub-distribution.yml"
   pull_request:
     branches: ["main"]
-    paths:
-      - "backend/**"
-      - "frontend/**"
-      - ".github/workflows/docker-hub-distribution.yml"
+    paths: *shared_paths
 
 jobs:
   docker:

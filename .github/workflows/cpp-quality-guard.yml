@@ -18,6 +18,7 @@
 # 1.2        2026-04-18  Nitish Singh    Refined src path patterns   */
 # 1.3        2026-04-24  Nitish Singh    Standardized Header and     */
 #                                         Naming                     */
+# 1.4        2026-05-01  Nitish Singh    shared_paths                */
 #*********************************************************************/
 
 name: C++ Quality Guard
@@ -25,12 +26,11 @@ name: C++ Quality Guard
 on:
   push:
     branches: ["main"]
-    paths:
+    paths: &shared_paths
       - 'backend/CaseConversionAPI/CppLib/**'
   pull_request:
     branches: ["main"]
-    paths:
-      - 'backend/CaseConversionAPI/CppLib/**'
+    paths: *shared_paths
   workflow_dispatch: {}
 
 jobs:
