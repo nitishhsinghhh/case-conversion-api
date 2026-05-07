@@ -154,9 +154,10 @@ jobs:
       - name: Build and Push to Packages
         uses: docker/build-push-action@v5
         with:
-          context:
+          context: .
           file: ./backend/Dockerfile
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:v3.0.0
             ghcr.io/${{ github.repository }}:${{ github.sha }}
