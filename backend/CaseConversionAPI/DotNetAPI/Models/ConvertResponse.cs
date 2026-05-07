@@ -24,28 +24,28 @@
  * backward compatibility.
  **************************************************************************************************/
 
-namespace StringConversionAPI.Models
+using System.Text.Json.Serialization;
+public class ConvertResponse
 {
-    public class ConvertResponse
-    {
-        public string Input { get; set; } = string.Empty;
-        
-        public int Choice { get; set; }
+    [JsonPropertyName("input")]
+    public string Input { get; set; } = string.Empty;
+    
+    [JsonPropertyName("choiceId")] 
+    public int Choice { get; set; }
 
-        /// <summary>
-        /// The final processed string from the native C++ engine.
-        /// Fixed: Explicitly named to match the WordCaseController assignment.
-        /// </summary>
-        public string ConvertedText { get; set; } = string.Empty;
+    /// <summary>
+    /// The final processed string from the native C++ engine.
+    /// </summary>
+    [JsonPropertyName("convertedText")] // Consistent with legacy Output
+    public string ConvertedText { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Maps to ConvertedText to ensure legacy compatibility with the 
-        /// 1.0 API contract without duplicating memory.
-        /// </summary>
-        public string Output 
-        { 
-            get => ConvertedText; 
-            set => ConvertedText = value; 
-        }
+    /// <summary>
+    /// Maps to ConvertedText for legacy compatibility.
+    /// </summary>
+    [JsonIgnore] // Use JsonIgnore so it doesn't collide or bloat the payload
+    public string Output 
+    { 
+        get => ConvertedText; 
+        set => ConvertedText = value; 
     }
 }

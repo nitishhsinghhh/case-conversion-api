@@ -11,14 +11,18 @@ First off, thank you for considering contributing! This project is a high-perfor
   - [ABI Stability](#abi-stability)
   - [Zero-Leak Policy](#zero-leak-policy)
 - [Contribution Context Matrix](#contribution-context-matrix)
+
 - [Development Workflow](#development-workflow)
   - [1. Native Layer (C++17)](#1-native-layer-c17)
   - [2. Managed Layer (.NET 8)](#2-managed-layer-net-8)
+  - [3. Integration and DevOps](#3-integration-and-devops)
+
 - [Testing Requirements](#testing-requirements)
-  - [Unit & Integration Tests](#unit--integration-tests)
-  - [Telemetry & Observability](#telemetry--observability)
+  - [Unit and Integration Tests](#unit-and-integration-tests)
+  - [Telemetry and Observability](#telemetry-and-observability)
+
 - [Pull Request Process](#pull-request-process)
-- [Security & Vulnerabilities](#security--vulnerabilities)
+- [Security and Vulnerabilities](#security-and-vulnerabilities)
 - [License](#license)
 
 ---
@@ -69,7 +73,7 @@ make
 ./runTests
 ```
 
-2. Managed Layer (.NET 8)
+### 2. Managed Layer (.NET 8)
 
 - Style: Follow standard C# coding conventions.
 
@@ -77,7 +81,7 @@ make
 
 - Interop: Use SafeHandle or IntPtr with explicit cleanup for any new P/Invoke calls.
 
-## Testing Requirements
+#### Testing Requirements
 
 We enforce a strict testing policy. No PR will be merged without:
 
@@ -87,21 +91,21 @@ We enforce a strict testing policy. No PR will be merged without:
 
 3. Telemetry Check: Verification that spans are correctly generated and the TraceID is propagated to the native engine.
 
-## Pull Request Process
+#### Pull Request Process
 
 1. Branching: Create a feature branch from main (e.g., feat/new-strategy-name).
 
 2. Documentation: Update DESIGN.md if you are changing the architectural flow.
 
-3. Badges: Ensure the CI pipeline passes. We monitor:
+### 3. Badges: Ensure the CI pipeline passes. We monitor
 
-    - C++ Core & GoogleTest
-    - .NET API Integration
-    - OpenTelemetry E2E Verification
+- C++ Core & GoogleTest
+- .NET API Integration
+- OpenTelemetry E2E Verification
 
-4. Review: At least one maintainer must review the code for memory safety and ABI compliance.
+### 4. Review: At least one maintainer must review the code for memory safety and ABI compliance
 
-## Security & Vulnerabilities
+#### Security and Vulnerabilities
 
 If you find a security hole (especially regarding buffer overflows in the native bridge), please do not open a public issue. Email the maintainer directly at [contact us](mailto:me.singhnitish@yandex.com). to ensure a coordinated disclosure.
 

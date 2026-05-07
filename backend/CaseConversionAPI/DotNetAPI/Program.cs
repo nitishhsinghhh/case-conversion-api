@@ -17,6 +17,8 @@
  * 1.1         2026-04-16     Nitish Singh     Optimized DI lifetime and refined CORS handling.
  * 1.2         2026-04-18     Nitish Singh     Integrated OpenTelemetry (OTLP) for distributed 
  * tracing across the native ABI boundary. Corrected OTLP namespace.
+ * 1.3         2026-05-06     Nitish Singh     Restructured middleware pipeline for CORS preflight
+ * support and pinned Kestrel to Port 5050.
  **************************************************************************************************/
 
 using Microsoft.OpenApi.Models;
@@ -40,12 +42,17 @@ builder.Services.AddOpenTelemetry()
         .AddOtlpExporter(options =>
         {
             options.Endpoint = new Uri("http://localhost:4317");
-            // Corrected Enum Path: Removed the middle 'OpenTelemetryProtocol'
             options.ExportProcessorType = ExportProcessorType.Simple;
         }));
 
 // --- 2. Controller & Documentation Services ---
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -67,11 +74,20 @@ builder.Services.AddCors(options =>
 // --- 4. Core Business Services ---
 builder.Services.AddSingleton<ProcessStringService>();
 
+// Pinning the WebHost to Port 5050 to avoid macOS AirPlay (Port 5000) conflict
+builder.WebHost.UseUrls("http://localhost:5050"); 
+
 var app = builder.Build();
 
-// --- Middleware Pipeline ---
+// --- 5. Middleware Pipeline (Strict Order Required) ---
+
+// A. Enable Routing first so CORS can identify the endpoint
+app.UseRouting();
+
+// B. Enable CORS immediately after Routing to handle Preflight (OPTIONS) requests
 app.UseCors(); 
 
+// C. Documentation Services
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -79,12 +95,14 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = string.Empty; 
 });
 
+// D. Security & Mapping
 app.UseAuthorization();
 app.MapControllers();
 
+// E. Execution Boundary
 if (app.Environment.EnvironmentName != "Testing")
 {
-    app.Run();
+    app.Run("http://localhost:5050");
 }
 
 public partial class Program { }

@@ -131,14 +131,14 @@ static bool mapConversionType(ConversionChoice choice,
 
 extern "C" {
 
-API const char *processStringDLL(const char *input, int choiceInt,
+API const char *processStringDLL(const char *input, int len, int choiceInt,
                                  const char *traceId) {
   try {
     if (!input) {
       return safeError("ERROR_NULL_INPUT");
     }
 
-    size_t inputLength = std::strlen(input);
+    size_t inputLength = static_cast<size_t>(len);
     if (inputLength > MAX_INPUT_SIZE) {
       return safeError("ERROR_BUFFER_OVERFLOW_LIMIT_5MB");
     }
@@ -161,7 +161,7 @@ API const char *processStringDLL(const char *input, int choiceInt,
 
     client.setStrategy(StringConversionFactory::create(type));
 
-    ConversionResult result = client.execute(std::string(input));
+    ConversionResult result = client.execute(std::string(input, inputLength));
     const char *rawPtr = result.get_c_str();
 
     if (!rawPtr) {

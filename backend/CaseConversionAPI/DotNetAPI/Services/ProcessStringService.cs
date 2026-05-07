@@ -25,6 +25,7 @@
  * delegate for distributed tracing (traceId).
  * 1.3         2026-04-19     Nitish Singh     Added M2-Optimized Parallel Batch Processing (P-Cores)
  * 1.4         2026-04-19     Nitish Singh     Integrated ConcurrentBag and Aggregate Memory Guard
+ * 1.5         2026-05-05     Nitish Singh     Fixed UTF-8 ByteCount mismatch & hardened guards.
  **************************************************************************************************/
 
 using System;
@@ -58,9 +59,10 @@ namespace StringConversionAPI.Services
         #region Native Delegates
 
         private delegate IntPtr ProcessStringDelegate(
-            [MarshalAs(UnmanagedType.LPStr)] string input, 
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string input,
+            int len, 
             int choice, 
-            [MarshalAs(UnmanagedType.LPStr)] string traceId);
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string traceId);
 
         private delegate void FreeStringDelegate(IntPtr ptr);
 
@@ -107,21 +109,24 @@ namespace StringConversionAPI.Services
 
             using var activity = _activitySource.StartActivity("Native-C++-Process", ActivityKind.Internal);
 
+            // CRITICAL: Calculate actual byte count for the UTF-8 representation
+            int byteCount = System.Text.Encoding.UTF8.GetByteCount(input);
+            
             string traceId = activity?.Id ?? "no-trace-context";
             
             activity?.SetTag("conversion.choice", choice);
-            activity?.SetTag("input.length", input.Length);
 
             IntPtr resultPtr = IntPtr.Zero;
 
             try
             {
-                resultPtr = _processString(input, choice, traceId);
+                // Pass byteCount instead of input.Length to the native function for accurate processing and security checks
+                resultPtr = _processString(input, byteCount, choice, traceId);
                 
                 if (resultPtr == IntPtr.Zero)
                     return string.Empty;
 
-                string result = Marshal.PtrToStringAnsi(resultPtr) ?? string.Empty;
+                string result = Marshal.PtrToStringUTF8(resultPtr) ?? string.Empty;
 
                 // Sentinel Check for native security gate
                 if (result == "ERROR_BUFFER_OVERFLOW_LIMIT_5MB")

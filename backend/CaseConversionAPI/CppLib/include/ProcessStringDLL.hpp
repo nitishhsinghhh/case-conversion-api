@@ -51,11 +51,12 @@ extern "C" {
  * C-string.
  *
  * @param input  C-string input.
+ * @param len    Length of the input string.
  * @param choice Integer conversion choice.
  * @return C-string result (valid until next call). Caller must free using
  * freeString.
  */
-API const char *processStringDLL(const char *input, int choice, const char *traceId);
+API const char *processStringDLL(const char *input, int len, int choice, const char *traceId);
 
 /**
  * @brief Frees memory allocated by processStringDLL

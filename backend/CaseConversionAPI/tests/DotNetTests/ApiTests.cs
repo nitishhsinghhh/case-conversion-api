@@ -19,12 +19,14 @@
  * ------------------------------------------------------------------------------------------------
  * Version     Date        Author          Description
  * ------------------------------------------------------------------------------------------------
+ * 1.0         2026-04-14  Nitish Singh    Initial implementation of API integration tests
  * 1.2         2026-04-14  Nitish Singh    Synced with C++ test expectations and API contract
- *
+ * 1.3          2026-05-06      Nitish Singh     Added explicit length calculation for Native v1.5.*
  **************************************************************************************************/
 
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -41,9 +43,17 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
 
     private async Task<string> ConvertAsync(string text, int choice)
     {
+        // Calculate the physical byte count for UTF-8 encoding.
+        // This is critical for the native engine to allocate correct buffer sizes.
+        int length = string.IsNullOrEmpty(text) ? 0 : Encoding.UTF8.GetByteCount(text);
+
         var response = await _client.PostAsJsonAsync(
             "/api/WordCase/convert",
-            new { text, choice });
+            new { 
+                text, 
+                choice,
+                length // Explicit length passed to native-managed bridge
+            });
 
         response.EnsureSuccessStatusCode();
 

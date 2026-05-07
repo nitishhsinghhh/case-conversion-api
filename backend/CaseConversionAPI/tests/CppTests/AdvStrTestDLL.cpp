@@ -23,7 +23,7 @@
 #include "StringConversionFactory.hpp"
 
 extern "C" {
-char *processStringDLL(const char *input, int choice, const char *traceId);
+char *processStringDLL(const char *input, int len, int choice, const char *traceId);
 void freeString(char *str);
 }
 
@@ -32,79 +32,79 @@ void freeString(char *str);
 // ============================================================
 
 TEST(ProcessStringDLL, AlternatingCase) {
-  char *result = processStringDLL("hello", 1, "test-trace-id");
+  char *result = processStringDLL("hello", 5, 1, "test-trace-id");
   ASSERT_STREQ(result, "HeLlO");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, CapitalizeWords) {
-  char *result = processStringDLL("hello world", 2, "test-trace-id");
+  char *result = processStringDLL("hello world", 11, 2, "test-trace-id");
   ASSERT_STREQ(result, "Hello World");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, LowerCase) {
-  char *result = processStringDLL("HELLO", 3, "test-trace-id");
+  char *result = processStringDLL("HELLO", 5, 3, "test-trace-id");
   ASSERT_STREQ(result, "hello");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, UpperCase) {
-  char *result = processStringDLL("hello", 4, "test-trace-id");
+  char *result = processStringDLL("hello", 5, 4, "test-trace-id");
   ASSERT_STREQ(result, "HELLO");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, SentenceCase) {
-  char *result = processStringDLL("hello world.", 5, "test-trace-id");
+  char *result = processStringDLL("hello world.", 12, 5, "test-trace-id");
   ASSERT_STREQ(result, "Hello world.");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, ToggleCase) {
-  char *result = processStringDLL("HeLLo", 6, "test-trace-id");
+  char *result = processStringDLL("HeLLo", 6, 6, "test-trace-id");
   ASSERT_STREQ(result, "hEllO");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, Reverse) {
-  char *result = processStringDLL("hello", 7, "test-trace-id");
+  char *result = processStringDLL("hello", 5, 7, "test-trace-id");
   ASSERT_STREQ(result, "olleh");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, RemoveVowels) {
-  char *result = processStringDLL("hello world", 8, "test-trace-id");
+  char *result = processStringDLL("hello world", 11, 8, "test-trace-id");
   ASSERT_STREQ(result, "hll wrld");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, RemoveSpaces) {
-  char *result = processStringDLL("hello world", 9, "test-trace-id");
+  char *result = processStringDLL("hello world", 11, 9, "test-trace-id");
   ASSERT_STREQ(result, "helloworld");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, InvertWords) {
-  char *result = processStringDLL("hello world", 10, "test-trace-id");
+  char *result = processStringDLL("hello world", 11, 10, "test-trace-id");
   ASSERT_STREQ(result, "olleh dlrow");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, SnakeCase) {
-  char *result = processStringDLL("hello world", 11, "test-trace-id");
+  char *result = processStringDLL("hello world", 11, 11, "test-trace-id");
   ASSERT_STREQ(result, "hello_world");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, KebabCase) {
-  char *result = processStringDLL("hello world", 12, "test-trace-id");
+  char *result = processStringDLL("hello world", 12, 12, "test-trace-id");
   ASSERT_STREQ(result, "hello-world");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, LeetSpeak) {
-  char *result = processStringDLL("elite hacker", 13, "test-trace-id");
+  char *result = processStringDLL("elite hacker", 13, 13, "test-trace-id");
   ASSERT_TRUE(result != nullptr); // flexible validation
   freeString(result);
 }
@@ -114,19 +114,19 @@ TEST(ProcessStringDLL, LeetSpeak) {
 // ============================================================
 
 TEST(ProcessStringDLL, EmptyString) {
-  char *result = processStringDLL("", 4, "test-trace-id");
+  char *result = processStringDLL("", 0, 0, "test-trace-id");
   ASSERT_STREQ(result, "");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, SingleCharacter) {
-  char *result = processStringDLL("a", 4, "test-trace-id");
+  char *result = processStringDLL("a", 1, 4, "test-trace-id");
   ASSERT_STREQ(result, "A");
   freeString(result);
 }
 
 TEST(ProcessStringDLL, SpecialCharacters) {
-  char *result = processStringDLL("@#123 abc!", 4, "test-trace-id");
+  char *result = processStringDLL("@#123 abc!", 10, 4, "test-trace-id");
   ASSERT_STREQ(result, "@#123 ABC!");
   freeString(result);
 }
@@ -136,13 +136,13 @@ TEST(ProcessStringDLL, SpecialCharacters) {
 // ============================================================
 
 TEST(ProcessStringDLL, InvalidChoice) {
-  char *result = processStringDLL("hello", 999, "test-trace-id");
+  char *result = processStringDLL("hello", 5, 999, "test-trace-id");
   ASSERT_STREQ(result, "hello"); // based on your fallback
   freeString(result);
 }
 
 TEST(ProcessStringDLL, NullInput) {
-  char *result = processStringDLL(nullptr, 4, "test-trace-id");
+  char *result = processStringDLL(nullptr, 0, 0, "test-trace-id");
   ASSERT_TRUE(result == nullptr || strcmp(result, "") == 0);
   if (result)
     freeString(result);
@@ -155,7 +155,7 @@ TEST(ProcessStringDLL, NullInput) {
 TEST(ProcessStringDLL, LargeInput) {
   std::string large(10000, 'a');
 
-  char *result = processStringDLL(large.c_str(), 4, "test-trace-id");
+  char *result = processStringDLL(large.c_str(), 10000, 4, "test-trace-id");
 
   ASSERT_EQ(strlen(result), large.size());
   freeString(result);
@@ -163,7 +163,7 @@ TEST(ProcessStringDLL, LargeInput) {
 
 TEST(ProcessStringDLL, MultipleCalls) {
   for (int i = 0; i < 1000; i++) {
-    char *result = processStringDLL("test", 4, "test-trace-id");
+    char *result = processStringDLL("test", 4, 4, "test-trace-id");
     ASSERT_STREQ(result, "TEST");
     freeString(result);
   }
@@ -174,7 +174,7 @@ TEST(ProcessStringDLL, MultipleCalls) {
 // ============================================================
 
 TEST(ProcessStringDLL, MemoryNotNull) { 
-  const char *result = processStringDLL("hello", 4, "test-trace-id"); 
+  const char *result = processStringDLL("hello", 4, 4, "test-trace-id"); 
   ASSERT_NE(result, nullptr);
   // Cast to char* if your freeString expects it, or keep it consistent
   freeString(const_cast<char*>(result)); 

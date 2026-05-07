@@ -5,9 +5,9 @@
  * between the HTML View and the WordCase API Service.
  * * @copyright   (c) 2016–2026 nitishhsinghh. All rights reserved.
  * Educational use only.
- * * @version     1.1.0
- * @author      Nitish Singh
- * @lastMachine 2026-04-14
+ * * @version     1.1.1
+ * @author       Nitish Singh
+ * @lastMachine 2026-05-06
  */
 
 import { convertText } from "../api/wordCaseApi";
@@ -46,7 +46,8 @@ async function onConvertClick(): Promise<void> {
         const result: ConvertResponse = await convertText(request);
 
         // 5. Update View with Native Result
-        outputElement.textContent = result.output;
+        // CHANGE: Access 'convertedText' instead of 'output'
+        outputElement.textContent = result.convertedText;
 
     } catch (error) {
         // 6. Error Boundary Handling

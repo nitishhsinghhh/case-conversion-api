@@ -111,9 +111,13 @@ jobs:
       # ======================================================
       # 5. TEST EXECUTION
       # ======================================================
+
       - name: Run Integration Tests
         working-directory: backend/CaseConversionAPI/tests/DotNetTests
-        # Adding current directory to PATH on Windows to ensure P/Invoke finds the DLL
+        shell: bash
         run: |
-          ${{ runner.os == 'Windows' && '$env:PATH += ";."' || '' }}
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            # Adds the current directory to the PATH for the duration of this step
+            export PATH="$PATH:$(pwd)"
+          fi
           dotnet test --no-build --configuration Release --verbosity normal

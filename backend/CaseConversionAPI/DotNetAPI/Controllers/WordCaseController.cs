@@ -76,13 +76,14 @@ namespace StringConversionAPI.Controllers
                 // from the C++ layer is matched exactly.
                 if (string.Equals(result, "ERROR_BUFFER_OVERFLOW_LIMIT_5MB", StringComparison.Ordinal))
                 {
-                    return Accepted("Input exceeds 5MB security limit.");
+                    return Ok(new ConvertResponse { ConvertedText = "ERROR_BUFFER_OVERFLOW_LIMIT_5MB" });
                 }
 
                 // FIXED: Property name ConvertedText matches v1.4 Models
                 return Ok(new ConvertResponse 
-                {
-                    ConvertedText = result
+                {   Input = request.Text,
+                    Choice = request.Choice,
+                    ConvertedText = result ?? string.Empty
                 });
             }
             catch (Exception ex)

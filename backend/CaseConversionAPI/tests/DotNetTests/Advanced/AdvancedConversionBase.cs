@@ -17,6 +17,7 @@
  * 1.0         2026-04-14      Nitish Singh     Initial implementation of advanced tests.
  * 1.1         2026-04-19      Nitish Singh     Added M2 P-Core saturation and hardware-specific tags.
  * 1.2         2026-04-19      Nitish Singh     Integrated Race-Condition, N+1 Stress, and Leak tests.
+ * 1.3         2026-05-05      Nitish Singh     Added UTF-8 Multi-byte validation & 5MB Guard tests.
  **************************************************************************************************/
 
 using System;
@@ -163,5 +164,52 @@ public class AdvancedConversionTests : ApiTestBase
         
         var results = await Task.WhenAll(tasks);
         Assert.Equal(5, results.Length);
+    }
+
+    //===================================================================
+    // NEW: UTF-8 Multi-Byte Integrity (Crucial for v1.5)
+    //===================================================================
+
+    [Fact]
+    [Trait("Category", "Encoding-Safety")]
+    public async Task Convert_MultiByteChars_EnsuresNoTruncation()
+    {
+        // '₹' is 3 bytes in UTF-8. 
+        // If the engine used .Length (1), it would truncate and return garbage.
+        string input = "Price: ₹100"; 
+        var result = await ConvertAsync(input, 4); // Uppercase
+
+        Assert.Contains("₹", result);
+        Assert.Equal("PRICE: ₹100", result);
+    }
+
+    //===================================================================
+    // Security & Boundary Testing (v1.5 Guard)
+    //===================================================================
+
+    [Fact]
+    [Trait("Category", "Security")]
+    public async Task Convert_Exceeding5MB_TriggersSecuritySentinel()
+    {
+        // 6MB payload to trigger the native "ERROR_BUFFER_OVERFLOW_LIMIT_5MB"
+        string oversizedInput = new string('x', 6 * 1024 * 1024);
+        
+        var result = await ConvertAsync(oversizedInput, 1);
+
+        // This validates that our C# service and C++ DLL agree on the byte-limit
+        Assert.Equal("ERROR_BUFFER_OVERFLOW_LIMIT_5MB", result);
+    }
+
+    [Fact]
+    [Trait("Category", "Reliability")]
+    public async Task Convert_RapidSuccession_MemoryStability()
+    {
+        // Increased to 5000 iterations to catch slow native leaks on the M2 unified memory heap
+        for (int i = 0; i < 5000; i++)
+        {
+            var res = await ConvertAsync("MemoryPressure", 4);
+            Assert.Equal("MEMORYPRESSURE", res);
+        }
+        // If this passes without an OutOfMemoryException, our freeString delegate is working.
     }
 }

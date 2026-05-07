@@ -48,8 +48,12 @@ fi
 # -----------------------------------------------------------------
 echo "===== Running .NET Tests ====="
 
-# Using --no-build ensures we use the exact binaries we just moved
-dotnet test tests/DotNetTests/DotNetAPI.Tests.csproj -c Release --no-build -v normal
+# Use the full path to the project file to avoid context ambiguity
+# Also, removing --no-build temporarily can help verify if it's a sync issue
+dotnet test "$(pwd)/tests/DotNetTests/DotNetAPI.Tests.csproj" \
+    -c Release \
+    --no-restore \
+    -v normal
 
 echo "===== Tests completed ====="
 
