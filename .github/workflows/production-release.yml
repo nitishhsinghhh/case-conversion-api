@@ -1,24 +1,26 @@
-#*********************************************************************/
-#  CI Pipeline - Production Release (ARM64 Optimized)                */
-#                                                                    */
-# Purpose   : Packages high-performance binaries and metadata        */
+#**********************************************************************/
+#  CI Pipeline - Production Release (ARM64 Optimized)                 */
+#                                                                     */
+# Purpose   : Packages high-performance binaries and metadata         */
 #              for official GitHub Releases.                          */
 # Trigger   : Push Version Tags (e.g., v2.0.0)                        */
 # Runtime   : macOS Latest (Native Apple Silicon Compilation)         */
-#                                                                    */
+#                                                                     */
 # Notes     : - Targets M2 Performance Cores via ARM64 build flags.   */
 #             - Bundles C++ .dylib with .NET 8 Managed API.           */
 #             - v2.0.0: Marks the 1M Request Endurance Milestone.     */
-#                                                                    */
-# Revision History:                                                  */
-# ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-14  Nitish Singh    Initial Release Workflow    
-# 1.1-1.5    2026-04-22  Nitish Singh    Monorepo & Path Optimization
-# 2.0.0      2026-04-24  Nitish Singh    M2 ARM64 Production Milestone */
-# 2.0.1      2026-04-30  Nitish Singh    Workflow Refinement & Metadata Packaging */
+#                                                                     */
+# Revision History:                                                   */
+# ------------------------------------------------------------------  */
+# Version    Date        Author          Description                  */
+# ------------------------------------------------------------------  */
+# 1.0        2026-04-14  Nitish Singh    Initial Release Workflow     */
+# 1.1-1.5    2026-04-22  Nitish Singh    Monorepo & Path Optimization */
+# 2.0.0      2026-04-24  Nitish Singh    M2 ARM64 Prod Milestone      */
+# 2.0.1      2026-04-30  Nitish Singh    Workflow Refinement &        */ 
+# Packaging                                                           */
 # 2.2.0      2026-04-30  Nitish Singh    RAII & Memory Sovereignty    */
+# 3.0.0      2026-05-06  Nitish Singh   1.5M Millionaire Milestone    */
 #*********************************************************************/
 
 name: "Production Release"
@@ -84,21 +86,19 @@ jobs:
             WordCaseEngine-ARM64.zip
             SourceCode-Metadata.zip
           body: |
-            ## Word Case Conversion Engine v2.2.0 
-            ### The "Memory Sovereignty" Milestone
+            ## Word Case Conversion Engine v2.3.0
 
-            This release represents the pinnacle of the polyglot architecture, introducing deterministic memory management and significant performance gains.
+            This release builds upon the stable v2.2 foundation, shifting focus from memory safety to hardware-level execution density.
 
-            **Core Engineering Improvements:**
-            - **Memory Sovereignty:** Implemented the **Rule of Five** and **RAII** patterns in the C++17 core to eliminate heap friction.
-            - **Zero-Leak Bridge:** Hardened the Marshalling Contract between .NET 8 and Native C++ for zero-leak execution under extreme concurrency.
-            - **Throughput Milestone:** Benchmarked at **2,827 req/s** (a 25% increase over v2.0.0).
-            - **Latency Optimization:** Reduced median (P50) latency to **22ms** (a 42% improvement).
+            ** Performance & Scale:**
+            - **1.5M Request Validation:** Verified engine stability under massive temporal density.
+            - **7,067 RPS Peak:** Achieved maximum throughput on Apple M2 Silicon.
+            - **SIMD Roadmap:** Integrated build-flags for C++20 vectorization prep.
 
-            **Technical Changes:**
-            - **Self-Contained Deployment:** API is now published as a self-contained `osx-arm64` binary.
-            - **Binary Optimization:** Native `.dylib` is now stripped of non-essential symbols for production use.
-            - **Stress Validation:** Successfully passed a 1,000,000 request endurance soak test with an optimized P99 tail latency.
+            ** Architectural Updates:**
+            - **Hardware Affinity:** Refined thread-pinning for M2 P-Cores.
+            - **Memory Sovereignty:** Permanent zero-leak state via RAII / Rule of Five.
+            - **TOC Optimization:** Fully synchronized documentation for architectural review.
 
             **Installation:**
             1. Extract `WordCaseEngine-v2.2.0-ARM64.zip`.
