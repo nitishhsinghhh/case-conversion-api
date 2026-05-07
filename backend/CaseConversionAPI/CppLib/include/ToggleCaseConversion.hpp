@@ -1,23 +1,34 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: ToggleCaseConversion.hpp                                 */
+/* File        : ToggleCaseConversion.hpp                            */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - ToggleCaseConversion                                */
+/* Module      : Core/String                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Concrete implementation of IStringConversion that   */
-/*               toggles the case of each character in a string.     */
+/* Description : Converts input strings by toggling the case of      */
+/*               each alphabetic character while preserving          */
+/*               non-alphabetic characters unchanged.                */
 /*                                                                   */
-/* Notes       - Lowercase becomes uppercase and vice versa.         */
-/*               Non-alphabetic characters remain unchanged.         */
+/* Notes       : - Implements the IStringConversion interface.       */
+/*             : - Lowercase characters become uppercase.            */
+/*             : - Uppercase characters become lowercase.            */
 /*                                                                   */
-/* $Log: ToggleCaseConversion.hpp                                    */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of ToggleCaseConversion class.            */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 #ifndef TOGGLECASECONVERSION_HPP

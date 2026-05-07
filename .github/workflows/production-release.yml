@@ -21,7 +21,7 @@
 # Packaging                                                           */
 # 2.2.0      2026-04-30  Nitish Singh    RAII & Memory Sovereignty    */
 # 3.0.0      2026-05-06  Nitish Singh   1.5M Millionaire Milestone    */
-#*********************************************************************/
+#**********************************************************************/
 
 name: "Production Release"
 

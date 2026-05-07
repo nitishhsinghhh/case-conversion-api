@@ -1,27 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $File: ProcessString.cpp                                          */
+/* File        : ProcessString.cpp                                   */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - ProcessString                                       */
+/* Module      : Core/Dispatcher                                     */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Core dispatcher selecting conversion strategies     */
+/* Description : Core dispatcher selecting conversion strategies     */
 /*               using Factory and Strategy design patterns.         */
 /*               Shared by DLL and CLI applications.                 */
 /*                                                                   */
-/* Notes       - Uses Strategy and Factory design patterns           */
-/*               Returns original input for invalid choice           */
+/* Notes       : - Uses Strategy and Factory design patterns         */
+/*             : - Returns original input for invalid choices        */
+/*             : - Maps ConversionChoice to ConversionType safely    */
 /*                                                                   */
-/* $Log: ProcessString.cpp                                           */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of ProcessString dispatcher.              */
-/*                                                                   */
-/*  Revision 1.1  2026/04/12  Nitish Singh                           */
-/*  Added code quality changes.                                      */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
+/* 1.1        2026-04-12  Nitish Singh    Code quality improvements  */
 /*********************************************************************/
 
 /*********************************************************************/

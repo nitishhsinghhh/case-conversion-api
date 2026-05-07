@@ -1,21 +1,21 @@
 #*********************************************************************/
-#  CI Pipeline - Cross-Platform Native C++ Engine                     */
-#                                                                     */
-# Purpose   : Validates the Core C++17 engine and CLI local app       */
-#              across Linux, Windows, and macOS environments.         */
-# Trigger   : Push to main / Pull Request to main                     */
-# Runtime   : Matrix Build (Ubuntu, Windows, macOS)                   */
-#                                                                     */
-# Notes     : - Enforces ABI compatibility across OS platforms.       */
-#             - Updated for the new /backend folder structure.        */
-#             - Utilizes CMake for platform-agnostic build logic.     */
-#                                                                     */
-# Revision History:                                                   */
-# ------------------------------------------------------------------  */
-# Version    Date        Author          Description                  */
-# ------------------------------------------------------------------  */
-# 1.0        2026-04-14  Nitish Singh    Initial multi-OS workflow    */
-# 1.1        2026-04-15  Nitish Singh    Updated for /backend path    */
+#  CI Pipeline - Cross-Platform Native C++ Engine                    */
+#                                                                    */
+# Purpose   : Validates the Core C++17 engine and CLI local app      */
+#             across Linux, Windows, and macOS environments.         */
+# Trigger   : Push to main / Pull Request to main                    */
+# Runtime   : Matrix Build (Ubuntu, Windows, macOS)                  */
+#                                                                    */
+# Notes     : - Enforces ABI compatibility across OS platforms.      */
+#             - Updated for the new /backend folder structure.       */
+#             - Utilizes CMake for platform-agnostic build logic.    */
+#                                                                    */
+# Revision History:                                                  */
+# ------------------------------------------------------------------ */
+# Version    Date        Author          Description                 */
+# ------------------------------------------------------------------ */
+# 1.0        2026-04-14  Nitish Singh    Initial multi-OS workflow   */
+# 1.1        2026-04-15  Nitish Singh    Updated for /backend path   */
 #*********************************************************************/
 
 name: C++ CI CaseConversionAPI - All Platforms (Local App)

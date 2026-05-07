@@ -1,22 +1,33 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $File: RemoveVowelsConversion.cpp                                 */
+/* File        : RemoveVowelsConversion.cpp                          */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - RemoveVowelsConversion                              */
+/* Module      : Core/String                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Removes all vowel characters from the input string. */
+/* Description : Removes all vowel characters from the input string. */
 /*                                                                   */
-/* Notes       - Reuses LowerCaseConversion for case normalization   */
-/*               Preserves non-vowel characters                      */
+/* Notes       : - Reuses LowerCaseConversion for normalization      */
+/*             : - Removes both uppercase and lowercase vowels       */
+/*             : - Preserves non-vowel characters in original form   */
+/*             : - Maintains positional iteration consistency        */
 /*                                                                   */
-/* $Log: RemoveVowelsConversion.cpp                                  */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of RemoveVowelsConversion.                */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 /*********************************************************************/

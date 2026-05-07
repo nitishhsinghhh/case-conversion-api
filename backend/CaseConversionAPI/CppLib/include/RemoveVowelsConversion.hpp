@@ -1,21 +1,33 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: RemoveVowelsConversion.hpp                               */
+/* File        : RemoveVowelsConversion.hpp                          */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - RemoveVowelsConversion                              */
+/* Module      : Core/String                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Removes all vowels from the input string.           */
+/* Description : Removes all vowel characters from the input string  */
+/*               while preserving consonants, digits, and symbols.   */
 /*                                                                   */
-/* Notes       - Implements IStringConversion interface.             */
+/* Notes       : - Implements the IStringConversion interface.       */
+/*             : - Supports both uppercase and lowercase vowels.     */
+/*             : - Preserves original character ordering.            */
 /*                                                                   */
-/* $Log: RemoveVowelsConversion.hpp                                  */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of RemoveVowelsConversion class.          */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 #ifndef REMOVEVOWELSCONVERSION_HPP

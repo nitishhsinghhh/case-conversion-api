@@ -1,0 +1,65 @@
+// SPDX-License-Identifier: Apache-2.0
+
+/*********************************************************************/
+/* File         : [FILENAME].hpp                                     */
+/* Author       : [AUTHOR_NAME]                                      */
+/* Created      : [YYYY-MM-DD]                                       */
+/*                                                                   */
+/* Copyright (c) 2026 [ORGANIZATION_OR_PROJECT]                      */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
+/*                                                                   */
+/* Module       : Core/String                                        */
+/* Component    : Case Conversion Engine                             */
+/* Thread Safe  : Yes                                                */
+/* Complexity   : O(n)                                               */
+/* API Status   : Stable                                             */
+/* Exception Safety : Basic Guarantee                                */
+/*                                                                   */
+/* Description : [BRIEF DESCRIPTION OF THE ALGORITHM]                */
+/*                                                                   */
+/* Notes       : Implements the IStringConversion interface.         */
+/*                                                                   */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        [DATE]      [AUTHOR]        Initial implementation     */
+/*********************************************************************/
+
+#ifndef CASE_CONVERSION_ENGINE_[STRATEGY_NAME]_HPP
+#define CASE_CONVERSION_ENGINE_[STRATEGY_NAME]_HPP
+
+#include "IStringConversion.hpp"
+#include <string>
+
+namespace CaseConversion::Core {
+
+/**
+ * @class [STRATEGY_NAME]
+ * @brief Implements the [ALGORITHM NAME] conversion strategy.
+ */
+class [STRATEGY_NAME] : public IStringConversion {
+public:
+    /**
+     * @brief Transforms the input string using [ALGORITHM].
+     * @param input The raw string to be converted.
+     * @return A new string formatted in [ALGORITHM] case.
+     */
+    std::string convert(const std::string& input) const override {
+        if (input.empty()) return "";
+
+        std::string result;
+        result.reserve(input.length());
+
+        // TODO: Implement O(n) stateless transformation logic here
+        
+        return result;
+    }
+
+    ~[STRATEGY_NAME]() override = default;
+};
+
+} // namespace CaseConversion::Core
+
+#endif // CASE_CONVERSION_ENGINE_[STRATEGY_NAME]_HPP

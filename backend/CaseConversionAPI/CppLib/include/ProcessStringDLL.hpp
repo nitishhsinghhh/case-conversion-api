@@ -1,22 +1,34 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: ProcessStringDLL.hpp                                     */
+/* File        : ProcessStringDLL.hpp                                */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* File        - ProcessStringDLL.hpp                                */
+/* Module      : Interop/Native                                      */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Declares exported DLL function for string           */
-/*               conversion used for C# interop.                     */
+/* Description : Declares exported native DLL interface used for     */
+/*               unmanaged and C# P/Invoke-based string conversion.  */
 /*                                                                   */
-/* Notes       - Provides C-style interface for unmanaged access.    */
+/* Notes       : - Provides C-compatible ABI interface.              */
+/*             : - Supports cross-platform symbol visibility.        */
+/*             : - Caller is responsible for freeing allocated       */
+/*             :   memory using freeString().                        */
 /*                                                                   */
-/* $Log: ProcessStringDLL.hpp                                        */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of DLL export interface.                  */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 #ifndef PROCESSSTRINGDLL_HPP

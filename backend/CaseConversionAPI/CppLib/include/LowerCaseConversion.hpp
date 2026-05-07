@@ -1,22 +1,34 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: LowerCaseConversion.hpp                                  */
+/* File        : LowerCaseConversion.hpp                             */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - LowerCaseConversion                                 */
+/* Module      : Core/String                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Converts all alphabetic characters in a string to   */
-/*               lowercase.                                          */
+/* Description : Converts all alphabetic characters in a string to   */
+/*               lowercase while preserving non-alphabetic           */
+/*               characters unchanged.                               */
 /*                                                                   */
-/* Notes       - Implements IStringConversion interface.             */
+/* Notes       : - Implements the IStringConversion interface.       */
+/*             : - Uses standard character transformation utilities. */
+/*             : - Performs locale-independent ASCII conversion.     */
 /*                                                                   */
-/* $Log: LowerCaseConversion.hpp                                     */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of LowerCaseConversion class.             */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 #ifndef LOWERCASECONVERSION_HPP

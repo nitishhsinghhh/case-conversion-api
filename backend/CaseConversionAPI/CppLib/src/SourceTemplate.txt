@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: Apache-2.0
+
+/*********************************************************************/
+/* File         : [FILENAME].cpp                                     */
+/* Author       : [AUTHOR_NAME]                                      */
+/* Created      : [YYYY-MM-DD]                                       */
+/*                                                                   */
+/* Copyright (c) 2026 [ORGANIZATION_OR_PROJECT]                      */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
+/*                                                                   */
+/* Module       : Core/String                                        */
+/* Component    : Case Conversion Engine                             */
+/* Thread Safe  : Yes                                                */
+/* Complexity   : O(n)                                                */
+/* API Status   : Stable                                             */
+/* Exception Safety : Basic Guarantee                                */
+/*                                                                   */
+/* Description : [BRIEF DESCRIPTION OF THE IMPLEMENTATION]           */
+/*                                                                   */
+/* Notes       : - Stateless implementation for concurrent processing*/
+/*               - Optimized for high-throughput batch operations    */
+/*                                                                   */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        [DATE]      [AUTHOR]        Initial implementation     */
+/*********************************************************************/
+
+#include "[FILENAME].hpp"
+#include <string>
+#include <cctype>
+
+namespace CaseConversion::Core {
+
+/**
+ * @brief Logic implementation for [STRATEGY_NAME].
+ * Handles O(n) transformation with hardware-sympathetic pre-allocation.
+ */
+std::string [STRATEGY_NAME]::convert(const std::string& input) const {
+    if (input.empty()) {
+        return "";
+    }
+
+    // Performance Note: Reserve memory to avoid heap reallocations 
+    // during character-by-character processing.
+    std::string result;
+    result.reserve(input.length());
+
+    for (char c : input) {
+        // TODO: Implement transformation logic here
+        // Example: result += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+        result += c; 
+    }
+
+    return result;
+}
+
+} // namespace CaseConversion::Core

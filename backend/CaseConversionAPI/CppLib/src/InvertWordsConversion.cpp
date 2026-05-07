@@ -1,23 +1,33 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $File: InvertWordsConversion.cpp                                  */
+/* File        : InvertWordsConversion.cpp                           */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - InvertWordsConversion                               */
+/* Module      : Core/String                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Reverses characters of each word in the input       */
+/* Description : Reverses characters of each word in the input       */
 /*               string while preserving word order.                 */
 /*                                                                   */
-/* Notes       - Uses string stream to split words                   */
-/*               Uses std::reverse for in-place word reversal        */
+/* Notes       : - Uses string stream to split words                 */
+/*             : - Uses std::reverse for in-place word reversal      */
+/*             : - Preserves spacing between words                   */
 /*                                                                   */
-/* $Log: InvertWordsConversion.cpp                                   */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of InvertWordsConversion.                 */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 /*********************************************************************/

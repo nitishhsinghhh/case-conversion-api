@@ -1,28 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: ConversionResult.hpp                                     */
+/* File        : ConversionResult.hpp                                */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-30                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - ConversionResult                                    */
+/* Module      : Core/Memory                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : No                                                   */
+/* Complexity  : O(n) Copy / O(1) Move                               */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - RAII wrapper for managing string conversion results */
-/*               across the native ABI boundary. Ensures strict      */
-/*               ownership semantics using Rule of 5.                */
+/* Description : RAII wrapper for managing string conversion results */
+/*               across native ABI boundaries using deterministic    */
+/*               ownership semantics and Rule of 5 compliance.       */
 /*                                                                   */
-/* Notes       - Implements deep copy semantics for safety.          */
-/*             - Supports move semantics for high-performance        */
-/*               transfers without heap duplication.                 */
-/*             - Designed to integrate with C-style ABI contracts    */
-/*               (malloc/free ownership model).                      */
+/* Notes       : - Implements deep copy semantics for memory safety. */
+/*             : - Supports move semantics for zero-copy transfers.  */
+/*             : - Designed for interoperability with C-style ABI    */
+/*             :   ownership contracts (malloc/free model).          */
 /*                                                                   */
-/* $Log: ConversionResult.hpp                                        */
-/*                                                                   */
-/*  Revision 1.0  2026/04/30  Nitish Singh                           */
-/*  Initial implementation with full Rule of 5 support.              */
-/*                                                                   */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-30  Nitish Singh    Initial Rule of 5 support  */
 /*********************************************************************/
 
 #ifndef CONVERSION_RESULT_HPP

@@ -1,27 +1,36 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $File: ConversionResult.cpp                                       */
+/* File        : ConversionResult.cpp                                */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-30                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - ConversionResult                                    */
+/* Module      : Core/Memory                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Strong Guarantee (where applicable)            */
 /*                                                                   */
-/* Description - Implements RAII-based ownership model for           */
+/* Description : Implements RAII-based ownership model for           */
 /*               dynamically allocated C-style strings.              */
 /*               Provides deep copy and move semantics for safe      */
 /*               transfer across ABI boundaries.                     */
 /*                                                                   */
-/* Notes       - Ensures deterministic memory cleanup via delete[]   */
-/*             - Designed for interoperability with managed runtimes */
-/*             - Null-safe handling across all operations            */
+/* Notes       : - Ensures deterministic memory cleanup via delete[]  */
+/*             : - Designed for interoperability with managed runtimes*/
+/*             : - Null-safe handling across all operations           */
+/*             : - Implements Rule of Five                           */
 /*                                                                   */
-/* $Log: ConversionResult.cpp                                        */
-/*                                                                   */
-/* Revision 1.0  2026/04/30  Nitish Singh                            */
-/* Initial implementation with full Rule of 5 support.               */
-/*                                                                   */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-30  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 /*********************************************************************/

@@ -1,22 +1,33 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: TestHelpers.hpp                                          */
+/* File        : TestHelpers.hpp                                     */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - TestHelpers                                         */
+/* Module      : Tests/Utilities                                     */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Provides helper utilities for logging string        */
-/*               conversion results during testing.                  */
+/* Description : Provides reusable helper utilities for logging and  */
+/*               displaying string conversion test results.          */
 /*                                                                   */
-/* Notes       - Contains inline helper functions for test output.   */
+/* Notes       : - Contains inline utility functions for tests.      */
+/*             : - Uses standard output stream for diagnostics.      */
+/*             : - Intended for lightweight debugging and tracing.   */
 /*                                                                   */
-/* $Log: TestHelpers.hpp                                             */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of test helper utilities.                 */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 #ifndef TEST_HELPERS_HPP

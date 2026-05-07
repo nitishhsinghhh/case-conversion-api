@@ -2,7 +2,7 @@
 #  CI Pipeline - Cross-Platform Native C++ Engine                    */
 #                                                                    */
 # Purpose   : Orchestrates a multi-OS build and test matrix for      */
-#              the CaseConversionAPI C++17 core.                      */
+#              the CaseConversionAPI C++17 core.                     */
 # Trigger   : Push to main / Pull Request to main                    */
 # Runtime   : Matrix Build (Ubuntu, Windows, macOS)                  */
 #                                                                    */
@@ -14,8 +14,10 @@
 # ------------------------------------------------------------------ */
 # Version    Date        Author          Description                 */
 # ------------------------------------------------------------------ */
-# 1.0-1.2    2026-04-15  Nitish Singh    Initial Setup & Monorepo Fix
-# 1.3        2026-04-24  Nitish Singh    Standardized Shell & Cleanup */
+# 1.0-1.2    2026-04-15  Nitish Singh    Initial Setup & Monorepo    */
+#                                         Fix                        */
+# 1.3        2026-04-24  Nitish Singh    Standardized Shell and      */
+#                                         Cleanup                    */
 #*********************************************************************/
 
 name: C++ CI CaseConversionAPI - All Platforms (Local App)

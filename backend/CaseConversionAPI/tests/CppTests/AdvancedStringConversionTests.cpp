@@ -1,10 +1,20 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* File: StringConversionLoggingTests.cpp                            */
+/* File        : StringConversionLoggingTests.cpp                    */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
+/*                                                                   */
+/* Module      : Tests                                               */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : No (test suite)                                     */
+/* Complexity  : O(n) per test case                                  */
+/* API Status  : Stable                                              */
+/* Exception Safety : N/A (test environment)                         */
 /*                                                                   */
 /* Description : Google Test suite validating string conversion      */
 /*               strategies with logging support. Tests include      */
@@ -16,9 +26,16 @@
 /*               2. Client strategy pattern tests                    */
 /*               3. processString integration tests                  */
 /*               4. Special conversion tests                         */
+/*               5. Performance validation tests                     */
+/*               6. Fuzz testing with random inputs                  */
 /*                                                                   */
-/* Notes       : Uses TestHelpers::logConversion for trace output    */
-/*               and debugging validation.                           */
+/* Notes       : - Uses TestHelpers::logConversion for trace output  */
+/*             : - Validates correctness across all strategies       */
+/*             : - Includes performance and fuzz coverage            */
+/*********************************************************************/
+
+/*********************************************************************/
+/* Dependencies                                                      */
 /*********************************************************************/
 
 #include <gtest/gtest.h>

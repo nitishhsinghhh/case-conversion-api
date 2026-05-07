@@ -1,24 +1,34 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: KebabCaseConversion.hpp                                  */
+/* File        : KebabCaseConversion.hpp                             */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - KebabCaseConversion                                 */
+/* Module      : Core/String                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Converts input string to kebab-case format. Words   */
-/*               are separated by hyphens and all characters are     */
-/*               lowercase.                                          */
+/* Description : Converts input strings into kebab-case format       */
+/*               where words are separated using hyphens and all     */
+/*               characters are normalized to lowercase.             */
 /*                                                                   */
-/* Notes       - Implements IStringConversion interface. Handles     */
-/*               consecutive spaces and removes trailing hyphens.    */
+/* Notes       : - Implements the IStringConversion interface.       */
+/*             : - Handles consecutive whitespace safely.            */
+/*             : - Prevents trailing delimiter generation.           */
 /*                                                                   */
-/* $Log: KebabCaseConversion.hpp                                     */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of KebabCaseConversion class.             */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 #ifndef KEBABCASECONVERSION_HPP

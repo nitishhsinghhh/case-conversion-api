@@ -1,38 +1,55 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $File: ProcessStringDLL.cpp                                       */
+/* File        : ProcessStringDLL.cpp                                */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - ProcessStringDLL                                    */
+/* Module      : Core/Interop                                        */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Strong Guarantee (externally guarded)          */
 /*                                                                   */
-/* Description - DLL wrapper exposing C++ string conversion engine   */
+/* Description : DLL wrapper exposing C++ string conversion engine   */
 /*               for C# P/Invoke interoperability.                   */
 /*               Delegates calls to core ProcessString dispatcher.   */
 /*                                                                   */
-/* Notes       - Interop layer between native C++ and .NET API.      */
+/* Notes       : - Interop layer between native C++ and .NET API     */
+/*             : - Enforces strict 5MB input size limit              */
+/*             : - Uses heap allocation (malloc/free) for ABI safety */
+/*             : - Caller (C# side) MUST free memory via freeString  */
+/*             : - Returns fallback error strings on failure paths   */
+/*             : - Catch-all exception guard prevents ABI leakage    */
+/*             : - std::string constructed from raw input buffer     */
+/*             : - Does NOT assume null-termination of input buffer  */
+/*             : - TraceId is optional and used for observability    */
+/*             : - Safe conversion mapping prevents invalid enum use */
+/*             : - Designed for stable C ABI across language         */
+/*                  boundary                                         */
 /*                                                                   */
-/* $Log: ProcessStringDLL.cpp                                        */
+/* Memory Safety Notes:                                              */
+/*             : - Every successful allocation has ownership         */
+/*                 transfer                                          */
+/*             : - No mixed delete/free (malloc paired with free)    */
+/*             : - ConversionResult lifetime is local to function    */
+/*             : - Output is deep-copied before returning to caller  */
 /*                                                                   */
-/* Revision 1.0  2026/04/11  Nitish Singh                            */
-/* Initial implementation of DLL interop wrapper.                    */
-/*                                                                   */
-/* Revision 1.1  2026/04/12  Nitish Singh                            */
-/* Refactored for maintainability and safety.                        */
-/*                                                                   */
-/* Revision 1.2  2026/04/13  Nitish Singh                            */
-/* Added 5MB security gate to prevent buffer overflow.               */
-/*                                                                   */
-/* Revision 1.3  2026/04/18  Nitish Singh                            */
-/* Applied clang-format for code quality.                            */
-/*                                                                   */
-/* Revision 1.4  2026/04/18  Nitish Singh                            */
-/* Added traceId for distributed tracing (OpenTelemetry).            */
-/*                                                                   */
-/* Revision 1.5  2026/04/28  Nitish Singh                            */
-/* Hardened DLL API with exception safety and memory safety.         */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
+/* 1.1        2026-04-12  Nitish Singh    Refactored for safety      */
+/* 1.2        2026-04-13  Nitish Singh    Added 5MB security gate    */
+/* 1.3        2026-04-18  Nitish Singh    Applied clang-format       */
+/* 1.4        2026-04-18  Nitish Singh    Added traceId support      */
+/* 1.5        2026-04-28  Nitish Singh    Hardened memory safety     */
 /*********************************************************************/
 
 /*********************************************************************/

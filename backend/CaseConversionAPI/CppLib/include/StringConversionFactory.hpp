@@ -1,23 +1,34 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: StringConversionFactory.hpp                              */
+/* File        : StringConversionFactory.hpp                         */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - StringConversionFactory                             */
+/* Module      : Core/Factory                                        */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(1)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Strong Guarantee                               */
 /*                                                                   */
-/* Description - Factory class for creating string conversion        */
-/*               strategy objects.                                   */
+/* Description : Defines the factory interface responsible for       */
+/*               creating concrete string conversion strategy        */
+/*               objects based on ConversionType selection.          */
 /*                                                                   */
-/* Notes       - Returns appropriate IStringConversion implementation*/
-/*               based on ConversionType.                            */
+/* Notes       : - Implements Factory Method design pattern.         */
+/*             : - Returns polymorphic conversion strategy objects.  */
+/*             : - Uses std::unique_ptr for automatic ownership.     */
 /*                                                                   */
-/* $Log: StringConversionFactory.hpp                                 */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of StringConversionFactory class.         */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 #ifndef STRINGCONVERSIONFACTORY_HPP

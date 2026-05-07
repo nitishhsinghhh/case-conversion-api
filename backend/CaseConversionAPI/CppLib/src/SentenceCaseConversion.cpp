@@ -1,24 +1,34 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $File: SentenceCaseConversion.cpp                                 */
+/* File        : SentenceCaseConversion.cpp                          */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - SentenceCaseConversion                              */
+/* Module      : Core/String                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Converts input string to sentence case by           */
+/* Description : Converts input string to sentence case by          */
 /*               capitalizing the first character and converting     */
-/*               the remaining characters to lowercase.              */
+/*               remaining characters to lowercase.                  */
 /*                                                                   */
-/* Notes       - Reuses LowerCaseConversion and UpperCaseConversion  */
-/*               Handles empty input safely                          */
+/* Notes       : - Reuses LowerCaseConversion and UpperCaseConversion*/
+/*             : - Safely handles empty input                        */
+/*             : - Preserves non-alphabetic characters appropriately  */
 /*                                                                   */
-/* $Log: SentenceCaseConversion.cpp                                  */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of SentenceCaseConversion.                */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 /*********************************************************************/

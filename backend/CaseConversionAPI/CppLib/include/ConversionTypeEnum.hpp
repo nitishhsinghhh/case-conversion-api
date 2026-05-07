@@ -1,24 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: ConversionTypeEnum.hpp                                   */
+/* File        : ConversionTypeEnum.hpp                              */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Enum        - ConversionChoice                                    */
+/* Module      : Core/Types                                          */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(1)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : No-Throw Guarantee                             */
 /*                                                                   */
-/* Description - Enumerates supported string conversion strategies   */
-/*               used by the C++ conversion engine and exposed       */
-/*               through the DLL interface.                          */
+/* Description : Enumerates supported string conversion strategies   */
+/*               exposed through the native DLL interface and        */
+/*               internal conversion engine.                         */
 /*                                                                   */
-/* Notes       - Values map directly to integer choices passed       */
-/*               into processStringDLL for conversion selection.     */
+/* Notes       : - Values map directly to integer conversion IDs.    */
+/*             : - Used by processStringDLL for strategy selection.  */
+/*             : - Stable numeric ordering maintained for ABI        */
+/*             :   compatibility across releases.                    */
 /*                                                                   */
-/* $Log: ConversionTypeEnum.hpp                                      */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of ConversionChoice enum.                 */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial enum definition    */
 /*********************************************************************/
 
 #ifndef CONVERSIONTYPEENUM_HPP

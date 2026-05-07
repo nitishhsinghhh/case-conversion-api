@@ -1,23 +1,33 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $File: StringConversionFactory.cpp                                */
+/* File        : StringConversionFactory.cpp                         */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - StringConversionFactory                             */
+/* Module      : Core/Factory                                        */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(1) dispatch                                       */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Factory class responsible for creating string       */
+/* Description : Factory class responsible for creating string       */
 /*               conversion strategy objects based on type.          */
 /*                                                                   */
-/* Notes       - Implements Factory design pattern                   */
-/*               Returns unique_ptr to IStringConversion             */
+/* Notes       : - Implements Factory design pattern                 */
+/*             : - Returns std::unique_ptr<IStringConversion>        */
+/*             : - Centralized strategy creation point               */
 /*                                                                   */
-/* $Log: StringConversionFactory.cpp                                 */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of StringConversionFactory.               */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 /*********************************************************************/

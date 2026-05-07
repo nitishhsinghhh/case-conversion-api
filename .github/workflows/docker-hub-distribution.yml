@@ -2,7 +2,7 @@
 #  CI Pipeline - Docker Orchestration & Image Distribution            */
 #                                                                     */
 # Purpose   : Packages the CaseConversionAPI ecosystem into           */
-#              separate Backend and Frontend images for DockerHub.    */
+#             separate Backend and Frontend images for DockerHub.     */
 # Trigger   : Push to main / Pull Request to main                     */
 # Runtime   : Ubuntu Latest                                           */
 #                                                                     */

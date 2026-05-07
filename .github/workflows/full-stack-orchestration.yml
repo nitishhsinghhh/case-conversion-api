@@ -2,23 +2,24 @@
 #  CI Pipeline - Full Stack Project (Core, API, & Frontend)          */
 #                                                                    */
 # Purpose   : Orchestrates multi-platform builds and automates       */
-#              Docker distribution to GitHub Packages (GHCR).         */
+#             Docker distribution to GitHub Packages (GHCR).         */
 # Trigger   : Push to main                                           */
 # Runtime   : Matrix Build (Linux, Win, macOS) + Docker Publish      */
 #                                                                    */
 # Notes     : - Synchronizes ABI artifacts (DLL/SO/DYLIB) with .NET. */
 #             - Automates immutable container versioning to GHCR.    */
-#             - Optimized for parallel matrix execution.              */
+#             - Optimized for parallel matrix execution.             */
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
 # Version    Date        Author          Description                 */
 # ------------------------------------------------------------------ */
-# 1.0-1.3    2026-04-16  Nitish Singh    Initial Setup & Monorepo 
-# Optimization                                                    
-# 1.4-1.5    2026-04-22  Nitish Singh    Added Docker GHCR & Context 
-# Fixes
-# 1.6        2026-04-24  Nitish Singh    Standardized Header & Naming */
+# 1.0-1.3    2026-04-16  Nitish Singh    Initial Setup & Monorepo    */
+#                                         Optimization               */
+# 1.4-1.5    2026-04-22  Nitish Singh    Added Docker GHCR &         */
+#                                         Context Fixes              */
+# 1.6        2026-04-24  Nitish Singh    Standardized Header &       */
+#                                         Naming                     */
 #*********************************************************************/
 
 name: "Full Stack Build & Container Publish"

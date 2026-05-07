@@ -1,24 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $File: CapitalizeWordsConversion.cpp                              */
+/* File        : CapitalizeWordsConversion.cpp                       */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - CapitalizeWordsConversion                           */
+/* Module      : Core/String                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Converts input string so that each word starts      */
+/* Description : Converts input string so that each word starts      */
 /*               with an uppercase letter followed by lowercase      */
 /*               characters.                                         */
 /*                                                                   */
-/* Notes       - Reuses LowerCaseConversion and                      */
-/*               UpperCaseConversion                                 */
+/* Notes       : - Reuses LowerCaseConversion and                    */
+/*               UpperCaseConversion implementations.                */
+/*               - Processes input word-by-word using stream parsing */
+/*               - Preserves single spacing between words.           */
 /*                                                                   */
-/* $Log: CapitalizeWordsConversion.cpp                               */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of CapitalizeWordsConversion.             */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 /*********************************************************************/

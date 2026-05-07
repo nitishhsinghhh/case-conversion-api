@@ -1,21 +1,34 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: ReverseConversion.hpp                                    */
+/* File        : ReverseConversion.hpp                               */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - ReverseConversion                                   */
+/* Module      : Core/String                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Reverses all characters in the input string.        */
+/* Description : Reverses the character sequence of the input        */
+/*               string while preserving all original characters.    */
 /*                                                                   */
-/* Notes       - Implements IStringConversion interface.             */
+/* Notes       : - Implements the IStringConversion interface.       */
+/*             : - Performs in linear time complexity.               */
+/*             : - Preserves whitespace and symbol placement         */
+/*             :   relative to reversal order.                       */
 /*                                                                   */
-/* $Log: ReverseConversion.hpp                                       */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of ReverseConversion class.               */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 #ifndef REVERSECONVERSION_HPP

@@ -1,3 +1,84 @@
+// SPDX-License-Identifier: Apache-2.0
+
+/*********************************************************************/
+/* File        : ProcessStringDLLTests.cpp                           */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
+/*                                                                   */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
+/*                                                                   */
+/* Module      : Tests                                               */
+/* Component   : Core/Interop (DLL Layer)                            */
+/* Thread Safe : No (test suite)                                     */
+/* Complexity  : O(n) per test                                       */
+/* API Status  : Stable                                              */
+/* Exception Safety : N/A (test environment)                         */
+/*                                                                   */
+/* Description : Google Test suite validating the DLL interop layer  */
+/*               of the string conversion engine. Covers all exposed */
+/*               C-style API conversions, edge cases, invalid inputs,*/
+/*               stress scenarios, and memory management behavior.   */
+/*                                                                   */
+/* Test Groups :                                                     */
+/*               1. Functional DLL conversion tests                  */
+/*               2. Edge case validation                             */
+/*               3. Invalid input handling                           */
+/*               4. Stress / performance testing                     */
+/*               5. Memory management verification                   */
+/*                                                                   */
+/* Notes       : - Uses processStringDLL for C# P/Invoke simulation  */
+/*             : - Ensures freeString is called for heap safety      */
+/*             : - Validates full strategy coverage via DLL layer    */
+/*********************************************************************/
+
+// SPDX-License-Identifier: Apache-2.0
+
+/*********************************************************************/
+/* File        : StringConversionTests.cpp                           */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
+/*                                                                   */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
+/*                                                                   */
+/* Module      : Tests                                               */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes (read-only test execution)                     */
+/* Complexity  : O(n) per conversion                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : N/A (test layer)                               */
+/*                                                                   */
+/* Description : Unit tests for String Conversion library using      */
+/*               Google Test framework. Covers basic conversions,    */
+/*               advanced conversions, factory creation, strategy     */
+/*               pattern behavior, processString API, and edge       */
+/*               cases.                                              */
+/*                                                                   */
+/* Test Groups :                                                     */
+/*               1. Basic conversion tests                           */
+/*               2. Advanced conversion tests                        */
+/*               3. Edge case tests                                  */
+/*               4. Factory tests                                    */
+/*               5. Client strategy tests                            */
+/*               6. ProcessString integration tests                  */
+/*               7. Logging tests                                    */
+/*                                                                   */
+/* Notes       : Requires GoogleTest and linked conversion library.  */
+/*             : Uses TestHelpers::logConversion for trace output    */
+/*             : and debugging validation.                           */
+/*                                                                   */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial test suite         */
+/*********************************************************************/
+
+/*********************************************************************/
+/* Dependencies                                                      */
 /*********************************************************************/
 
 #include <gtest/gtest.h>

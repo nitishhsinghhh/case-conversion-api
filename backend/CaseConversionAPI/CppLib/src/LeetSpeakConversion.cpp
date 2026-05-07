@@ -1,24 +1,34 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $File: LeetSpeakConversion.cpp                                    */
+/* File        : LeetSpeakConversion.cpp                             */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - LeetSpeakConversion                                 */
+/* Module      : Core/String                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Converts input string into leetspeak format by      */
-/*               replacing certain alphabetic characters with        */
+/* Description : Converts input string into leetspeak format by      */
+/*               replacing selected alphabetic characters with       */
 /*               numeric representations.                            */
 /*                                                                   */
-/* Notes       - Uses unordered_map for character mapping            */
-/*               Preserves characters not in mapping                 */
+/* Notes       : - Uses unordered_map for character mapping          */
+/*             : - Preserves characters not present in mapping       */
+/*             : - Supports both uppercase and lowercase inputs      */
 /*                                                                   */
-/* $Log: LeetSpeakConversion.cpp                                     */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of LeetSpeakConversion.                   */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 /*********************************************************************/

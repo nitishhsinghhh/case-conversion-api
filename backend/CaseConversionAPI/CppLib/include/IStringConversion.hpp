@@ -1,23 +1,33 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: IStringConversion.hpp                                    */
+/* File        : IStringConversion.hpp                               */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - IStringConversion                                   */
+/* Module      : Core/Interfaces                                     */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n) (Implementation Dependent)                     */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Interface defining contract for string conversion   */
-/*               strategies.                                         */
+/* Description : Defines the abstract contract for all string        */
+/*               conversion strategies used throughout the engine.   */
 /*                                                                   */
-/* Notes       - Base interface for all string transformation        */
-/*               implementations (e.g., lower, upper, toggle case).  */
+/* Notes       : - Base interface for all transformation strategies. */
+/*             : - Used by the Strategy pattern context layer.       */
+/*             : - Supports polymorphic conversion execution.        */
 /*                                                                   */
-/* $Log: IStringConversion.hpp                                       */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of IStringConversion interface.           */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial interface design   */
 /*********************************************************************/
 
 #ifndef ISTRINGCONVERSION_HPP

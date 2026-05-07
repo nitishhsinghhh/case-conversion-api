@@ -1,23 +1,34 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $Header: LeetSpeakConversion.hpp                                  */
+/* File        : LeetSpeakConversion.hpp                             */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - LeetSpeakConversion                                 */
+/* Module      : Core/String                                         */
+/* Component   : Case Conversion Engine                              */
+/* Thread Safe : Yes                                                 */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description - Converts input string into leet speak (1337).       */
-/*               Certain alphabetic characters are replaced with     */
-/*               numbers or symbols.                                 */
+/* Description : Converts input strings into leet speak (1337)       */
+/*               format where selected alphabetic characters are     */
+/*               replaced with numeric or symbolic equivalents.      */
 /*                                                                   */
-/* Notes       - Implements IStringConversion interface.             */
+/* Notes       : - Implements the IStringConversion interface.       */
+/*             : - Preserves unsupported characters as-is.           */
+/*             : - Performs deterministic character substitution.    */
 /*                                                                   */
-/* $Log: LeetSpeakConversion.hpp                                     */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of LeetSpeakConversion class.             */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 #ifndef LEETSPEAKCONVERSION_HPP

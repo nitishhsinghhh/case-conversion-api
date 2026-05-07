@@ -2,22 +2,23 @@
 #  CI Pipeline - Linux Native Application Execution                  */
 #                                                                    */
 # Purpose   : Validates the end-to-end build and execution flow of   */
-#              the C++ String Conversion Application on Linux.        */
+#             the C++ String Conversion Application on Linux.        */
 # Trigger   : Push to main / Pull Request to main                    */
 # Runtime   : Ubuntu Latest                                          */
 #                                                                    */
 # Notes     : - Synchronizes the LocalApp CMake configuration.       */
-#             - Validates core logic via GoogleTest console output.   */
-#             - Confirms binary linkage and runtime stability.        */
+#             - Validates core logic via GoogleTest console output.  */
+#             - Confirms binary linkage and runtime stability.       */
 #             - Updated for Monorepo (backend/ subdirectory).        */
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
 # Version    Date        Author          Description                 */
 # ------------------------------------------------------------------ */
-# 1.0        2026-04-14  Nitish Singh    Initial Linux App Workflow  
-# 1.1        2026-04-15  Nitish Singh    Updated for /backend path   
-# 1.2        2026-04-24  Nitish Singh    Standardized Header & Naming */
+# 1.0        2026-04-14  Nitish Singh    Initial Linux App Workflow  */
+# 1.1        2026-04-15  Nitish Singh    Updated for /backend path   */
+# 1.2        2026-04-24  Nitish Singh    Standardized Header &       */
+#                                        Naming                      */
 #*********************************************************************/
 
 name: "Linux Engine Validation"

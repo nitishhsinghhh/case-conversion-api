@@ -1,25 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /*********************************************************************/
-/* $File: main.cpp                                                   */
+/* File        : sourcecode.cpp (main file)                          */
+/* Author      : Nitish Singh                                        */
+/* Created     : 2026-04-11                                          */
 /*                                                                   */
-/* Copyright (c) 2016-2026 nitishhsinghh. All rights reserved.       */
-/* This material may be reproduced for teaching and learning         */
-/* purposes only. It is not to be used in industry or for            */
-/* commercial purposes.                                              */
+/* Copyright (c) 2026 Nitish Singh                                   */
+/* Licensed under the Apache License, Version 2.0                    */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
-/* Class       - main                                                */
+/* Module      : Core/CLI                                            */
+/* Component   : Test Application                                    */
+/* Thread Safe : No (single-threaded console application)            */
+/* Complexity  : O(n)                                                */
+/* API Status  : Stable                                              */
+/* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
 /* Description : Console application for local testing of string     */
 /*               conversion engine. Uses ProcessString dispatcher.   */
 /*               Accepts user input and conversion choice, then      */
 /*               displays the converted result.                      */
 /*                                                                   */
-/* Notes       : Uses ProcessString dispatcher                       */
-/*               Demonstrates runtime selection of conversions       */
+/* Notes       : - Uses ProcessString dispatcher                     */
+/*             : - Demonstrates runtime selection of conversions     */
+/*             : - Simple CLI driver for validation/testing         */
 /*                                                                   */
-/* $Log: main.cpp                                                    */
-/*                                                                   */
-/*  Revision 1.0  2026/04/11  Nitish Singh                           */
-/*  Initial implementation of console test application.              */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 /*********************************************************************/

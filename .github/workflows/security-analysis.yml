@@ -1,8 +1,8 @@
 #*********************************************************************/
 #  Security Pipeline - CodeQL Advanced Semantic Analysis             */
 #                                                                    */
-# Purpose   : Performs SAST (Static Application Security Testing)     */
-#              across the polyglot stack (C++, C#, TS, Actions).      */
+# Purpose   : Performs SAST (Static Application Security Testing)    */
+#             across the polyglot stack (C++, C#, TS, Actions).      */
 # Trigger   : Weekly Schedule / Push & PR to main                    */
 # Runtime   : Matrix Build (Multi-language Analysis)                 */
 #                                                                    */
@@ -15,9 +15,11 @@
 # ------------------------------------------------------------------ */
 # Version    Date        Author          Description                 */
 # ------------------------------------------------------------------ */
-# 1.0        2026-04-18  Nitish Singh    Initial Security Orchestration
-# 1.1        2026-04-18  Nitish Singh    Fix: Manual Build for C++ Lib
-# 1.2        2026-04-24  Nitish Singh    Finalized Naming & Header    */
+# 1.0        2026-04-18  Nitish Singh    Initial Security            */
+#                                         Orchestration              */
+# 1.1        2026-04-18  Nitish Singh    Fix: Manual Build for       */
+#                                         C++ Lib                    */
+# 1.2        2026-04-24  Nitish Singh    Finalized Naming & Header   */
 #*********************************************************************/
 
 

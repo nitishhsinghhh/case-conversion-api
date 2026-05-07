@@ -1,20 +1,21 @@
 #*********************************************************************/
 #  CI Pipeline - .NET + API Integration Tests (Multi-Platform)       */
 #                                                                    */
-# Purpose   : Validates the P/Invoke bridge and API logic across      */
-#              Ubuntu, macOS, and Windows environments.               */
+# Purpose   : Validates the P/Invoke bridge and API logic across     */
+#              Ubuntu, macOS, and Windows environments.              */
 # Trigger   : Push to main/develop | Pull Request to main            */
 # Runtime   : Matrix (Ubuntu, macOS, Windows)                        */
 #                                                                    */
 # Notes     : - Synchronizes Native & Managed build cycles.          */
 #             - Implements cross-platform artifact injection.        */
-#             - v1.4: Injects Jaeger sidecar for Telemetry validation.*/
+#             - v1.4: Injects Jaeger sidecar for Telemetry           */
+# validation.                                                        */
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
 # Version    Date        Author          Description                 */
 # ------------------------------------------------------------------ */
-# 1.0-1.2    2026-04-17  Nitish Singh    Initial Setup & Matrix Fixes */
+# 1.0-1.2    2026-04-17  Nitish Singh    Initial Setup, Matrix Fix   */
 # 1.3        2026-04-18  Nitish Singh    Added Telemetry Validation  */
 # 1.4        2026-04-24  Nitish Singh    Standardized Header & Env   */
 #*********************************************************************/
