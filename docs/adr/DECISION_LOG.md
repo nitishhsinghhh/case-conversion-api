@@ -104,9 +104,11 @@
 
 ## Highlight: ADR 013 (Sustained Low Latency)
 
-**Problem:** Tail latency spikes (>10s) during the 1,000,000 request marathon.
-**Root Cause:** Standard GC behavior was performing full collection cycles under heavy P/Invoke pressure.
-**The Solution:** By switching to `SustainedLowLatency`, we prioritized the **95th percentile (P95)** over absolute memory efficiency. This resulted in a rock-solid 58.8ms P95, proving that at a certain scale, hardware-aware tuning is a mechanical necessity.
+- **Problem:** Tail latency spikes (>10s) during the 1,000,000 request marathon.
+
+- **Root Cause:** Standard GC behavior was performing full collection cycles under heavy P/Invoke pressure.
+
+- **The Solution:** By switching to `SustainedLowLatency`, we prioritized the **95th percentile (P95)** over absolute memory efficiency. This resulted in a rock-solid 58.8ms P95, proving that at a certain scale, hardware-aware tuning is a mechanical necessity.
 
 ---
 

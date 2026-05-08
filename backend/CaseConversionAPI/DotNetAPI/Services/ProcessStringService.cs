@@ -81,7 +81,7 @@ namespace StringConversionAPI.Services
 
         public ProcessStringService()
         {
-            string dllName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ProcessStringDLL.dll" :
+            string dllName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "libProcessStringDLL.dll" :
                              RuntimeInformation.IsOSPlatform(OSPlatform.Linux)   ? "libProcessStringDLL.so" :
                              RuntimeInformation.IsOSPlatform(OSPlatform.OSX)     ? "libProcessStringDLL.dylib" :
                              throw new PlatformNotSupportedException("Unsupported OS platform.");

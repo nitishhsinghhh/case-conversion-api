@@ -20,6 +20,7 @@
 # 1.3        2026-04-24  Nitish Singh    Standardized Header & Env   */
 # 1.4        2026-05-01  Nitish Singh    Added path filters          */
 # 1.5        2026-05-07  Nitish Singh    Path Var Hoisting & Cleanup */
+# 1.6        2026-05-07  Nitish Singh    DllNotFound Path Fix        */
 #*********************************************************************/
 
 name: ".NET Integration Tests"
@@ -57,13 +58,14 @@ jobs:
             target_name: "libProcessStringDLL.dylib"
           - os: windows-latest
             lib_ext: "*.dll"
-            target_name: "ProcessStringDLL.dll"
+            target_name: "libProcessStringDLL.dll"
     runs-on: ${{ matrix.os }}
 
     steps:
       # ======================================================
       # 1. ENVIRONMENT SETUP
       # ======================================================
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -83,6 +85,7 @@ jobs:
       # ======================================================
       # 2. NATIVE LAYER BUILD (C++17)
       # ======================================================
+
       - name: Build C++ Library (Unix)
         if: runner.os != 'Windows'
         working-directory: ${{ env.CPP_LIB_DIR }}
@@ -113,40 +116,40 @@ jobs:
       # ======================================================
       # 4. ARTIFACT INJECTION (ABI BRIDGE PREP)
       # ======================================================
-      
-      - name: Inject Native Library to Test Folder
+
+      - name: Inject Native Library
         shell: bash
         run: |
-          # Define target directory for the compiled .NET binaries
           FULL_DEST="${{ env.DOTNET_TEST_DIR }}/${{ env.DOTNET_BIN_REL }}/"
           mkdir -p "$FULL_DEST"
-          
-          # Use matrix variables to find and name the library
-          LIB_FILE=$(find ${{ env.CPP_LIB_DIR }}/build -type f -name "${{ matrix.lib_ext }}" | head -n 1)
-            
-          if [ -z "$LIB_FILE" ]; then
-            echo "::error::Native library not found!"
-            exit 1
-          fi
-          
-          echo "Injecting $LIB_FILE -> $FULL_DEST${{ matrix.target_name }}"
- 
-          # 1. Copy to the actual build output directory
-          cp "$LIB_FILE" "$FULL_DEST${{ matrix.target_name }}"
 
-          # 2. Copy to the test project root for local execution context
-          cp "$LIB_FILE" "${{ env.DOTNET_TEST_DIR }}/${{ matrix.target_name }}"
+            if [ "${{ runner.os }}" == "Windows" ]; then
+              LIB_FILE=$(find ${{ env.CPP_LIB_DIR }} -name "*.dll" | head -n 1)
+              TARGET_NAME=${{ matrix.target_name }}
+            elif [ "${{ runner.os }}" == "macOS" ]; then
+              LIB_FILE=$(find ${{ env.CPP_LIB_DIR }} -name "*.dylib" | head -n 1)
+              TARGET_NAME=${{ matrix.target_name }}
+            else
+              LIB_FILE=$(find ${{ env.CPP_LIB_DIR }} -name "*.so" | head -n 1)
+              TARGET_NAME=${{ matrix.target_name }}
+            fi   
+          
+          # Inject into BOTH the binary output and the test project root
+          cp "$LIB_FILE" "$FULL_DEST$TARGET_NAME"
+          cp "$LIB_FILE" "${{ env.DOTNET_TEST_DIR }}/$TARGET_NAME"
 
       # ======================================================
-      # 5. TEST EXECUTION
+      # 5. TEST EXECUTION WITH PATH HOISTING
       # ======================================================
-
+      
       - name: Run Integration Tests
         working-directory: ${{ env.DOTNET_TEST_DIR }}
-        shell: bash
+        shell: bash # Standardizing to bash makes path manipulation easier
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: ${{ runner.os == 'Linux' && 'http://localhost:4317' || 'http://localhost:9999' }}
+          OTEL_SERVICE_NAME: "CaseConversion-Test-Runner"
         run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
-            # Adds the current directory to the PATH for the duration of this step
             export PATH="$PATH:$(pwd)"
           fi
           dotnet test --no-build --configuration Release --verbosity normal

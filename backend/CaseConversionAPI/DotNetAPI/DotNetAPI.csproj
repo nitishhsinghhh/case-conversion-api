@@ -13,7 +13,7 @@
 
   <ItemGroup >
   <!-- Windows DLL -->
-  <None Include="../CppLib/build_dll/Release/ProcessStringDLL.dll"
+  <None Include="../CppLib/build_dll/Release/libProcessStringDLL.dll"
         CopyToOutputDirectory="Always"
         Condition=" '$(CI)' != 'true' AND '$(OS)' == 'Windows_NT' " />
 

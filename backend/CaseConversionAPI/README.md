@@ -8,8 +8,6 @@ This module serves as the managed gateway for the Case Conversion ecosystem. It 
 * [Key Design Patterns](#key-design-patterns)
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
-  * [Automated Execution](#1-automated-execution)
-  * [Manual Development Workflow](#2manual-development-workflow)
 * [Testing Infrastructure](#testing-infrastructure)
   * [Test Categories](#test-categories)
 * [API Contract](#api-contract)
@@ -20,7 +18,6 @@ This module serves as the managed gateway for the Case Conversion ecosystem. It 
   * [3. Thread Safety & Lifecycle Management](#3-thread-safety--lifecycle-management)
 * [Telemetry & Observability](#telemetry--observability)
   * [Setup Instructions](#setup-instructions)
-  * [Visualizing Performance with Jaeger](#3-visualizing-performance-with-jaeger)
   * [Analyzing the Waterfall](#analyzing-the-waterfall)
 * [Request Lifecycle Flow](#request-lifecycle-flow)
 
@@ -30,21 +27,21 @@ The .NET layer is designed as a stateless "Thin Wrapper" around the native binar
 
 ## Key Design Patterns
 
-- Callee-Allocates / Caller-Frees: Implements an explicit memory ownership contract. The .NET layer invokes the native freeString export immediately after string marshalling to ensure a Zero-Leak heap profile.
+* Callee-Allocates / Caller-Frees: Implements an explicit memory ownership contract. The .NET layer invokes the native freeString export immediately after string marshalling to ensure a Zero-Leak heap profile.
 
-- Dynamic DLL Loading: Uses System.Runtime.InteropServices.NativeLibrary for platform-agnostic symbol resolution (Windows .dll, Linux .so, macOS .dylib).
+* Dynamic DLL Loading: Uses System.Runtime.InteropServices.NativeLibrary for platform-agnostic symbol resolution (Windows .dll, Linux .so, macOS .dylib).
 
-- Dependency Injection (DI): Registered as a Scoped or Singleton service to manage the lifecycle of the native library handle.
+* Dependency Injection (DI): Registered as a Scoped or Singleton service to manage the lifecycle of the native library handle.
 
-- Hardened Guardrails: Integrates with the native engine's 2MB buffer limit to prevent Heap Exhaustion or DoS attacks.
+* Hardened Guardrails: Integrates with the native engine's 2MB buffer limit to prevent Heap Exhaustion or DoS attacks.
 
 ## Getting Started
 
 ### Prerequisites
 
-- .NET 8.0 SDK
+* .NET 8.0 SDK
 
-- Compiled C++ Shared Library (libProcessStringDLL) present in the project root or build output.
+* Compiled C++ Shared Library (libProcessStringDLL) present in the project root or build output.
 
 1. Automated Execution
 
@@ -75,13 +72,13 @@ The project includes an extensive Integration Test Suite using Microsoft.AspNetC
 
 ### Test Categories
 
-- Basic: Core case transformations (Upper, Lower, Reverse).
+* Basic: Core case transformations (Upper, Lower, Reverse).
 
-- Advanced: Complex logic (SnakeCase, LeetSpeak, InvertWords).
+* Advanced: Complex logic (SnakeCase, LeetSpeak, InvertWords).
 
-- Edge Cases: Boundary validation for empty strings and whitespace.
+* Edge Cases: Boundary validation for empty strings and whitespace.
 
-- Contractual Safety: Validation of out-of-range choices and large input handling.
+* Contractual Safety: Validation of out-of-range choices and large input handling.
 
 ```Bash
 # Run the xUnit suite
@@ -112,12 +109,12 @@ Successful Response (200 OK):
 
 ## Security & Memory Governance
 
-| Feature              | Implementation                    | Architectural Justification |
-|---------------------|----------------------------------|-----------------------------|
-| Memory Cleanup      | `IDisposable` & `freeString`     | Implements the "Callee-Allocates, Caller-Frees" contract. Ensures unmanaged heap memory is reclaimed immediately after marshalling, achieving a zero-leak profile. |
-| ABI Safety          | `Marshal.PtrToStringAnsi`        | Performs a deep-copy of native memory into the managed garbage-collected (GC) heap. This decouples the .NET string lifecycle from the native buffer. |
-| Boundary Protection | Strict O(n) Length Checks        | Enforces a 2MB security gate at the native entry point. Prevents heap exhaustion and buffer overflow attacks before memory is allocated for strategies. |
-| Thread Safety       | Stateless Reentrancy             | The native engine is entirely stateless and stack-allocated, allowing the .NET ThreadPool to execute concurrent P/Invoke calls without mutex contention. |
+| Feature              | Implementation                    | Architectural Justification                                                                                                                                        |
+|--------------------- |---------------------------------- |-----------------------------                                                                                                                                       |
+| Memory Cleanup       | `IDisposable` & `freeString`      | Implements the "Callee-Allocates, Caller-Frees" contract. Ensures unmanaged heap memory is reclaimed immediately after marshalling, achieving a zero-leak profile. |
+| ABI Safety           | `Marshal.PtrToStringAnsi`         | Performs a deep-copy of native memory into the managed garbage-collected (GC) heap. This decouples the .NET string lifecycle from the native buffer.               |
+| Boundary Protection  | Strict O(n) Length Checks         | Enforces a 2MB security gate at the native entry point. Prevents heap exhaustion and buffer overflow attacks before memory is allocated for strategies.            |
+| Thread Safety        | Stateless Reentrancy              | The native engine is entirely stateless and stack-allocated, allowing the .NET ThreadPool to execute concurrent P/Invoke calls without mutex contention.           |
 
 ## Native Interop Architectural Principles
 
@@ -147,28 +144,29 @@ This project implements **Distributed Tracing** to monitor the lifecycle of a re
 
 ### Prerequisites docker
 
-- Docker Desktop (for Jaeger backend)
-- .NET 8.0 SDK
+* Docker Desktop (for Jaeger backend)
+* .NET 8.0 SDK
 
 ### Setup Instructions
 
-1. Install Dependencies
-   Navigate to the API project folder and install the OTEL packages:
+#### 1. Install Dependencies
 
-   ```bash
-   cd CaseConversionAPI/DotNetAPI
-   dotnet add package OpenTelemetry.Extensions.Hosting
-   dotnet add package OpenTelemetry.Exporter.OpenTelemetryProtocol
-   dotnet add package OpenTelemetry.Instrumentation.AspNetCore
-   ```
+Navigate to the API project folder and install the OTEL packages:
 
-2. Add package
+```bash
+  cd CaseConversionAPI/DotNetAPI
+  dotnet add package OpenTelemetry.Extensions.Hosting
+  dotnet add package OpenTelemetry.Exporter.OpenTelemetryProtocol
+  dotnet add package OpenTelemetry.Instrumentation.AspNetCore
+```
 
-  ```Bash
-    dotnet add package OpenTelemetry.Extensions.Hosting
-  ```
+#### 2. Add package
 
- 3. Visualizing Performance with Jaeger
+```Bash
+  dotnet add package OpenTelemetry.Extensions.Hosting
+```
+
+#### 3. Visualizing Performance with Jaeger
 
  To view the traces, the project utilizes Jaeger as the distributed tracing backend.
 

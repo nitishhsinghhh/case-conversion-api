@@ -22,12 +22,11 @@
 
   <!-- Robust Native Library Inclusion -->
   <ItemGroup>
-  <!-- Ensure the test project can also find the native library across platforms -->
-  <Content Include="../../CppLib/build/**/ProcessStringDLL.dll;../../CppLib/build/**/libProcessStringDLL.dylib;../../CppLib/build/**/libProcessStringDLL.so">
-    <Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    <Visible>false</Visible>
-  </Content>
+    <Content Include="$(MSBuildProjectDirectory)\..\..\CppLib\build\**\libProcessStringDLL.dll">
+      <Link>libProcessStringDLL.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
   </ItemGroup>
 
   <PropertyGroup>
