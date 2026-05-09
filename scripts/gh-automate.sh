@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
 # File      : gh-automate.sh                                         */
-# Version   : 1.2                                                    */
+# Version   : 1.5                                                    */
 #                                                                    */
 # Purpose   : Local PR Automator for standardization and cleanup.    */
 #             Handles branch creation, PR submission, and merging.   */
@@ -16,66 +16,157 @@
 #                                        M2 cleanup verification.    */
 # 1.2        2026-05-09  Nitish Singh    Refined manual checkpoint   */
 #                                        and added final sync steps. */
-# 1.3        2026-05-09  Nitish Singh    Open PR in browser for CI 
+# 1.3        2026-05-09  Nitish Singh    Open PR in browser for CI   */
 #                                        monitoring                  */
+# 1.4        2026-05-09  Nitish Singh    Added local GitHub checks   */
+#                                        monitoring via gh CLI.      */
+# 1.5        2026-05-09  Nitish Singh    Added structured logging,   */
+#                                        timestamps, and colors.     */
+#*********************************************************************/
+
+set -euo pipefail
+
+#*********************************************************************/
+# Logging Utilities                                                  */
+#*********************************************************************/
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+timestamp() {
+    date +"%Y-%m-%d %H:%M:%S"
+}
+
+log_info() {
+    echo -e "${BLUE}[$(timestamp)] [INFO]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[$(timestamp)] [WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[$(timestamp)] [ERROR]${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}[$(timestamp)] [SUCCESS]${NC} $1"
+}
+
+#*********************************************************************/
+# Input Validation                                                   */
 #*********************************************************************/
 
 BRANCH=$1
 MESSAGE=$2
 
 if [ -z "$BRANCH" ] || [ -z "$MESSAGE" ]; then
-    echo "Error: Missing arguments."
+    log_error "Missing arguments."
     echo "Usage: ./gh-automate.sh <branch-name> <message>"
     exit 1
 fi
 
-echo "===== Starting PR Workflow: $BRANCH ====="
+log_info "Starting PR Workflow: $BRANCH"
 
-# 1. Prepare Branch
+#*********************************************************************/
+# 1. Prepare Branch                                                  */
+#*********************************************************************/
+
+log_info "Preparing branch..."
+
 if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+    log_info "Switching to existing branch: $BRANCH"
     git checkout "$BRANCH"
 else
+    log_info "Creating new branch: $BRANCH"
     git checkout -b "$BRANCH"
 fi
 
-git add . -A 
-git commit -m "$MESSAGE" || echo "No changes to commit"
+log_info "Staging changes..."
+git add . -A
 
-# 2. Push & Create PR
+log_info "Creating commit..."
+git commit -m "$MESSAGE" || log_warn "No changes to commit."
+
+#*********************************************************************/
+# 2. Push & Create PR                                                */
+#*********************************************************************/
+
+log_info "Pushing branch to remote..."
 git push origin "$BRANCH" --force-with-lease
-PR_URL=$(gh pr create --title "$MESSAGE" --body "Automated standardization and cleanup." --fill)
+
+log_info "Creating GitHub Pull Request..."
+
+PR_URL=$(gh pr create \
+    --title "$MESSAGE" \
+    --body "Automated standardization and cleanup." \
+    --fill)
 
 if [ -z "$PR_URL" ]; then
     PR_URL=$(gh pr view --json url -q ".url")
 fi
 
 PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$')
-echo "PR Active: $PR_URL (#$PR_NUMBER)"
 
-# Open PR in browser for CI/CD monitoring
-echo "Opening PR in browser..."
-gh pr view "$PR_NUMBER" --web
+log_success "PR Active: $PR_URL (#$PR_NUMBER)"
 
-# 3. The "Blue Tick" Manual Gate
-echo "--------------------------------------------------------"
-echo "CI/CD pipeline is now running for PR #$PR_NUMBER."
-echo "The pull request has been opened in your browser."
+#*********************************************************************/
+# 3. CI/CD Verification Gate                                         */
+#*********************************************************************/
+
 echo
-echo "Please verify:"
-echo "  - All required GitHub Actions are successful"
-echo "  - CodeQL and security checks are green"
-echo "  - No failing or pending status checks remain"
+log_info "CI/CD pipeline is now running..."
+log_info "Monitoring GitHub Actions and required checks locally."
+
 echo
-echo "Once all checks are GREEN (or safely bypassable),"
-read -p "press [Enter] to continue with squash merge..."
-echo "--------------------------------------------------------"
+echo "Tracking:"
+echo "  - GitHub Actions"
+echo "  - CodeQL analysis"
+echo "  - Security validation"
+echo "  - Required status checks"
+echo
 
-# 4. Merge & Cleanup
-echo "Merging PR #$PR_NUMBER..."
-gh pr merge "$PR_NUMBER" --squash --delete-branch --admin
+log_info "Allowing GitHub Actions to initialize..."
+sleep 30
 
-# 5. Sync Main
+while [ "$(gh pr checks "$PR_NUMBER" 2>/dev/null | wc -l)" -eq 0 ]; do
+    log_warn "Waiting for CI/CD checks to appear..."
+    sleep 5
+done
+
+log_success "CI/CD checks detected."
+
+gh pr checks "$PR_NUMBER" --watch
+
+echo
+log_info "Review the final status above."
+log_info "Ensure all required checks are GREEN or safely bypassable."
+
+read -p "Press [Enter] to continue with squash merge..."
+
+#*********************************************************************/
+# 4. Merge & Cleanup                                                 */
+#*********************************************************************/
+
+log_info "Merging PR #$PR_NUMBER..."
+
+gh pr merge "$PR_NUMBER" \
+    --squash \
+    --delete-branch \
+    --admin
+
+log_success "Pull Request merged successfully."
+
+#*********************************************************************/
+# 5. Sync Main                                                       */
+#*********************************************************************/
+
+log_info "Synchronizing local main branch..."
+
 git checkout main
-git pull origin main
+git pull --ff-only origin main
 
-echo -e "\n===== Workflow Complete. Environment Synced. ====="
+log_success "Workflow Complete. Environment Synced."
