@@ -22,6 +22,8 @@
 #                                        monitoring via gh CLI.      */
 # 1.5        2026-05-09  Nitish Singh    Added structured logging,   */
 #                                        timestamps, and colors.     */
+# 1.6        2026-05-09  Nitish Singh    Added dependency and        */
+#                                        authentication validation.  */
 #*********************************************************************/
 
 set -euo pipefail
@@ -55,6 +57,51 @@ log_error() {
 log_success() {
     echo -e "${GREEN}[$(timestamp)] [SUCCESS]${NC} $1"
 }
+
+#*********************************************************************/
+# Dependency Validation                                              */
+#*********************************************************************/
+
+log_info "Validating required dependencies..."
+
+if ! command -v git >/dev/null 2>&1; then
+    log_error "Git is not installed or not available in PATH."
+    exit 1
+fi
+
+if ! command -v gh >/dev/null 2>&1; then
+    log_error "GitHub CLI (gh) is not installed or not available in PATH."
+    exit 1
+fi
+
+log_success "Required CLI dependencies detected."
+
+#*********************************************************************/
+# GitHub Authentication Validation                                   */
+#*********************************************************************/
+
+log_info "Validating GitHub CLI authentication..."
+
+if ! gh auth status >/dev/null 2>&1; then
+    log_error "GitHub CLI authentication failed."
+    log_error "Run: gh auth login"
+    exit 1
+fi
+
+log_success "GitHub CLI authentication verified."
+
+#*********************************************************************/
+# Git Remote Validation                                              */
+#*********************************************************************/
+
+log_info "Validating git remote configuration..."
+
+if ! git remote get-url origin >/dev/null 2>&1; then
+    log_error "Git remote 'origin' is not configured."
+    exit 1
+fi
+
+log_success "Git remote configuration verified."
 
 #*********************************************************************/
 # Input Validation                                                   */
