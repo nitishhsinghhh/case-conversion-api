@@ -16,6 +16,8 @@
 #                                        M2 cleanup verification.    */
 # 1.2        2026-06-01  Nitish Singh    Refined manual checkpoint   */
 #                                        and added final sync steps. */
+# 1.3        2026-06-10  Nitish Singh    Open PR in browser for CI 
+#                                        monitoring                  */
 #*********************************************************************/
 
 BRANCH=$1
@@ -50,11 +52,15 @@ fi
 PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$')
 echo "PR Active: $PR_URL (#$PR_NUMBER)"
 
+# Open PR in browser for CI/CD monitoring
+echo "Opening PR in browser..."
+gh pr view "$PR_NUMBER" --web
+
 # 3. The "Blue Tick" Manual Gate
 echo "--------------------------------------------------------"
 echo "Waiting for CI/CD (CodeQL, etc.) to start/complete..."
 echo "Please monitor the PR in your browser or run 'gh pr checks'."
-echo "Once you see all GREEN checkmarks (or bypassable blue ticks):"
+echo "Once you see all GREEN checkmarks (or bypassable the ticks):"
 read -p "Press [Enter] to proceed with the merge..."
 echo "--------------------------------------------------------"
 
