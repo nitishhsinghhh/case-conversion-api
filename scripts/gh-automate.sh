@@ -58,10 +58,16 @@ gh pr view "$PR_NUMBER" --web
 
 # 3. The "Blue Tick" Manual Gate
 echo "--------------------------------------------------------"
-echo "Waiting for CI/CD (CodeQL, etc.) to start/complete..."
-echo "Please monitor the PR in your browser or run 'gh pr checks'."
-echo "Once you see all GREEN checkmarks (or bypassable the ticks):"
-read -p "Press [Enter] to proceed with the merge..."
+echo "CI/CD pipeline is now running for PR #$PR_NUMBER."
+echo "The pull request has been opened in your browser."
+echo
+echo "Please verify:"
+echo "  - All required GitHub Actions are successful"
+echo "  - CodeQL and security checks are green"
+echo "  - No failing or pending status checks remain"
+echo
+echo "Once all checks are GREEN (or safely bypassable),"
+read -p "press [Enter] to continue with squash merge..."
 echo "--------------------------------------------------------"
 
 # 4. Merge & Cleanup
