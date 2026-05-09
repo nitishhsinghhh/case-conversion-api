@@ -1,6 +1,11 @@
 #!/bin/bash
 #*********************************************************************/
 #  Utility Script - Frontend Development Server                      */
+#  Version     : 1.3                                                 */
+#                                                                    */
+# Purpose   : Manages the lifecycle and execution of the Vite        */
+#              development server for the TypeScript UI.             */
+# Location  : scripts/run-frontend.sh                                */
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
@@ -9,6 +14,8 @@
 # 1.0        2026-04-16  Nitish Singh    Initial Dev Runner          */
 # 1.1        2026-04-16  Nitish Singh    Added Apple Silicon Fix     */
 # 1.2        2026-05-06  Nitish Singh    Added Binary Path Validation*/
+# 1.3        2026-05-09  Nitish Singh    Standardized versioning and */
+#                                        M2 dev optimization.        */
 #*********************************************************************/
 
 set -e
@@ -22,7 +29,7 @@ echo "===== Starting Frontend Environment ====="
 
 # Ensure dependencies are installed
 if [ ! -d "node_modules" ]; then
-    echo "node_modules not found. Installing arm64 native bindings..."
+    echo "node_modules not found. Installing arm64 native bindings for M2..."
     npm install
 fi
 
@@ -36,5 +43,6 @@ if [ ! -f "$VITE_BIN" ]; then
 fi
 
 # Run Vite dev server using the explicit local path
+# Forcing HMR (Hot Module Replacement) to stay responsive on M2
 echo "Launching Vite server on port 5175..."
 $VITE_BIN --port 5175 --open

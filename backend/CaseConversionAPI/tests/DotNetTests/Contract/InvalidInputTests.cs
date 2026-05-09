@@ -1,19 +1,24 @@
-/**************************************************************************************************
- * File         : InvalidInputTests.cs
- *
- * Copyright    : (c) 2016–2026 nitishhsinghh. All rights reserved.
- *
- * Description  : Integration test suite for defensive input handling.
- * Updated for v1.1 to validate the 5MB Native Security Gate.
- *
- * Revision History:
- * ------------------------------------------------------------------------------------------------
- * Version     Date            Author           Description
- * ------------------------------------------------------------------------------------------------
- * 1.0         2026-04-14      Nitish Singh     Initial implementation.
- * 1.1         2026-04-19      Nitish Singh     Added 5MB Payload Security Gate validation.
- * 1.2         2026-05-05      Nitish Singh     Added TraceId validation & Sentinel Error tests.
- **************************************************************************************************/
+//--------------------------------------------------------------------------------------------------
+// File        : InvalidInputTests.cs
+// Author      : Nitish Singh
+// Version     : 1.3
+// License     : Apache License, Version 2.0 
+// Copyright   : (c) 2016–2026 Nitish Singh. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except 
+// in compliance with the License. You may obtain a copy of the License at:
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software distributed under the 
+// License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
+//
+// Change History:
+// 1.3 | 2026-05-09 | Nitish Singh | Upgraded to XML Documentation for IDE IntelliSense support.
+// 1.2 | 2026-05-05 | Nitish Singh | Added TraceId validation & Sentinel Error tests.
+// 1.1 | 2026-04-19 | Nitish Singh | Added 5MB Payload Security Gate validation.
+// 1.0 | 2026-04-14 | Nitish Singh | Initial implementation of defensive input handling.
+//--------------------------------------------------------------------------------------------------
 
 using System;
 using System.Net.Http.Json;
@@ -22,10 +27,18 @@ using System.Net;
 using Xunit;
 using Microsoft.AspNetCore.Mvc.Testing;
 
+namespace CaseConversion.Tests.Integration;
+
 /// <summary>
+/// 🛡️ [DEFENSIVE INTEGRATION SUITE]
 /// Validates system behavior when the API receives input that falls 
 /// outside the defined operational parameters.
 /// </summary>
+/// <remarks>
+/// <para><b>Identity:</b> InvalidInputTests (v1.2)</para>
+/// <para><b>Security:</b> Validates the 5MB Native Security Gate and Sentinel logic.</para>
+/// <para><b>Reliability:</b> Ensures P/Invoke stability against null/empty/overflow payloads.</para>
+/// </remarks>
 public class InvalidInputTests : ApiTestBase
 {
     public InvalidInputTests(WebApplicationFactory<Program> factory)
@@ -33,9 +46,7 @@ public class InvalidInputTests : ApiTestBase
     {
     }
 
-    //===================================================================
-    // Defensive Boundary Tests
-    //===================================================================
+    //---[ SECTION: Defensive Boundary Tests ]------------------------------------------------------
 
     /// <summary>
     /// Verifies that an undefined conversion choice is handled by the 
@@ -54,7 +65,6 @@ public class InvalidInputTests : ApiTestBase
     public async Task Convert_NegativeChoice_ReturnsOriginalString_SafeFallback()
         => Assert.Equal("ERROR_NEGATIVE_CONVERSION_CHOICE", await ConvertAsync("BoundaryTest", -1));
 
-
     /// <summary>
     /// Verifies that null/empty inputs are handled gracefully before 
     /// hitting the P/Invoke layer to avoid AccessViolationExceptions.
@@ -69,9 +79,7 @@ public class InvalidInputTests : ApiTestBase
         Assert.Equal(input, result);
     }
 
-    //===================================================================
-    // Native Sentinel Gate Validation (Updated for v1.2)
-    //===================================================================
+    //---[ SECTION: Native Sentinel Gate Validation ]-----------------------------------------------
 
     /// <summary>
     /// Validates the 5MB Security Gate in the native engine.
@@ -90,23 +98,7 @@ public class InvalidInputTests : ApiTestBase
         Assert.Equal("ERROR_BUFFER_OVERFLOW_LIMIT_5MB", result);
     }
 
-    //===================================================================
-    // Choice & Range Validation
-    //===================================================================
-
-    [Fact]
-    [Trait("Category", "Resiliency")]
-    public async Task Convert_InvalidChoice_ReturnsSentinelError()
-        => Assert.Equal("ERROR_INVALID_CONVERSION_CHOICE", await ConvertAsync("Hello", 99));
-
-    [Fact]
-    [Trait("Category", "Resiliency")]
-    public async Task Convert_NegativeChoice_ReturnsSentinelError()
-        => Assert.Equal("ERROR_NEGATIVE_CONVERSION_CHOICE", await ConvertAsync("BoundaryTest", -1));
-
-    //===================================================================
-    // Memory & Lifecycle Safety
-    //===================================================================
+    //---[ SECTION: Memory & Lifecycle Safety ]-----------------------------------------------------
 
     /// <summary>
     /// Ensures that passing a very long TraceId doesn't cause a buffer 

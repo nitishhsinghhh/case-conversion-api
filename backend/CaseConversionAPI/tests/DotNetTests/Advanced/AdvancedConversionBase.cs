@@ -1,24 +1,25 @@
-/**************************************************************************************************
- * File         : AdvancedConversionTests.cs
- *
- * Copyright    : (c) 2016–2026 nitishhsinghh. All rights reserved.
- * This material may be reproduced for teaching and learning purposes only.
- * It is not to be used in industry or for commercial purposes.
- *
- * Class        : AdvancedConversionTests
- *
- * Description  : Integration test suite for high-complexity conversion and concurrency.
- * Validates M2 Hardware Parallelism, ABI thread-safety, and memory stability.
- *
- * Revision History:
- * ------------------------------------------------------------------------------------------------
- * Version     Date            Author           Description
- * ------------------------------------------------------------------------------------------------
- * 1.0         2026-04-14      Nitish Singh     Initial implementation of advanced tests.
- * 1.1         2026-04-19      Nitish Singh     Added M2 P-Core saturation and hardware-specific tags.
- * 1.2         2026-04-19      Nitish Singh     Integrated Race-Condition, N+1 Stress, and Leak tests.
- * 1.3         2026-05-05      Nitish Singh     Added UTF-8 Multi-byte validation & 5MB Guard tests.
- **************************************************************************************************/
+//--------------------------------------------------------------------------------------------------
+// File        : AdvancedConversionTests.cs
+// Author      : Nitish Singh
+// Version     : 1.4
+// License     : Apache License, Version 2.0 
+// Copyright   : (c) 2016–2026 Nitish Singh. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except 
+// in compliance with the License. You may obtain a copy of the License at:
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software distributed under the 
+// License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
+//
+// Change History:
+// 1.4 | 2026-05-09 | Nitish Singh | Upgraded to XML Documentation for IDE IntelliSense support.
+// 1.3 | 2026-05-05 | Nitish Singh | Added UTF-8 Multi-byte validation & 5MB Guard tests.
+// 1.2 | 2026-04-19 | Nitish Singh | Integrated Race-Condition, N+1 Stress, and Leak tests.
+// 1.1 | 2026-04-19 | Nitish Singh | Added M2 P-Core saturation and hardware-specific tags.
+// 1.0 | 2026-04-14 | Nitish Singh | Initial implementation of advanced integration tests.
+//--------------------------------------------------------------------------------------------------
 
 using System;
 using System.Collections.Generic;
@@ -27,10 +28,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
+namespace CaseConversion.Tests.Integration;
 
 /// <summary>
-/// Validates high-complexity conversion strategies and concurrent execution 
-/// patterns tuned for Apple M2 hardware constraints (4 P-Cores).
+/// Integration test suite for high-complexity conversion and concurrency.
+/// Validates M2 Hardware Parallelism, ABI thread-safety, and memory stability.
 /// </summary>
 public class AdvancedConversionTests : ApiTestBase
 {
@@ -81,7 +83,7 @@ public class AdvancedConversionTests : ApiTestBase
         watch.Stop();
         long sequentialTime = watch.ElapsedMilliseconds;
 
-        // Parallel - Use Parallel.ForEachAsync for better M2 thread management
+        // Parallel - Used Parallel.ForEachAsync for better M2 thread management
         watch.Restart();
         await Parallel.ForEachAsync(inputs, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (input, token) => 
         {
