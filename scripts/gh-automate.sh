@@ -6,7 +6,6 @@
 #                                                                    */
 # Purpose   : Local PR Automator for standardization and cleanup.    */
 #             Handles branch creation, PR submission, and merging.   */
-# Status    : LOCAL UTILITY ONLY                                     */
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
