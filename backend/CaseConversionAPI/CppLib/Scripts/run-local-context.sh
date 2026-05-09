@@ -1,11 +1,11 @@
 #!/bin/bash
 #*********************************************************************/
-#  Utility Script - Local CLI App Runner (Temporary Context)          */
+#  Utility Script - Local CLI App Runner (Temporary Context)         */
 #  Version     : 1.2                                                 */
 #                                                                    */
-# Purpose   : Temporarily swaps CMakeLists to build/run the CLI app   */
+# Purpose   : Temporarily swaps CMakeLists to build/run the CLI app  */
 #              without modifying the main project architecture.      */
-# Location  : backend/CaseConversionAPI/CppLib/Scripts/               */
+# Location  : backend/CaseConversionAPI/CppLib/Scripts/run-local.sh  */
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
@@ -15,57 +15,105 @@
 # 1.1        2026-04-16  Nitish Singh    Added Absolute Path Trap    */
 # 1.2        2026-05-09  Nitish Singh    Optimized for M2 P-Cores    */
 #                                        and enhanced error cleanup. */
+# 1.3       2026-05-16  Nitish Singh     Standardized logging,       */
+#                                        UI consistency & sync logic.*/
 #*********************************************************************/
 
-set -e
+set -euo pipefail
 
-# 1. Path Synchronization
-# Ensures the script can be executed from any directory
+#*********************************************************************/
+# Logging Utilities                                                  */
+#*********************************************************************/
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+timestamp() { date +"%Y-%m-%d %H:%M:%S"; }
+log_info() { echo -e "${BLUE}[$(timestamp)] [INFO]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[$(timestamp)] [WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[$(timestamp)] [ERROR]${NC} $1"; }
+log_success() { echo -e "${GREEN}[$(timestamp)] [SUCCESS]${NC} $1"; }
+
+#*********************************************************************/
+# 1. Environment & Path Synchronization                              */
+#*********************************************************************/
+
+log_info "Synchronizing workspace context..."
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 CPP_ROOT="$SCRIPT_DIR/.."
 cd "$CPP_ROOT"
 
-# 2. Safety Backup & Swap
-echo "===== Swapping to Local App Configuration ====="
 if [ ! -f "CMakeListsLocalApp.txt" ]; then
-    echo "ERROR: CMakeListsLocalApp.txt not found in $CPP_ROOT"
+    log_error "Critical file missing: CMakeListsLocalApp.txt not found in $CPP_ROOT"
     exit 1
 fi
 
-# Create a backup of the DLL-based CMakeLists
+log_success "Workspace synchronized: $(pwd)"
+
+#*********************************************************************/
+# 2. Safety Backup & Context Swap                                    */
+#*********************************************************************/
+
+log_info "Swapping to Local App Configuration..."
+
+# Create a backup of the original C++ library CMakeLists
 cp CMakeLists.txt CMakeLists.txt.bak
-# Overwrite with the Local App version
+
+# Overwrite with the standalone CLI App configuration
 cp CMakeListsLocalApp.txt CMakeLists.txt
 
-# 3. Enhanced Trap Logic
-# The 'EXIT' trap runs regardless of success, failure, or Ctrl+C.
-# Uses absolute paths ($CPP_ROOT) to ensure restoration works even
-# if the script ends while inside the 'build_local' directory.
-trap 'cp "$CPP_ROOT/CMakeLists.txt.bak" "$CPP_ROOT/CMakeLists.txt" && rm "$CPP_ROOT/CMakeLists.txt.bak"; echo "===== Configuration Restored ====="' EXIT
+# --- Safety Trap ---
+# Ensures the original CMakeLists.txt is restored regardless of success or failure
+cleanup() {
+    cp "$CPP_ROOT/CMakeLists.txt.bak" "$CPP_ROOT/CMakeLists.txt"
+    rm "$CPP_ROOT/CMakeLists.txt.bak"
+    log_success "Configuration context restored."
+}
+trap cleanup EXIT
 
-# 4. Build Phase
-echo "===== Building CLI App ====="
-mkdir -p build_local
-cd build_local
+#*********************************************************************/
+# 3. Build Phase (M2 Optimization)                                   */
+#*********************************************************************/
+log_info "===== Building CLI Application ====="
 
-# Identify hardware for parallel compilation (M2 Optimization)
+mkdir -p build_local && cd build_local
+
+# Detect available cores for max performance (M2 P-Cores / Linux nproc)
 NUM_CORES=$(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 1)
 
-# Configure and Build using the temporary CMakeLists.txt
+# Configure with high-performance flags
 cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_PCORES=ON
+log_info "Utilizing $NUM_CORES cores for parallel compilation..."
 cmake --build . --config Release --parallel "$NUM_CORES"
 
-# 5. Execution Phase
+log_success "CLI App built successfully."
+
+#*********************************************************************/
+# 4. Execution Phase                                                 */
+#*********************************************************************/
 echo -e "\n===== Running CLI App (sourcecode.cpp) ====="
-# Run the 'app' binary produced by CMakeListsLocalApp.txt
-if [ -f "./app" ]; then
-    ./app
-elif [ -f "./Release/app" ]; then
-    ./Release/app
+
+APP_BIN=""
+for bin in "./app" "./app.exe" "./Release/app" "./Release/app.exe"; do
+    if [ -f "$bin" ]; then APP_BIN="$bin"; break; fi
+done
+
+if [ -n "$APP_BIN" ]; then
+    $APP_BIN
+    log_success "Execution completed."
 else
-    echo "Error: 'app' binary not found in build_local directory."
+    log_error "Binary 'app' not found. Checking build directory:"
+    ls -R
     exit 1
 fi
 
-# 6. Workspace Restoration
-# Restoration is handled automatically by the 'trap' defined in Section 3.
+#*********************************************************************/
+# 5. Workspace Restoration                                           */
+#*********************************************************************/
+# Navigation back to root: backend/CaseConversionAPI/CppLib/Scripts/
+cd ../../../..
+log_info "Current project root: $(pwd)"
+# Restoration of CMakeLists.txt is handled by the EXIT trap.

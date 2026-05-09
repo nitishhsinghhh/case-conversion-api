@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
 # File      : gh-automate.sh                                         */
-# Version   : 1.5                                                    */
+# Version   : 1.6                                                    */
 #                                                                    */
 # Purpose   : Local PR Automator for standardization and cleanup.    */
 #             Handles branch creation, PR submission, and merging.   */
