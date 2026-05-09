@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
 #  Utility Script - Frontend Development Server                      */
 #  Version     : 1.3                                                 */

@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
 #  Utility Script - Project Scaffolding (Microsoft-Style)            */
 #  Version     : 1.2                                                 */

@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
 #  Utility Script - .NET API Orchestration (Monorepo)                */
 #  Version     : 1.6                                                 */

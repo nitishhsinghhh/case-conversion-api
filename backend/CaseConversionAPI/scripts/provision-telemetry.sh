@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
 #  Utility Script - Telemetry Infrastructure (Jaeger/OTLP)           */
 #  Version     : 1.1                                                 */
