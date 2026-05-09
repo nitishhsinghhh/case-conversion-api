@@ -14,9 +14,9 @@
 # 1.0        2026-04-14  Nitish Singh    Initial Automation Script.  */
 # 1.1        2026-05-09  Nitish Singh    Added architecture sync and */
 #                                        M2 cleanup verification.    */
-# 1.2        2026-06-01  Nitish Singh    Refined manual checkpoint   */
+# 1.2        2026-05-09  Nitish Singh    Refined manual checkpoint   */
 #                                        and added final sync steps. */
-# 1.3        2026-06-10  Nitish Singh    Open PR in browser for CI 
+# 1.3        2026-05-09  Nitish Singh    Open PR in browser for CI 
 #                                        monitoring                  */
 #*********************************************************************/
 
