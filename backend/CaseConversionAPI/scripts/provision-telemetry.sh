@@ -1,6 +1,7 @@
 #!/bin/bash
 #*********************************************************************/
 #  Utility Script - Telemetry Infrastructure (Jaeger/OTLP)            */
+#  Version     : 1.1                                                 */
 #                                                                    */
 # Purpose   : Manages the lifecycle of the Jaeger container for      */
 #             OpenTelemetry trace collection and visualization.      */
@@ -8,10 +9,11 @@
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date          Author           Description              */
+# Version    Date           Author           Description              */
 # ------------------------------------------------------------------ */
-# 1.0        2026-04-18    Nitish Singh     Initial implementation of*/
-#                                           telemetry orchestration. */
+# 1.0        2026-04-18     Nitish Singh     Initial implementation. */
+# 1.1        2026-05-09     Nitish Singh     Added explicit version  */
+#                                            tag to header.          */
 #*********************************************************************/
 
 CONTAINER_NAME="jaeger"

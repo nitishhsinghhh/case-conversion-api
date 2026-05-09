@@ -1,16 +1,19 @@
 #!/bin/bash
 #*********************************************************************/
-#  Utility Script - Frontend Scaffolding (Vite/TypeScript)            */
+#  Utility Script - Frontend Scaffolding (Vite/TypeScript)           */
+#  Version     : 1.1                                                 */
 #                                                                    */
-# Purpose   : Generates the directory hierarchy and boilerplate for   */
-#             the Vite-based TypeScript frontend application.         */
-# Location  : scripts/scaffold-frontend.sh                            */
+# Purpose   : Generates the directory hierarchy and boilerplate for  */
+#              the Vite-based TypeScript frontend application.       */
+# Location  : scripts/scaffold-frontend.sh                           */
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
 # Version    Date         Author           Description               */
 # ------------------------------------------------------------------ */
 # 1.0        2026-04-28   Nitish Singh     Initial UI Template       */
+# 1.1        2026-05-09   Nitish Singh     Added explicit versioning */
+#                                          to match monorepo style.  */
 #*********************************************************************/
 
 # Exit immediately if a command fails

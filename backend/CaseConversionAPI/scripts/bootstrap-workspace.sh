@@ -1,16 +1,19 @@
 #!/bin/bash
 #*********************************************************************/
 #  Utility Script - Project Scaffolding (Microsoft-Style)            */
+#  Version     : 1.2                                                 */
 #                                                                    */
-# Purpose   : Generates the monorepo hierarchy for C++ and .NET.     */
-# Location  : scripts/create_structure.sh                            */
+# Purpose   : Generates the monorepo hierarchy for C++ and .NET.      */
+# Location  : scripts/create_structure.sh                             */
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
 # Version    Date        Author          Description                 */
 # ------------------------------------------------------------------ */
-# 1.0        2026-04-14  Nitish Singh    Initial Structure Template  */
-# 1.1        2026-04-16  Nitish Singh    Added Version Header        */
+# 1.0        2026-04-14  Nitish Singh    Initial Structure Template   */
+# 1.1        2026-04-16  Nitish Singh    Added Version Header         */
+# 1.2        2026-05-09  Nitish Singh    Explicit versioning and      */
+#                                        M2 project alignment.       */
 #*********************************************************************/
 
 set -e
@@ -58,3 +61,5 @@ touch $ROOT/scripts/create_structure.sh
 
 touch $ROOT/README.md
 touch $ROOT/CMakeLists.txt
+
+echo "===== Scaffolding Complete for $ROOT ====="

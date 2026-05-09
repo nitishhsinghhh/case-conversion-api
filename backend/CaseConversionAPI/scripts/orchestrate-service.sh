@@ -1,6 +1,7 @@
 #!/bin/bash
 #*********************************************************************/
 #  Utility Script - .NET API Orchestration (Monorepo)                */
+#  Version     : 1.6                                                 */
 #                                                                    */
 # Purpose   : Manages the lifecycle (Restore, Build, Publish, Run)   */
 #              of the .NET 8 REST API within the monorepo context.   */
@@ -17,6 +18,8 @@
 # 1.3        2026-04-16  Nitish Singh    Added Native Dylib Sync     */
 # 1.4        2026-04-16  Nitish Singh    Fixed naming prefix mismatch*/
 # 1.5        2026-04-16  Nitish Singh    Added Port Cleanup logic    */
+# 1.6        2026-05-09  Nitish Singh    Added M2 P-Core DYLD path   */
+#                                        export and versioning.      */
 #*********************************************************************/
 
 # Exit immediately if any command fails
@@ -75,19 +78,27 @@ if [ -z "$SRC_LIB" ]; then
     exit 1
 fi
 
+# Use absolute path for DYLD resolution on macOS
+ABS_BIN_DIR="$(pwd)/$BIN_DIR"
+
 # Copy both with and without 'lib' prefix to satisfy P/Invoke across different environments
-cp "$SRC_LIB" "$BIN_DIR/libProcessStringDLL.dylib"
-cp "$SRC_LIB" "$BIN_DIR/ProcessStringDLL.dylib"
+cp "$SRC_LIB" "$ABS_BIN_DIR/libProcessStringDLL.dylib"
+cp "$SRC_LIB" "$ABS_BIN_DIR/ProcessStringDLL.dylib"
+
+# Export library path for the current shell session to ensure the native engine is found
+export DYLD_LIBRARY_PATH="$ABS_BIN_DIR:$DYLD_LIBRARY_PATH"
 
 echo "Synced: $SRC_LIB -> $BIN_DIR/"
+echo "Architecture Check:"
+file "$ABS_BIN_DIR/libProcessStringDLL.dylib"
 
 # -------------------------------
 # 5. Publish the project
 # -------------------------------
 echo -e "\n===== Publishing project ====="
 dotnet publish -c Release -o ../../../publish
-cp "$BIN_DIR/libProcessStringDLL.dylib" ../../../publish/
-cp "$BIN_DIR/ProcessStringDLL.dylib" ../../../publish/
+cp "$ABS_BIN_DIR/libProcessStringDLL.dylib" ../../../publish/
+cp "$ABS_BIN_DIR/ProcessStringDLL.dylib" ../../../publish/
 
 # -------------------------------
 # 6. Run the API

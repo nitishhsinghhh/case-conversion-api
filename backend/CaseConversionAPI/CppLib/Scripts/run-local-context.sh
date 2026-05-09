@@ -1,8 +1,9 @@
 #!/bin/bash
 #*********************************************************************/
 #  Utility Script - Local CLI App Runner (Temporary Context)          */
+#  Version     : 1.2                                                 */
 #                                                                    */
-# Purpose   : Temporarily swaps CMakeLists to build/run the CLI app  */
+# Purpose   : Temporarily swaps CMakeLists to build/run the CLI app   */
 #              without modifying the main project architecture.      */
 # Location  : backend/CaseConversionAPI/CppLib/Scripts/               */
 #                                                                    */
@@ -12,6 +13,8 @@
 # ------------------------------------------------------------------ */
 # 1.0        2026-04-16  Nitish Singh    Initial Swap Logic Script   */
 # 1.1        2026-04-16  Nitish Singh    Added Absolute Path Trap    */
+# 1.2        2026-05-09  Nitish Singh    Optimized for M2 P-Cores    */
+#                                        and enhanced error cleanup. */
 #*********************************************************************/
 
 set -e
@@ -24,6 +27,11 @@ cd "$CPP_ROOT"
 
 # 2. Safety Backup & Swap
 echo "===== Swapping to Local App Configuration ====="
+if [ ! -f "CMakeListsLocalApp.txt" ]; then
+    echo "ERROR: CMakeListsLocalApp.txt not found in $CPP_ROOT"
+    exit 1
+fi
+
 # Create a backup of the DLL-based CMakeLists
 cp CMakeLists.txt CMakeLists.txt.bak
 # Overwrite with the Local App version
@@ -40,15 +48,20 @@ echo "===== Building CLI App ====="
 mkdir -p build_local
 cd build_local
 
+# Identify hardware for parallel compilation (M2 Optimization)
+NUM_CORES=$(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 1)
+
 # Configure and Build using the temporary CMakeLists.txt
-cmake .. -DCMAKE_BUILD_TYPE=Release
-cmake --build . --config Release
+cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_PCORES=ON
+cmake --build . --config Release --parallel "$NUM_CORES"
 
 # 5. Execution Phase
 echo -e "\n===== Running CLI App (sourcecode.cpp) ====="
 # Run the 'app' binary produced by CMakeListsLocalApp.txt
 if [ -f "./app" ]; then
     ./app
+elif [ -f "./Release/app" ]; then
+    ./Release/app
 else
     echo "Error: 'app' binary not found in build_local directory."
     exit 1

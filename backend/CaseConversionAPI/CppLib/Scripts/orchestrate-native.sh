@@ -1,9 +1,10 @@
 #!/bin/bash
 #*********************************************************************/
-#  Utility Script - C++ Core Orchestration (Monorepo)                 */
+#  Utility Script - C++ Core Orchestration (Monorepo)                */
+#  Version     : 1.4                                                 */
 #                                                                    */
-# Purpose   : Configures, builds, and executes C++ logic & tests.     */
-# Location  : backend/CaseConversionAPI/CppLib/Scripts/run.sh         */
+# Purpose   : Configures, builds, and executes C++ logic & tests.    */
+# Location  : backend/CaseConversionAPI/CppLib/Scripts/run.sh        */
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
@@ -13,6 +14,8 @@
 # 1.1        2026-04-15  Nitish Singh    Updated for /backend path   */
 # 1.2        2026-04-16  Nitish Singh    Added Dynamic Path Sync     */
 # 1.3        2026-05-02  Nitish Singh    Added Matrix OS Support     */
+# 1.4        2026-05-09  Nitish Singh    Enhanced M2 P-Core detection*/
+#                                        and script versioning.      */
 #*********************************************************************/
 
 set -euo pipefail
@@ -44,7 +47,8 @@ CMAKE_ARGS=("-DCMAKE_BUILD_TYPE=Release")
 
 if [[ "$OS_TARGET" == *"macos"* ]]; then
   echo "Setting up Apple Silicon / macOS optimization..."
-  CMAKE_ARGS+=("-DARCH_ARM64=ON" "-DUSE_PCORES=ON")
+  # Explicitly targeting M2 performance cores where available
+  CMAKE_ARGS+=("-DARCH_ARM64=ON" "-DUSE_PCORES=ON" "-DCMAKE_OSX_ARCHITECTURES=arm64")
   
 elif [[ "$OS_TARGET" == *"ubuntu"* || "$OS_TARGET" == *"linux"* ]]; then
   echo "Setting up Linux / GCC optimization..."
@@ -108,6 +112,7 @@ fi
 # -------------------------------
 # 6. Workspace Restoration
 # -------------------------------
+# Navigation back to the root based on the defined location: backend/CaseConversionAPI/CppLib/Scripts/
 cd ../../../..
 
 echo -e "\n===== Completed. Back in project root: $(pwd) ====="
