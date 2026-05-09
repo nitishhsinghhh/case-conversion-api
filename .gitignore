@@ -104,5 +104,4 @@ docker-compose.override.yml
 // Solution files should not be ignored as they are essential for the .NET project structure
 *word-case-api.sln
 
-scripts/gh-automate.sh
 scripts/command.txt
