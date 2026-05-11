@@ -53,20 +53,17 @@ jobs:
 
       - name: Delete Old Caches
         run: |
-
           command -v jq >/dev/null 2>&1 || { echo >&2 "FATAL: jq required but not found; aborting."; exit 1; }
           command -v gh >/dev/null 2>&1 || { echo >&2 "FATAL: gh CLI required but not found; aborting."; exit 1; }
 
           REPO=${{ github.repository }}
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-          # Structured Logging Function
           log_event() {
             local level=$1
             local message=$2
             local cache_key=$3
             local age=$4
-            
             jq -n \
               --arg ts "$TIMESTAMP" \
               --arg repo "$REPO" \
@@ -79,23 +76,23 @@ jobs:
 
           echo "Fetching cache list for $REPO..."
           
-          # Fetch cache list in JSON format
-          gh actions-cache list -R $REPO --limit 100 --json key,lastAccessedAt > caches.json
+          # gh actions-cache list outputs: ID  KEY  STATUS  SIZE  CREATED_AT  LAST_ACCESSED_AT
+          # We skip the header and grab Key ($2) and Last Accessed ($6)
+          gh actions-cache list -R $REPO --limit 100 | tail -n +2 | while read -r line; do
+            # Extract KEY and LAST_USED using awk for reliable column splitting
+            KEY=$(echo "$line" | awk '{print $2}')
+            LAST_USED=$(echo "$line" | awk '{print $6}')
 
-          # Use jq to iterate safely through the JSON data
-          # jq is pre-installed on ubuntu-latest
-          jq -r '.[] | "\(.key) \(.lastAccessedAt)"' caches.json | while read -r KEY LAST_USED; do
-            
-            # Convert ISO 8601 timestamp to Epoch
-            LAST_USED_TS=$(date -d "$LAST_USED" +%s || echo 0)
+            # Safety check: skip if variables are empty
+            [[ -z "$KEY" || -z "$LAST_USED" ]] && continue
+
+            LAST_USED_TS=$(date -d "$LAST_USED" +%s 2>/dev/null || echo 0)
             NOW_TS=$(date +%s)
             
-            # Calculate Age in Days
             AGE=$(( (NOW_TS - LAST_USED_TS) / 86400 ))
 
             if [ "$AGE" -gt 7 ]; then
               log_event "INFO" "Deleting stale cache" "$KEY" "$AGE"
-              # Added '|| true' so the loop doesn't crash if a cache was already deleted
               gh actions-cache delete "$KEY" -R $REPO --confirm || true
             else
               log_event "DEBUG" "Skipping active cache" "$KEY" "$AGE"
