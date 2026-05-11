@@ -17,7 +17,7 @@
 #               You may obtain a copy of the License at              */
 #               http://www.apache.org/licenses/LICENSE-2.0           */
 #                                                                    */
-# AUTHOR       : Nitish Singh (nitishhsinghhh)                       */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
 # CONTACT     : me.singhnitish@yandex.com                            */
 #                                                                    */
 # REVISION HISTORY:                                                  */
@@ -25,9 +25,9 @@
 # Ver  Date        Author          Description                       */
 # ---  ----------  --------------  --------------------------------- */
 # 1.0  2026-05-03  Nitish Singh    Initial Implementation            */
-# 1.1  2026-05-11  Nitish Singh    Migrated to JSON parsing/JQ to    */
-#                                  resolve col-alignment date bugs.  */
-# 1.2  2026-05-11  Nitish Singh    Updated Trigger Logic             */
+# 1.1  2026-05-11  Nitish Singh    Migrated to AWK parsing to        */
+#                                  resolve --json compatibility bugs.*/
+# 1.2  2026-05-11  Nitish Singh    Updated Trigger Logic & Anchors   */
 #*********************************************************************/
 
 name: Cache Cleanup
@@ -39,7 +39,7 @@ on:
 
   push:
     paths: &pathClean
-      - '.github/workflows/cache-cleanup.yml' # Triggers on changes to this file
+      - '.github/workflows/cache-cleanup.yml' 
   pull_request:
     paths: *pathClean
 
@@ -60,12 +60,14 @@ jobs:
 
       - name: Delete Old Caches
         run: |
-          command -v jq >/dev/null 2>&1 || { echo >&2 "FATAL: jq required but not found; aborting."; exit 1; }
-          command -v gh >/dev/null 2>&1 || { echo >&2 "FATAL: gh CLI required but not found; aborting."; exit 1; }
+          # Dependency Check
+          command -v jq >/dev/null 2>&1 || { echo >&2 "FATAL: jq required; aborting."; exit 1; }
+          command -v gh >/dev/null 2>&1 || { echo >&2 "FATAL: gh CLI required; aborting."; exit 1; }
 
           REPO=${{ github.repository }}
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
+          # Structured Logging Function 
           log_event() {
             local level=$1
             local message=$2
@@ -81,21 +83,20 @@ jobs:
               '{timestamp: $ts, repository: $repo, level: $lvl, message: $msg, cache_key: $key, age_days: $age}' -c
           }
 
-          echo "Fetching cache list for $REPO..."
-          
-          # gh actions-cache list outputs: ID  KEY  STATUS  SIZE  CREATED_AT  LAST_ACCESSED_AT
-          # We skip the header and grab Key ($2) and Last Accessed ($6)
+          echo "Fetching cache list for $REPO..." 
+
           gh actions-cache list -R $REPO --limit 100 | tail -n +2 | while read -r line; do
-            # Extract KEY and LAST_USED using awk for reliable column splitting
+            
+            # Using awk for reliable column extraction regardless of whitespace variation
             KEY=$(echo "$line" | awk '{print $2}')
             LAST_USED=$(echo "$line" | awk '{print $6}')
 
-            # Safety check: skip if variables are empty
+            # Safety check: skip if extraction failed
             [[ -z "$KEY" || -z "$LAST_USED" ]] && continue
 
+            # Convert to Epoch and calculate delta
             LAST_USED_TS=$(date -d "$LAST_USED" +%s 2>/dev/null || echo 0)
             NOW_TS=$(date +%s)
-            
             AGE=$(( (NOW_TS - LAST_USED_TS) / 86400 ))
 
             if [ "$AGE" -gt 7 ]; then
