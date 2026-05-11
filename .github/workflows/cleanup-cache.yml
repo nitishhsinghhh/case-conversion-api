@@ -2,7 +2,7 @@
 # SYSTEM      : GitHub Actions Infrastructure                        */
 # SUBSYSTEM   : CI/CD Resource Management                            */
 # COMPONENT   : stale-cache-cleanup                                  */
-# VERSION     : 1.1                                                  */
+# VERSION     : 1.2                                                  */
 #                                                                    */
 # DESCRIPTION : Automatically purges GitHub Actions caches older     */
 #               than 7 days. Ensures the 10GB repository limit is    */
@@ -27,6 +27,7 @@
 # 1.0  2026-05-03  Nitish Singh    Initial Implementation            */
 # 1.1  2026-05-11  Nitish Singh    Migrated to JSON parsing/JQ to    */
 #                                  resolve col-alignment date bugs.  */
+# 1.2  2026-05-11  Nitish Singh    Updated Trigger Logic             */
 #*********************************************************************/
 
 name: Cache Cleanup
@@ -35,6 +36,12 @@ on:
   schedule:
     - cron: '30 18 * * *' # Midnight IST (18:30 UTC)
   workflow_dispatch: {}
+
+  push:
+    paths: &pathClean
+      - '.github/workflows/cache-cleanup.yml' # Triggers on changes to this file
+  pull_request:
+    paths: *pathClean
 
 permissions:
   actions: write    
