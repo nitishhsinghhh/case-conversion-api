@@ -35,7 +35,7 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
 * [System Architecture](#system-architecture)
 * [Governance and Decision Tracking](#governance-and-decision-tracking)
 * [CI/CD & Deployment Pipeline](#cicd--deployment-pipeline)
-* [Horizontal Scaling and Orchestration](#horizontal-scaling-and-orchestration)
+* [Infrastructure Maintenance](#infrastructure-maintenance)
 * [Technical Documentation](#technical-documentation)
 * [Components](#components)
   * [1. Core Logic: Native Conversion Engine](#1-core-logic-native-conversion-engine)
@@ -49,25 +49,28 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
   * [5. Hardware-Specific Optimization (Apple M2)](#5-hardware-specific-optimization-apple-m2)
   * [6. Reliability and Fault Tolerance](#6-reliability-and-fault-tolerance)
   * [7. Memory Sovereignty and The Interop Lifecycle](#7-memory-sovereignty-and-the-interop-lifecycle)
-  * [8. Performance Benchmarks (1.5M Request Stress Test)](#8-performance-benchmarks-15m-request-stress-test)
+  * [8. Performance Benchmarks and Engineering Insights](#8-performance-benchmarks-and-engineering-insights)
+    * [Key Performance Drivers](#key-performance-drivers)
 * [Quick Start](#quick-start)
   * [Run the Load-Balanced Cluster](#run-the-load-balanced-cluster)
-* [Technical Significance](#technical-significance)
 * [Project Timeline and Roadmap](#project-timeline-and-roadmap)
 * [Release and Versioning](#release-and-versioning)
-* [Summary](#summary)
 
 ---
 
 ## System Architecture
 
-The architecture addresses the inherent challenges of exposing unmanaged performance logic to a managed web stack. It adheres to a Strict Separation of Concerns through three primary tiers:
+This project is built to safely expose high-performance C++ logic to a managed .NET web stack. We focus on a Strict Separation of Concerns to keep the native code fast and the web layer stable.
 
-* The Core: A C++17 engine utilizing the Strategy and Factory patterns for extensible string processing.
-* The Bridge: A custom C-style ABI wrapper with explicit memory ownership management (allocate/free contract).
-* The Gateway: A .NET 8 REST API utilizing Dynamic P/Invoke via NativeLibrary for platform-agnostic service execution.
-* The UI: A type-safe React/TypeScript frontend built on Vite for sub-second developer turnaround.
-* The DevOps: A multi-stage Docker orchestration supporting Artifact Promotion (Dev → Staging → Prod) to ensure environmental parity.
+* The Engine (C++17): This is our performance core. It uses Strategy and Factory patterns so we can add new processing logic without touching the core engine.
+
+* The Bridge (C-style ABI): Since .NET can't talk to C++ classes directly, we built a custom wrapper. It defines a clear memory contract (who allocates, who frees) to prevent memory leaks across the native-managed boundary.
+
+* The Gateway (.NET 8): Our REST API layer. We use Dynamic P/Invoke to load the native engine at runtime, making the service platform-agnostic and easy to swap out.
+
+* The Frontend (React/TS): A type-safe UI built on Vite. We prioritized sub-second reload times to keep the frontend development loop as fast as the backend.
+
+* The Pipeline (Docker): A multi-stage orchestration that handles Artifact Promotion. We build the binary once and move it from Dev to Prod to ensure that what we tested is exactly what we ship.
 
 ![alt text](assets/API.png)
 
@@ -84,7 +87,6 @@ This project follows a strict **Architectural Decision Log (ADL)** to document t
 * **Interop Strategy (ADR 001):** In-process **P/Invoke** selected over gRPC/Sockets to achieve sub-microsecond in-process latency.
 * **Memory Safety (ADR 002):** **Callee-Allocated** contract ensures C++ governs buffer creation while .NET handles lifecycle disposal via exported `free` delegates.
 * **Hardware Alignment (ADR 003):** Threading model explicitly tuned for **Apple M2 P-Core saturation**, avoiding efficiency core overhead.
-* **Performance (ADR 013):** Implemented **SustainedLowLatency GC** to eliminate tail-latency spikes during 1M+ request stress tests.
 
 ---
 
@@ -118,20 +120,6 @@ graph TD
 
 ---
 
-## Horizontal Scaling and Orchestration
-
-To achieve a sustained 2,800+ req/s, the system utilizes an NGINX Layer 7 Load Balancer to distribute traffic across a pool of isolated .NET replicas.
-
-Strategy: Round-Robin distribution across 4 performance-tuned containers.
-
-Optimization: Configured to saturate the Apple M2 P-Core architecture.
-
-Resilience: Automatic failover and connection pooling to mitigate "Stop-the-World" GC pauses.
-
-[Read the Load Balancing & Orchestration Guide →](docs/LoadBalancer/LOAD_BALANCER.md)
-
----
-
 ## Technical Documentation
 
 | Document                                                  | Focus                                              | Target Audience        |
@@ -142,6 +130,24 @@ Resilience: Automatic failover and connection pooling to mitigate "Stop-the-Worl
 | [Release Process](docs/releases/RELEASING.md)             | SemVer logic & Hardware optimization               | Release Managers       |
 | [Load Balancer Guide](docs/LoadBalancer/LOAD_BALANCER.md) | NGINX Layer 7 routing, scaling, and orchestration  | SREs / Devs            |
 | [DLL Internals](docs/DLL_INTERNALS/README.md)             | Native interop, DLL lifecycle, and memory model    | Systems / Backend Engs |
+
+---
+
+## Infrastructure Maintenance
+
+We’ve automated our cache cleanup to stay under GitHub’s 10GB limit and keep our C++ and .NET builds fast.
+
+### Stale Cache Purge
+
+* **The Rule:** If a cache hasn't been touched in 7 days, it’s gone. This keeps our storage fresh.
+
+* **The "Why":** Our build artifacts are huge. If we don't clean them up ourselves, GitHub will start randomly killing active caches when we hit the limit, which slows everyone down. This script lets us control that.
+
+* **When it runs:** Daily at 18:30 UTC (Midnight IST). We chose this time because nobody is usually pushing code then, so it won’t interfere with active work.
+
+* **Tracking:** The script outputs JSON logs. This makes it easy to see exactly what happened in the GitHub logs, and it's ready to be plugged into a dashboard if we ever need to audit our storage savings.
+
+* **Operational Status:** ![Cache Cleanup](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/cleanup-cache.yml?branch=main&label=Cache%20Management&style=flat-square)
 
 ---
 
@@ -199,8 +205,6 @@ In a high-throughput REST environment, thread-safety is paramount. The integrati
 
 * RAII (Resource Acquisition Is Initialization): Employed in C++ to manage internal resources and in C# via IDisposable to ensure native library handles are released.
 
-Note on Thread-Safety: The native C++ engine is designed to be Stateless and Thread-Safe, allowing the .NET pool to safely execute concurrent P/Invoke calls without shared-state contention.
-
 ### 3. Defensive Interop Design
 
 The bridge between .NET 8 and C++17 is engineered as a "Safe Harbor." The system ensures that native failures never crash the managed process by implementing a multi-tiered error trap.
@@ -211,9 +215,7 @@ The bridge between .NET 8 and C++17 is engineered as a "Safe Harbor." The system
 
 ### 4. Telemetry & Observability
 
-Integrated OpenTelemetry (OTLP) for end-to-end distributed tracing. W3C Trace IDs are propagated into the C++ layer to correlate native logs with specific REST requests.
-
-Every error returned by the native layer is tagged with the provided traceId. If the factory fails to create a strategy or an allocation fails, the error is correlated in the Jaeger/OpenTelemetry dashboard for immediate root-cause analysis.
+Integrated OpenTelemetry (OTLP) for end-to-end distributed tracing. W3C Trace IDs are propagated into the C++ layer, ensuring that every native error, factory failure, or allocation exception is correlated in the Jaeger dashboard for immediate root-cause analysis.
 
 ```Bash
 # Start the Jaeger collector and UI
@@ -274,37 +276,40 @@ The .NET 8 layer acts as the ultimate orchestrator of the memory lifecycle.
 
 * Deterministic Disposal: All native calls are wrapped in try-finally blocks (or SafeHandle patterns) to ensure the exported freeString function is invoked, preventing Resident Set Size (RSS) bloat in the containerized environment.
 
-* Technical Significance: This hierarchy solves the "Double-Delete" problem. C++ manages the object lifetime, while C# manages the buffer lifetime after the hand-off.
-
 Engineering Insight: This architecture eliminates the "Double-Delete" risk. C++ governs the object state, while C# governs the result buffer after the native execution context has exited.
 
-### 8. Performance Benchmarks (1.5M Request Stress Test)
-
-| Iterations | VUs | RPS    | p95 Latency  | Status                                      |
-|------------|-----|--------|--------------|---------------------------------------------|
-| 1,000      | 4   | 4,526  | 1.82ms       | Baseline: Perfect core alignment            |
-| 100,000    | 8   | 7,242  | 2.66ms       | Peak Efficiency: Full hardware saturation   |
-| 1,500,000  | 100 | 7,067  | 41.0ms       | Endurance: Long-duration stability          |
-
-#### High-Speed Criteria
-
-* The 60-Second Sprint: The engine successfully processed ~425,000 requests in under 60 seconds, demonstrating its ability to handle sudden, massive traffic spikes without degradation.
-
-* The 10-Minute Endurance: Even with a 1.5M request load (the "Millionaire Milestone"), the engine finished in 3.6 minutes—well under the 10-minute industrial benchmark—maintaining a 100% success rate.
-
-#### Key Engineering Insights
-
-* Hardware "Sweet Spot" (8 VUs): Maximum throughput aligns perfectly with the 8 physical cores of the M2. Beyond 8 VUs, context*switching overhead causes a latency plateau.
-
-* Real-World Capacity: At a sustained 7,067 RPS, a single M2 instance supports ~35,300 concurrent human users (based on a 5s industry-standard "think time").
-
-* Zero-Failure Reliability: Maintained a 100% success rate across 3 million+ total requests, proving the stability of the C++/C# memory bridge under extreme contention.
-
-* Elite Latency: Average response time (1.13ms) is 40x faster than a human blink, with 95% of requests remaining "instant" (<50ms) even under 100-thread load.
-
-**Temporal Density:** The engine achieves a Data Density of ~425k operations per minute. In a production context, this allows for near-real-time ETL processing without the overhead of a distributed Spark/Flink cluster.
-
 [↑ Back to Top](#high-performance-string-processing-a-polyglot-architecture)
+
+### 8. Performance Benchmarks and Engineering Insights
+
+This engine is designed for high-density processing, achieving a "Millionaire Milestone" (1.5M requests) with zero performance decay. The following results were captured on an Apple M2 (8-Core, 8GB Unified Memory).
+
+| Load Profile    | Iterations | VUs | Throughput    | p95 Latency  | Operational Status              |
+|-----------------|------------|-----|---------------|--------------|---------------------------------|
+| Cold Start      | 100        | 1   | ~1,200 RPS    | < 1ms        | JIT & Memory Initialization     |
+| Baseline        | 1,000      | 4   | 4,526 RPS     | 1.82ms       | Perfect P-Core alignment        |
+| Peak Efficiency | 100,000    | 8   | 7,242 RPS     | 2.66ms       | Full Hardware Saturation        |
+| Endurance       | 1,500,000  | 100 | 7,067 RPS     | 41.0ms       | Long-duration stability         |
+
+#### Key Performance Drivers
+
+* Core Scaling Efficiency:
+Scaling from 4 to 8 VUs yielded a 44% throughput increase, validating that the system successfully saturates the M2's physical cores without the scheduling overhead typically seen in managed environments.
+
+* Zero-Failure Reliability:
+Maintained a 100% success rate across 3 million+ total requests. The stable Resident Set Size (RSS) during the 1.5M iteration run proves the Native RAII and Interop Lifecycle management are production-grade.
+
+* Real-World User Capacity:
+At a sustained 7,067 RPS, a single instance supports ~35,300 concurrent human users (based on a 5s industry-standard "think time"). This provides the data density of a distributed cluster within a single optimized process.
+
+* Sustained Velocity:
+High-frequency processing maintained a peak average response time of 1.13ms. Even under extreme stress (100 VUs), the p95 remained at 41ms—well within the "instant" perception threshold (<100ms) and roughly 10x faster than a human blink.
+
+* Engineering Insight: While the total environment spans 194k lines, 60% of the authored logic resides in the C++ engine. This commitment to custom native algorithms ensures long-term ABI stability and eliminates the overhead typical of managed-language string processing.
+
+Temporal Density: The engine achieves a sustained processing density of ~424k operations per minute, scaling to a ~434k peak during high-concurrency bursts. This throughput enables near-real-time ETL workflows on consumer-grade hardware.
+
+[View Full Performance Logs & Scaling Data](ITERATIONS/README.md)
 
 ---
 
@@ -326,17 +331,7 @@ To support massive horizontal scaling, the system utilizes an NGINX Reverse Prox
 
 * Latency Smoothing: By distributing requests, the P(95) latency is stabilized at 56ms, significantly reducing the "Tail Latency" spikes caused by parallel Garbage Collection events in managed memory.
 
----
-
-### Technical Significance
-
-* Leak-Proof Architecture: Stable Resident Set Size (RSS) proves the manual memory management and RAII patterns in the C++ layer are production-grade.
-
-* Sustained Throughput: Maintaining an average latency of 0.45ms over a quarter-million requests proves there is no performance decay or "warm-up" penalty in the native bridge.
-
-* Hardware Efficiency: Optimized for Apple Silicon (arm64), leveraging unified memory to minimize data copy overhead during managed-to-unmanaged transitions.
-
-**Engineering Insight:** While the total project environment spans 194k lines, the architecture is anchored by a massive native C++ engine representing 60% of the authored functional logic. This reflects a strategic commitment to custom, high-performance algorithms over off-the-shelf libraries, ensuring maximum execution efficiency and long-term ABI stability.
+[Read the Load Balancing & Orchestration Guide →](docs/LoadBalancer/LOAD_BALANCER.md)
 
 ---
 
@@ -364,9 +359,3 @@ Artifact Promotion: We use a "Build Once, Promote Anywhere" strategy to maintain
 Traceability: Every release is tagged and accompanied by a detailed Architectural Decision Log entry.
 
 [Read the Full Release & Versioning Guide →](docs/releases/RELEASING.md)
-
----
-
-## Summary
-
-Developed a cross-platform string conversion ecosystem utilizing a high-performance C++17 engine integrated into a .NET 8 microservice via P/Invoke. Engineered a Zero-Leak memory management policy across the ABI boundary and implemented a multi-stage Docker CI/CD pipeline supporting immutable artifact promotion across Dev, Staging, and Production environments.
