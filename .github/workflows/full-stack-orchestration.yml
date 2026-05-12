@@ -1,41 +1,57 @@
 #*********************************************************************/
-#  CI Pipeline - Full Stack Project (Core, API, & Frontend)          */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Full Stack Project (Core, API, & Frontend)           */
+# COMPONENT   : full-stack-publish-pipeline                          */
+# VERSION     : 1.7                                                  */
 #                                                                    */
-# Purpose   : Orchestrates multi-platform builds and automates       */
-#             Docker distribution to GitHub Packages (GHCR).         */
-# Trigger   : Push to main                                           */
-# Runtime   : Matrix Build (Linux, Win, macOS) + Docker Publish      */
+# DESCRIPTION : Orchestrates multi-platform builds and automates     */
+#               Docker distribution to GitHub Packages (GHCR).       */
+#               Synchronizes native binary artifacts with the .NET   */
+#               managed layer for immutable container versioning.    */
 #                                                                    */
-# Notes     : - Synchronizes ABI artifacts (DLL/SO/DYLIB) with .NET. */
-#             - Automates immutable container versioning to GHCR.    */
-#             - Optimized for parallel matrix execution.             */
+# SIDE EFFECTS: Publishes images to GHCR. Triggers parallel matrix   */
+#               execution across Linux, Windows, and macOS.          */
 #                                                                    */
-# Revision History:                                                  */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0-1.3    2026-04-16  Nitish Singh    Initial Setup & Monorepo    */
-#                                         Optimization               */
-# 1.4-1.5    2026-04-22  Nitish Singh    Added Docker GHCR &         */
-#                                         Context Fixes              */
-# 1.6        2026-04-24  Nitish Singh    Standardized Header &       */
-#                                         Naming                     */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-16  Nitish Singh     Initial Setup & Monorepo Opt     */
+# 1.4  2026-04-22  Nitish Singh     Added Docker GHCR & Context Fix  */
+# 1.6  2026-04-24  Nitish Singh     Standardized Header & Naming     */
+# 1.7  2026-05-12  Nitish Singh     Refactored Header & Log Logic    */
 #*********************************************************************/
 
 name: "Full Stack Build & Container Publish"
 
 on:
   push:
-    branches: [main]
+    branches: ["main"]
+    paths: &shared_paths
+      - 'backend/CaseConversionAPI/CppLib/**'
+      - 'backend/CaseConversionAPI/DotNetAPI/**'
+      - '.github/workflows/full-stack-orchestration.yml'
+  pull_request:
+    branches: ["main"]
+    paths: *shared_paths
 
 permissions:
   contents: read
   packages: write
 
 jobs:
-  # ======================================================
+  # ------------------------------------------------------------
   # JOB 1: NATIVE ENGINE & MANAGED API (ABI BRIDGE)
-  # ======================================================
+  # ------------------------------------------------------------
+
   build-dll-api:
     strategy:
       fail-fast: false
@@ -48,6 +64,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Initialize Workflow Logs
+        shell: bash
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg os "${{ matrix.os }}" \
+            '{timestamp: $ts, event: "COMPILATION_START", runner: $os, layer: "polyglot-bridge"}' -c
+
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1.14
         with:
@@ -57,7 +82,7 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y build-essential
 
-      # --- Native Layer (C++) ---
+      # Native Layer (C++17)
       - name: Configure DLL (Unix)
         if: runner.os != 'Windows'
         run: |
@@ -77,7 +102,7 @@ jobs:
       - name: Build DLL
         run: cmake --build backend/CaseConversionAPI/CppLib/build_dll --config Release --parallel
 
-      # --- Managed Layer (.NET 8) ---
+      # Managed Layer (.NET 8)
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -88,7 +113,7 @@ jobs:
           dotnet restore backend/CaseConversionAPI/DotNetAPI
           dotnet publish backend/CaseConversionAPI/DotNetAPI -c Release -o ./publish
 
-      # --- ABI Bridge (Artifact Injection) ---
+      # ABI Bridge (Artifact Injection)
       - name: Inject Native Artifacts
         shell: bash
         run: |
@@ -99,6 +124,7 @@ jobs:
           elif [ "${{ runner.os }}" == "Windows" ]; then
             find backend/CaseConversionAPI/CppLib/build_dll -name "ProcessStringDLL.dll" -exec cp {} ./publish/ \;
           fi
+          echo "{\"event\": \"ABI_SYNC_COMPLETE\", \"os\": \"${{ matrix.os }}\"}"
 
       - name: Upload API + DLL artifact
         uses: actions/upload-artifact@v4
@@ -106,9 +132,10 @@ jobs:
           name: DotNetAPI-${{ matrix.os }}
           path: ./publish/
 
-  # ======================================================
+  # ------------------------------------------------------------
   # JOB 2: FRONTEND VALIDATION
-  # ======================================================
+  # ------------------------------------------------------------
+
   build-frontend:
     runs-on: ubuntu-latest
     steps:
@@ -129,9 +156,10 @@ jobs:
           name: Frontend-Static-Assets
           path: frontend/dist/
 
-  # ======================================================
+  # ------------------------------------------------------------
   # JOB 3: DOCKER DISTRIBUTION (GHCR)
-  # ======================================================
+  # ------------------------------------------------------------
+    
   publish-docker:
     needs: [build-dll-api]
     runs-on: ubuntu-latest
@@ -143,7 +171,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: DotNetAPI-ubuntu-latest
-          path: ./publish # Keeps consistency with the Dockerfile's expectations
+          path: ./publish
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -162,3 +190,12 @@ jobs:
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:v3.0.0
             ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      - name: Finalize Status
+        if: always()
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg st "${{ job.status }}" \
+            '{timestamp: $ts, event: "DOCKER_GHCR_PUBLISH", status: $st}' -c

@@ -1,24 +1,32 @@
 #*********************************************************************/
-#  CI Pipeline - Linux Native Application Execution                  */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Linux Native Application Execution                   */
+# COMPONENT   : linux-engine-validation                              */
+# VERSION     : 1.3                                                  */
 #                                                                    */
-# Purpose   : Validates the end-to-end build and execution flow of   */
-#             the C++ String Conversion Application on Linux.        */
-# Trigger   : Push to main / Pull Request to main                    */
-# Runtime   : Ubuntu Latest                                          */
+# DESCRIPTION : Validates the end-to-end build and execution flow of */
+#               the C++ String Conversion Application on Linux.      */
+#               Ensures core native logic is stable via GoogleTest.  */
 #                                                                    */
-# Notes     : - Synchronizes the LocalApp CMake configuration.       */
-#             - Validates core logic via GoogleTest console output.  */
-#             - Confirms binary linkage and runtime stability.       */
-#             - Updated for Monorepo (backend/ subdirectory).        */
+# SIDE EFFECTS: Swaps CMake configurations for LocalApp execution.   */
+#               Generates structured execution logs via JQ.          */
 #                                                                    */
-# Revision History:                                                  */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-14  Nitish Singh    Initial Linux App Workflow  */
-# 1.1        2026-04-15  Nitish Singh    Updated for /backend path   */
-# 1.2        2026-04-24  Nitish Singh    Standardized Header &       */
-#                                        Naming                      */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-14  Nitish Singh     Initial Linux App Workflow       */
+# 1.1  2026-04-15  Nitish Singh     Updated for /backend path        */
+# 1.2  2026-04-24  Nitish Singh     Standardized Header & Naming     */
+# 1.3  2026-05-12  Nitish Singh     Refactored Header & Log Logic    */
 #*********************************************************************/
 
 name: "Linux Engine Validation"
@@ -26,60 +34,94 @@ name: "Linux Engine Validation"
 on:
   push:
     branches: ["main"]
+    paths: &shared_paths
+      - 'backend/CaseConversionAPI/CppLib/**'
+      - '.github/workflows/linux-engine-validation.yml'
   pull_request:
     branches: ["main"]
+    paths: *shared_paths
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      # ======================================================
+      # ------------------------------------------------------------
       # 1. REPOSITORY & ENVIRONMENT PREPARATION
-      # ======================================================
+      # ------------------------------------------------------------
       
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ------------------------------------------------------------
+      # Resource Initialization & Structured Logging
+      # ------------------------------------------------------------
+
+      - name: Initialize Workflow Logs
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          log_event() {
+            jq -n \
+              --arg ts "$TIMESTAMP" \
+              --arg lvl "$1" \
+              --arg msg "$2" \
+              '{timestamp: $ts, component: "linux-validator", level: $lvl, message: $msg}' -c
+          }
+          log_event "INFO" "Starting native engine validation suite"
+
       - name: Create marker file
         run: touch marker_file.txt
 
-      - name: Install compiler and CMake
+      - name: Install Toolchain
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake
 
       - name: Show directory structure
         run: ls -R
 
-      # ======================================================
+      # ------------------------------------------------------------
       # 2. ARCHITECTURAL CONFIGURATION (Updated Paths)
-      # ======================================================
+      # ------------------------------------------------------------
 
       - name: Use local app CMakeLists
         # TRICK: Swap the default CMakeLists with a specialized version 
         # for local/standalone app building. This allows us to build 
         # a testable executable without modifying the core API build logic.
-        run: cp backend/CaseConversionAPI/CppLib/CMakeListsLocalApp.txt backend/CaseConversionAPI/CppLib/CMakeLists.txt
+        run: |
+          cp backend/CaseConversionAPI/CppLib/CMakeListsLocalApp.txt \
+             backend/CaseConversionAPI/CppLib/CMakeLists.txt
+          echo "{\"event\": \"CONFIG_SWAP\", \"status\": \"SUCCESS\", \"target\": \"LocalApp\"}"
 
       - name: Configure String Conversion
-        run: cmake -S backend/CaseConversionAPI/CppLib -B backend/CaseConversionAPI/CppLib/build -DCMAKE_BUILD_TYPE=Release
+        run: |
+          cmake -S backend/CaseConversionAPI/CppLib \
+                -B backend/CaseConversionAPI/CppLib/build \
+                -DCMAKE_BUILD_TYPE=Release
       
-      # ======================================================
-      # 3. COMPILATION & BUILD
-      # ======================================================
+      # ------------------------------------------------------------
+      # 3. Compilation & Runtime Validation
+      # ------------------------------------------------------------
 
       - name: Build project
         run: cmake --build backend/CaseConversionAPI/CppLib/build --parallel
 
-      # ======================================================
-      # 4. RUNTIME VALIDATION (APPLICATION)
-      # ======================================================
-
       - name: Run String Conversion App
-        run: ./backend/CaseConversionAPI/CppLib/build/app
+        run: |
+          ./backend/CaseConversionAPI/CppLib/build/app
+          echo "{\"event\": \"RUNTIME_EXECUTION\", \"binary\": \"app\", \"status\": \"PASSED\"}"
 
-      # ======================================================
-      # 5. NATIVE TEST EXECUTION (GOOGLE TEST)
-      # ======================================================
+      # ------------------------------------------------------------
+      # 4. NATIVE TEST EXECUTION (GOOGLE TEST)
+      # ------------------------------------------------------------
 
       - name: Run String Conversion Tests with Logs
         run: ./backend/CaseConversionAPI/CppLib/build/runTests --gtest_output=console --gtest_brief=0
+
+
+      - name: Finalize Status
+        if: always()
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg st "${{ job.status }}" \
+            '{timestamp: $ts, event: "ENGINE_VALIDATION_COMPLETE", status: $st}' -c

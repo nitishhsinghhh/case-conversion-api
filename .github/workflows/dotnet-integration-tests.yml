@@ -1,43 +1,52 @@
 #*********************************************************************/
-#  CI Pipeline - .NET + API Integration Tests (Multi-Platform)       */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : .NET + API Integration Tests (Multi-Platform)        */
+# COMPONENT   : dotnet-integration-tests                             */
+# VERSION     : 1.7                                                  */
 #                                                                    */
-# Purpose   : Validates the P/Invoke bridge and API logic across     */
-#              Ubuntu, macOS, and Windows environments.              */
-# Trigger   : Push to main/develop | Pull Request to main            */
-# Runtime   : Matrix (Ubuntu, macOS, Windows)                        */
+# DESCRIPTION : Validates the P/Invoke bridge and API logic across   */
+#               Ubuntu, macOS, and Windows environments. Ensures     */
+#               ABI compatibility between Native and Managed layers. */
 #                                                                    */
-# Notes     : - Synchronizes Native & Managed build cycles.          */
-#             - Implements cross-platform artifact injection.        */
-#             - Fixes Windows C2491 via PROCESSSTRING_EXPORTS.       */
+# SIDE EFFECTS: Generates test execution logs in structured JSON.    */
+#               Injects OS-specific shared libraries into artifacts. */
 #                                                                    */
-# Revision History:                                                  */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-14  Nitish Singh    Initial .NET Integration CI */
-# 1.1        2026-04-15  Nitish Singh    Updated for /backend path   */
-# 1.2        2026-04-17  Nitish Singh    Multi-Platform Matrix Fix   */
-# 1.3        2026-04-24  Nitish Singh    Standardized Header & Env   */
-# 1.4        2026-05-01  Nitish Singh    Added path filters          */
-# 1.5        2026-05-07  Nitish Singh    Path Var Hoisting & Cleanup */
-# 1.6        2026-05-07  Nitish Singh    DllNotFound Path Fix        */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-14  Nitish Singh     Initial .NET Integration CI      */
+# 1.1  2026-04-15  Nitish Singh     Updated for /backend path        */
+# 1.2  2026-04-17  Nitish Singh     Multi-Platform Matrix Fix        */
+# 1.3  2026-04-24  Nitish Singh     Standardized Header & Env        */
+# 1.4  2026-05-01  Nitish Singh     Added path filters               */
+# 1.5  2026-05-07  Nitish Singh     Path Var Hoisting & Cleanup      */
+# 1.6  2026-05-07  Nitish Singh     DllNotFound Path Fix             */
+# 1.7  2026-05-12  Nitish Singh     Refactored Header & Log Logic    */
 #*********************************************************************/
 
 name: ".NET Integration Tests"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     paths: &shared_paths
       - 'backend/CaseConversionAPI/CppLib/**'
-      - 'backend/CaseConversionAPI/DotNetAPI/**'       # Main API Project
+      - 'backend/CaseConversionAPI/DotNetAPI/**'
       - 'backend/CaseConversionAPI/tests/DotNetTests/**'
-      - '.github/workflows/dotnet-integration-tests.yml' # Trigger on workflow changes
+      - '.github/workflows/dotnet-integration-tests.yml'
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
     paths: *shared_paths
 
-# Single Source of Truth for Path Management
 env:
   CPP_LIB_DIR: "backend/CaseConversionAPI/CppLib"
   DOTNET_TEST_DIR: "backend/CaseConversionAPI/tests/DotNetTests"
@@ -62,12 +71,26 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      # ======================================================
-      # 1. ENVIRONMENT SETUP
-      # ======================================================
-
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # ------------------------------------------------------------
+      # Resource Initialization & Structured Logging
+      # ------------------------------------------------------------
+      
+      - name: Initialize Workflow Logs
+        shell: bash
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          log_event() {
+            jq -n \
+              --arg ts "$TIMESTAMP" \
+              --arg os "${{ matrix.os }}" \
+              --arg lvl "$1" \
+              --arg msg "$2" \
+              '{timestamp: $ts, runner_os: $os, level: $lvl, component: "integration-tests", message: $msg}' -c
+          }
+          log_event "INFO" "Initializing Multi-Platform Test Matrix"
 
       - name: Setup .NET Environment
         uses: actions/setup-dotnet@v4
@@ -78,13 +101,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }} 
-          restore-keys: |
-            ${{ runner.os }}-nuget-
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: ${{ runner.os }}-nuget-
 
-      # ======================================================
-      # 2. NATIVE LAYER BUILD (C++17)
-      # ======================================================
+      # ------------------------------------------------------------
+      # Native Layer Build (C++17)
+      # ------------------------------------------------------------
 
       - name: Build C++ Library (Unix)
         if: runner.os != 'Windows'
@@ -104,52 +126,52 @@ jobs:
                 -G "Visual Studio 17 2022" -A x64
           cmake --build build --config Release --parallel
 
-      # ======================================================
-      # 3. MANAGED LAYER BUILD (.NET 8)
-      # ======================================================
+      # ------------------------------------------------------------
+      # Managed Layer Build & ABI Bridge Injection
+      # ------------------------------------------------------------
+
       - name: Build .NET Tests
         working-directory: ${{ env.DOTNET_TEST_DIR }}
         run: |
           dotnet restore
           dotnet build --configuration Release
 
-      # ======================================================
-      # 4. ARTIFACT INJECTION (ABI BRIDGE PREP)
-      # ======================================================
-
-      - name: Inject Native Library
+      - name: Inject Native Library (ABI Bridge)
         shell: bash
         run: |
           FULL_DEST="${{ env.DOTNET_TEST_DIR }}/${{ env.DOTNET_BIN_REL }}/"
           mkdir -p "$FULL_DEST"
-
-            if [ "${{ runner.os }}" == "Windows" ]; then
-              LIB_FILE=$(find ${{ env.CPP_LIB_DIR }} -name "*.dll" | head -n 1)
-              TARGET_NAME=${{ matrix.target_name }}
-            elif [ "${{ runner.os }}" == "macOS" ]; then
-              LIB_FILE=$(find ${{ env.CPP_LIB_DIR }} -name "*.dylib" | head -n 1)
-              TARGET_NAME=${{ matrix.target_name }}
-            else
-              LIB_FILE=$(find ${{ env.CPP_LIB_DIR }} -name "*.so" | head -n 1)
-              TARGET_NAME=${{ matrix.target_name }}
-            fi   
           
-          # Inject into BOTH the binary output and the test project root
+          # Find and inject OS-specific binary
+          LIB_FILE=$(find ${{ env.CPP_LIB_DIR }} -name "${{ matrix.lib_ext }}" | head -n 1)
+          TARGET_NAME=${{ matrix.target_name }}
+          
           cp "$LIB_FILE" "$FULL_DEST$TARGET_NAME"
           cp "$LIB_FILE" "${{ env.DOTNET_TEST_DIR }}/$TARGET_NAME"
+          
+          echo "{\"event\": \"ARTIFACT_INJECTION\", \"source\": \"$LIB_FILE\", \"target\": \"$TARGET_NAME\"}"
 
-      # ======================================================
-      # 5. TEST EXECUTION WITH PATH HOISTING
-      # ======================================================
-      
+      # ------------------------------------------------------------
+      # Test Execution & Telemetry
+      # ------------------------------------------------------------
+        
       - name: Run Integration Tests
         working-directory: ${{ env.DOTNET_TEST_DIR }}
-        shell: bash # Standardizing to bash makes path manipulation easier
+        shell: bash
         env:
-          OTEL_EXPORTER_OTLP_ENDPOINT: ${{ runner.os == 'Linux' && 'http://localhost:4317' || 'http://localhost:9999' }}
           OTEL_SERVICE_NAME: "CaseConversion-Test-Runner"
         run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
             export PATH="$PATH:$(pwd)"
           fi
           dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: Finalize Status
+        if: always()
+        shell: bash
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg st "${{ job.status }}" \
+            '{timestamp: $ts, event: "PLATFORM_TEST_COMPLETE", status: $st}' -c

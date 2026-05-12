@@ -1,26 +1,33 @@
 #**********************************************************************/
-#  CI Pipeline - Production Release (ARM64 Optimized)                 */
-#                                                                     */
-# Purpose   : Packages high-performance binaries and metadata         */
-#              for official GitHub Releases.                          */
-# Trigger   : Push Version Tags (e.g., v2.0.0)                        */
-# Runtime   : macOS Latest (Native Apple Silicon Compilation)         */
-#                                                                     */
-# Notes     : - Targets M2 Performance Cores via ARM64 build flags.   */
-#             - Bundles C++ .dylib with .NET 8 Managed API.           */
-#             - v2.0.0: Marks the 1M Request Endurance Milestone.     */
-#                                                                     */
-# Revision History:                                                   */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Production Release (ARM64 Optimized)                 */
+# COMPONENT   : production-release-workflow                          */
+# VERSION     : 3.1.0                                                */
+#                                                                    */
+# DESCRIPTION : Packages high-performance binaries and metadata       */
+#               for official GitHub Releases. Targets Apple Silicon  */
+#               M2 Performance Cores via native ARM64 build flags.   */
+#                                                                    */
+# SIDE EFFECTS: Generates tagged GitHub Releases. Bundles native     */
+#               .dylib with .NET 8 managed artifacts.                */
+#                                                                    */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------  */
-# Version    Date        Author          Description                  */
-# ------------------------------------------------------------------  */
-# 1.0        2026-04-14  Nitish Singh    Initial Release Workflow     */
-# 1.1-1.5    2026-04-22  Nitish Singh    Monorepo & Path Optimization */
-# 2.0.0      2026-04-24  Nitish Singh    M2 ARM64 Prod Milestone      */
-# 2.0.1      2026-04-30  Nitish Singh    Workflow Refinement &        */ 
-# Packaging                                                           */
-# 2.2.0      2026-04-30  Nitish Singh    RAII & Memory Sovereignty    */
-# 3.0.0      2026-05-06  Nitish Singh   1.5M Millionaire Milestone    */
+# Ver    Date        Author           Description                    */
+# ---    ----------  --------------   ------------------------------ */
+# 1.0    2026-04-14  Nitish Singh     Initial Release Workflow       */
+# 2.0.0  2026-04-24  Nitish Singh     M2 ARM64 Prod Milestone        */
+# 2.2.0  2026-04-30  Nitish Singh     RAII & Memory Sovereignty      */
+# 3.0.0  2026-05-06  Nitish Singh     1.5M Millionaire Milestone     */
+# 3.1.0  2026-05-12  Nitish Singh     Refactored Header & Log Logic  */
 #**********************************************************************/
 
 name: "Production Release"
@@ -33,7 +40,7 @@ on:
 jobs:
   build-and-release:
     name: "Build Assets & Create Release"
-    runs-on: macos-latest # Using macOS to ensure ARM64/M2 native builds
+    runs-on: macos-latest
     permissions:
       contents: write
     
@@ -41,44 +48,59 @@ jobs:
       - name: "Checkout Code"
         uses: actions/checkout@v4
 
-      # 1. Build Native C++ Engine
+      # ------------------------------------------------------------
+      # Resource Initialization & Hardware Context
+      # ------------------------------------------------------------
+        
+      - name: Initialize Workflow Logs
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"timestamp\": \"$TIMESTAMP\", \"event\": \"PROD_BUILD_INIT\", \"target\": \"ARM64_M2\"}"
+
+      # ------------------------------------------------------------
+      # Native Layer: C++17 Engine (Apple Silicon Optimization)
+      # ------------------------------------------------------------
+
       - name: "Build Native Engine"
         run: |
-          # Use -S and -B to point exactly to the C++ source and output
-          cmake -S backend/CaseConversionAPI/CppLib -B build -DCMAKE_BUILD_TYPE=Release
+          cmake -S backend/CaseConversionAPI/CppLib -B build \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_OSX_ARCHITECTURES=arm64
           cmake --build build --config Release --parallel
 
-      # 2. Build .NET API Artifacts
+      # ------------------------------------------------------------
+      # Managed Layer: .NET 8 API & ABI Synchronization
+      # ------------------------------------------------------------
+
       - name: "Publish API"
         run: |
-          # Use the verified path from your find command
-          dotnet publish backend/CaseConversionAPI/DotNetAPI/DotNetAPI.csproj -c Release -o ./publish
+          dotnet publish backend/CaseConversionAPI/DotNetAPI/DotNetAPI.csproj \
+                 -c Release -o ./publish
           
-          # Copy the native library into the publish folder
-          # We know this exists because the previous step succeeded!
           DYLIB_PATH=$(find build -name "libProcessStringDLL.dylib" | head -n 1)
           
           if [ -z "$DYLIB_PATH" ]; then
-            echo "Error: libProcessStringDLL.dylib not found!"
+            echo "{\"event\": \"ABI_SYNC_FAILURE\", \"reason\": \"dylib_not_found\"}"
             exit 1
           fi
           
           cp "$DYLIB_PATH" ./publish/
+          echo "{\"event\": \"ABI_SYNC_SUCCESS\", \"lib\": \"libProcessStringDLL.dylib\"}"
 
-      # 3. Create the Release Bundle
+      # ------------------------------------------------------------
+      # Packaging & Distribution
+      # ------------------------------------------------------------
+
       - name: "Package Assets"
         run: |
-          # Use -rj to junk paths so the zip root contains the files directly
           zip -rj WordCaseEngine-ARM64.zip ./publish
           
-          # Pack metadata
           if [ -d "backend/database" ]; then
             zip -r SourceCode-Metadata.zip backend/database README.md
           else
             zip -r SourceCode-Metadata.zip README.md
           fi
 
-      # 4. Finalize GitHub Release
       - name: "Release to GitHub"
         uses: softprops/action-gh-release@v1
         with:
@@ -86,24 +108,30 @@ jobs:
             WordCaseEngine-ARM64.zip
             SourceCode-Metadata.zip
           body: |
-            ## Word Case Conversion Engine v2.3.0
+            ## Word Case Conversion Engine v3.1.0
 
-            This release builds upon the stable v2.2 foundation, shifting focus from memory safety to hardware-level execution density.
+            This release optimizes the stable v3.0 architecture, focusing on hardware-level execution density and ARM64-specific throughput.
 
-            ** Performance & Scale:**
-            - **1.5M Request Validation:** Verified engine stability under massive temporal density.
+            ### Performance Metrics:
+            - **1.5M Request Endurance:** Verified engine stability under peak temporal density.
             - **7,067 RPS Peak:** Achieved maximum throughput on Apple M2 Silicon.
-            - **SIMD Roadmap:** Integrated build-flags for C++20 vectorization prep.
+            - **SIMD Foundation:** Integrated build-flags for future C++20 vectorization.
 
-            ** Architectural Updates:**
-            - **Hardware Affinity:** Refined thread-pinning for M2 P-Cores.
-            - **Memory Sovereignty:** Permanent zero-leak state via RAII / Rule of Five.
-            - **TOC Optimization:** Fully synchronized documentation for architectural review.
+            ### Architectural Integrity:
+            - **Hardware Affinity:** Thread-pinning optimizations for M2 P-Cores.
+            - **Memory Sovereignty:** RAII-compliant native memory management.
+            - **ABI Stability:** Verified P/Invoke bridge across managed/unmanaged boundaries.
 
             **Installation:**
-            1. Extract `WordCaseEngine-v2.2.0-ARM64.zip`.
+            1. Extract `WordCaseEngine-ARM64.zip`.
             2. Native binaries are pre-linked—no external C++ dependencies required.
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Finalize Status
+        if: always()
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"timestamp\": \"$TIMESTAMP\", \"event\": \"RELEASE_COMPLETE\", \"status\": \"${{ job.status }}\"}"

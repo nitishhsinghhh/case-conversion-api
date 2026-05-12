@@ -35,13 +35,14 @@ name: Cache Cleanup
 on:
   schedule:
     - cron: '30 18 * * *' # Midnight IST (18:30 UTC)
-  workflow_dispatch: {}
-
   push:
-    paths: &pathClean
+    branches: ["main"]
+    paths: &shared_paths
       - '.github/workflows/cache-cleanup.yml' 
   pull_request:
+    branches: ["main"]
     paths: *pathClean
+  workflow_dispatch: {}
 
 permissions:
   actions: write    

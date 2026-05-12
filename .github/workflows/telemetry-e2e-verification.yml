@@ -1,22 +1,32 @@
 #*********************************************************************/
-#  CI Pipeline - Telemetry E2E Integration & Verification            */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Telemetry E2E Integration & Verification             */
+# COMPONENT   : telemetry-verification-pipeline                      */
+# VERSION     : 1.2                                                  */
 #                                                                    */
-# Purpose   : Orchestrates a full-stack smoke test by building the   */
-#             C++ engine, running the .NET API, and verifying        */
-#             trace ingestion into a live Jaeger instance.           */
-# Trigger   : Push to main / Pull Request to main                    */
-# Runtime   : Ubuntu Latest (GitHub Hosted)                          */
+# DESCRIPTION : Orchestrates a full-stack smoke test by building the  */
+#               C++ engine, running the .NET API, and verifying       */
+#               trace ingestion into a live Jaeger instance.          */
 #                                                                    */
-# Notes     : - Validates cross-language Span propagation.           */
-#             - Requires Jaeger sidecar with OTLP enabled.           */
-#             - v1.1: Standardized paths and added graceful flush.   */
+# SIDE EFFECTS: Validates cross-language Span propagation. Requires   */
+#               Jaeger sidecar with OTLP enabled. Flushes buffers     */
+#               via SIGTERM for accurate trace indexing.              */
 #                                                                    */
-# Revision History:                                                  */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-18  Nitish Singh    Initial E2E Telemetry CI    */
-# 1.1        2026-04-24  Nitish Singh    Standardized Header & Paths */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-18  Nitish Singh     Initial E2E Telemetry CI         */
+# 1.1  2026-04-24  Nitish Singh     Standardized Header & Paths      */
+# 1.2  2026-05-12  Nitish Singh     Refactored Header & Log Logic    */
 #*********************************************************************/
 
 name: "Telemetry E2E Verification"
@@ -32,7 +42,6 @@ jobs:
     name: "Build, Instrument, and Verify"
     runs-on: ubuntu-latest
 
-    # Sidecar Services: Jaeger OTLP collector
     services:
       jaeger:
         image: jaegertracing/all-in-one:latest
@@ -43,24 +52,36 @@ jobs:
           - 4317:4317
 
     steps:
-      # --- 1. Environment Setup ---
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      # ------------------------------------------------------------
+      # Resource Initialization
+      # ------------------------------------------------------------
+        
+      - name: Initialize Workflow Logs
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"timestamp\": \"$TIMESTAMP\", \"event\": \"TELEMETRY_E2E_START\"}"
 
       - name: Setup .NET 8.0 SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0
 
-      # --- 2. Build Native Layer ---
+      # ------------------------------------------------------------
+      # Native Layer Build (C++17 Engine)
+      # ------------------------------------------------------------
+
       - name: Compile C++ Conversion Engine
         run: |
-          mkdir -p backend/CaseConversionAPI/CppLib/build
-          cd backend/CaseConversionAPI/CppLib/build
-          cmake ..
-          make
+          cmake -S backend/CaseConversionAPI/CppLib -B backend/CaseConversionAPI/CppLib/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build backend/CaseConversionAPI/CppLib/build --parallel
 
-     # --- 3. Build & Launch Managed Gateway ---
+      # ------------------------------------------------------------
+      # Managed Layer & Sidecar Orchestration
+      # ------------------------------------------------------------
+
       - name: Bootstrap .NET API
         env:
           OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:4317
@@ -71,61 +92,61 @@ jobs:
           cd backend/CaseConversionAPI/DotNetAPI
           dotnet build -c Release
           
+          # Synchronize Native Binary with API Runtime
           cp ../CppLib/build/libProcessStringDLL.so .
           cp ../CppLib/build/libProcessStringDLL.so ./bin/Release/net8.0/
           
+          # Background Execution for Trace Capture
           dotnet ./bin/Release/net8.0/DotNetAPI.dll > api.log 2>&1 & 
           
-          echo "Waiting for API to respond..."
-          # Update the URL here to 5050
+          echo "Waiting for API Readiness at :5050..."
           timeout 60s bash -c 'until curl -sf http://localhost:5050/api/WordCase/convert \
-            -X POST \
-            -H "Content-Type: application/json" \
+            -X POST -H "Content-Type: application/json" \
             -d "{\"text\":\"CI-PROBE\", \"choice\":1}"; do 
-              echo "Waiting for Kestrel and Native Engine..."; 
               sleep 2; 
-            done' || (echo "FATAL: API failed to start. Logs:" && cat api.log && exit 1)
+            done' || (echo "FATAL: API Startup Timeout" && cat api.log && exit 1)
 
-      # --- 4. Traffic Injection ---
+      # ------------------------------------------------------------
+      # Traffic Injection & Span Generation
+      # ------------------------------------------------------------
+
       - name: Trigger Distributed Trace
         run: |
           for i in {1..3}; do
-            # Update the URL here to 5050
             curl -v -X POST http://localhost:5050/api/WordCase/convert \
             -H "Content-Type: application/json" \
             -d '{"text": "E2E-PROBE-'$i'", "choice": 1}'
             sleep 1
           done
 
-      # --- 5. Telemetry Validation ---
+      # ------------------------------------------------------------
+      # Telemetry Governance & Verification
+      # ------------------------------------------------------------
+
       - name: Verify Span Ingestion in Jaeger
         run: |
-          echo "Sending SIGTERM to flush OTLP buffers..."
+          echo "{\"event\": \"TELEMETRY_FLUSH\", \"action\": \"SIGTERM\"}"
           pkill -15 dotnet
-          sleep 7 # Give Jaeger time to index the incoming OTLP data
+          sleep 7 # Buffer for Jaeger indexing
 
-          echo "Querying Jaeger API..."
           for i in {1..12}; do
-            # We look for the specific span name generated by your C++ bridge
             RESPONSE=$(curl -s "http://localhost:16686/api/traces?service=CaseConversion-Gateway")
             
             if [[ "$RESPONSE" == *"Native-C++-Process"* ]]; then
-              echo "SUCCESS: Cross-language Trace detected!"
+              echo "{\"event\": \"TRACE_VALIDATION_SUCCESS\", \"provider\": \"Jaeger\"}"
               exit 0
             fi
             
-            echo "Attempt $i: Span not indexed yet. Retrying..."
+            echo "Attempt $i: Trace not indexed. Retrying..."
             sleep 5
           done
           
-          echo "ERROR: Trace verification timed out."
+          echo "{\"event\": \"TRACE_VALIDATION_TIMEOUT\"}"
           cat backend/CaseConversionAPI/DotNetAPI/api.log
           exit 1
 
-      - name: Debug API Crash
-        if: failure()
+      - name: Finalize Status
+        if: always()
         run: |
-          echo "--- API LOG OUTPUT ---"
-          cat backend/CaseConversionAPI/DotNetAPI/api.log
-          echo "--- LDD CHECK (Dependency verification) ---"
-          ldd backend/CaseConversionAPI/CppLib/build/libProcessStringDLL.so
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"timestamp\": \"$TIMESTAMP\", \"event\": \"TELEMETRY_E2E_COMPLETE\", \"status\": \"${{ job.status }}\"}"

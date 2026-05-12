@@ -1,21 +1,32 @@
 #*********************************************************************/
-#  CI Pipeline - Cross-Platform Native C++ Engine                    */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Cross-Platform Native C++ Engine                     */
+# COMPONENT   : cross-platform-cli-validation                        */
+# VERSION     : 1.2                                                  */
 #                                                                    */
-# Purpose   : Validates the Core C++17 engine and CLI local app      */
-#             across Linux, Windows, and macOS environments.         */
-# Trigger   : Push to main / Pull Request to main                    */
-# Runtime   : Matrix Build (Ubuntu, Windows, macOS)                  */
+# DESCRIPTION : Validates the Core C++17 engine and CLI local app    */
+#               across Linux, Windows, and macOS environments.       */
+#               Enforces ABI compatibility and path integrity for    */
+#               the monorepo /backend structure.                     */
 #                                                                    */
-# Notes     : - Enforces ABI compatibility across OS platforms.      */
-#             - Updated for the new /backend folder structure.       */
-#             - Utilizes CMake for platform-agnostic build logic.    */
+# SIDE EFFECTS: Swaps CMake configurations for standalone binary     */
+#               execution. Generates platform-specific test logs.    */
 #                                                                    */
-# Revision History:                                                  */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-14  Nitish Singh    Initial multi-OS workflow   */
-# 1.1        2026-04-15  Nitish Singh    Updated for /backend path   */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-14  Nitish Singh     Initial multi-OS workflow        */
+# 1.1  2026-04-15  Nitish Singh     Updated for /backend path        */
+# 1.2  2026-05-12  Nitish Singh     Refactored Header & Log Logic    */
 #*********************************************************************/
 
 name: C++ CI CaseConversionAPI - All Platforms (Local App)
@@ -39,16 +50,22 @@ jobs:
     timeout-minutes: 60
 
     steps:
-      # ======================================================
-      # 1. ENVIRONMENT INITIALIZATION
-      # ======================================================
-      
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ------------------------------------------------------------
+      # Resource Initialization & Toolchain Setup
+      # ------------------------------------------------------------
+
+      - name: Initialize Workflow Logs
+        shell: bash
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"timestamp\": \"$TIMESTAMP\", \"event\": \"OS_VALIDATION_START\", \"os\": \"${{ matrix.os }}\"}"
+
       - name: Install compiler & CMake (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake jq
 
       - name: Install CMake (macOS)
         if: runner.os == 'macOS'
@@ -58,35 +75,38 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System' --yes
 
-      # ======================================================
-      # 2. PRE-BUILD ORCHESTRATION (Updated Paths)
-      # ======================================================
+      # ------------------------------------------------------------
+      # Pre-Build Orchestration
+      # ------------------------------------------------------------
 
       - name: Clean build directory (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
           if (Test-Path "backend/CaseConversionAPI/CppLib/build") {
             Remove-Item -Recurse -Force "backend/CaseConversionAPI/CppLib/build"
           }
 
       - name: Use local app CMakeLists
-        run: cp backend/CaseConversionAPI/CppLib/CMakeListsLocalApp.txt backend/CaseConversionAPI/CppLib/CMakeLists.txt
+        shell: bash
+        run: |
+          cp backend/CaseConversionAPI/CppLib/CMakeListsLocalApp.txt \
+             backend/CaseConversionAPI/CppLib/CMakeLists.txt
+          echo "{\"event\": \"CLI_CONFIG_SWAP\", \"status\": \"SUCCESS\"}"
 
-      # ======================================================
-      # 3. COMPILATION LAYER
-      # ======================================================
+      # ------------------------------------------------------------
+      # Compilation Layer (Release Matrix)
+      # ------------------------------------------------------------
 
       - name: Configure project
-        # Using -A x64 ensures 64-bit on Windows
         run: cmake -S backend/CaseConversionAPI/CppLib -B backend/CaseConversionAPI/CppLib/build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build project
-        # CRITICAL: Added --config Release to ensure Windows builds the right version
         run: cmake --build backend/CaseConversionAPI/CppLib/build --config Release --parallel
 
-      # ======================================================
-      # 4. EXECUTION & VALIDATION (CLI APP)
-      # ======================================================
+      # ------------------------------------------------------------
+      # Execution & CLI Validation
+      # ------------------------------------------------------------
 
       - name: Run app (Linux/macOS)
         if: runner.os != 'Windows'
@@ -94,29 +114,34 @@ jobs:
 
       - name: Run app (Windows)
         if: runner.os == 'Windows'
-        # Fixed path to point to Release folder
         run: ./backend/CaseConversionAPI/CppLib/build/Release/app.exe
 
-      # ======================================================
-      # 5. TEST SUITE (CTEST / GOOGLETEST)
-      # ======================================================
+      # ------------------------------------------------------------
+      # Test Suite (CTest / GoogleTest)
+      # ------------------------------------------------------------
 
-      - name: Run tests with details (Linux/macOS)
+      - name: Run tests (Linux/macOS)
         if: runner.os != 'Windows'
         run: ctest --verbose --test-dir backend/CaseConversionAPI/CppLib/build
 
-      - name: Run tests with details (Windows)
+      - name: Run tests (Windows)
         if: runner.os == 'Windows'
-        # -C Release is mandatory here so CTest knows to look in the /Release subfolder
         run: ctest -C Release --verbose --output-on-failure --test-dir backend/CaseConversionAPI/CppLib/build
 
-      # ======================================================
-      # 6. ARTIFACT & LOG GOVERNANCE
-      # ======================================================
-
+      # ------------------------------------------------------------
+      # Post-Execution Governance
+      # ------------------------------------------------------------
+        
       - name: Upload test logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-logs-${{ matrix.os }}
           path: backend/CaseConversionAPI/CppLib/build/Testing/Temporary/LastTest.log
+
+      - name: Finalize Status
+        if: always()
+        shell: bash
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"timestamp\": \"$TIMESTAMP\", \"event\": \"OS_VALIDATION_COMPLETE\", \"status\": \"${{ job.status }}\"}"

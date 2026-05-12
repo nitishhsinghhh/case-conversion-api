@@ -1,32 +1,48 @@
 #*********************************************************************/
-#  CI Pipeline - .NET + API Integration Tests (Multi-Platform)       */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : .NET + API Integration Tests (Multi-Platform)        */
+# COMPONENT   : dotnet-integration-telemetry-tests                   */
+# VERSION     : 1.5                                                  */
 #                                                                    */
-# Purpose   : Validates the P/Invoke bridge and API logic across     */
-#              Ubuntu, macOS, and Windows environments.              */
-# Trigger   : Push to main/develop | Pull Request to main            */
-# Runtime   : Matrix (Ubuntu, macOS, Windows)                        */
+# DESCRIPTION : Validates the P/Invoke bridge and API logic across   */
+#               Ubuntu, macOS, and Windows environments. Includes    */
+#               Jaeger sidecar orchestration for OpenTelemetry       */
+#               trace validation.                                    */
 #                                                                    */
-# Notes     : - Synchronizes Native & Managed build cycles.          */
-#             - Implements cross-platform artifact injection.        */
-#             - v1.4: Injects Jaeger sidecar for Telemetry           */
-# validation.                                                        */
+# SIDE EFFECTS: Launches a Jaeger container on Linux runners.        */
+#               Exports structured JSON events for CI observability. */
 #                                                                    */
-# Revision History:                                                  */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0-1.2    2026-04-17  Nitish Singh    Initial Setup, Matrix Fix   */
-# 1.3        2026-04-18  Nitish Singh    Added Telemetry Validation  */
-# 1.4        2026-04-24  Nitish Singh    Standardized Header & Env   */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-17  Nitish Singh     Initial Setup, Matrix Fix        */
+# 1.3  2026-04-18  Nitish Singh     Added Telemetry Validation       */
+# 1.4  2026-04-24  Nitish Singh     Standardized Header & Env        */
+# 1.5  2026-05-12  Nitish Singh     Refactored Header & Log Logic    */
 #*********************************************************************/
 
 name: .NET Tests
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: ["main", "develop"]
+    paths: &shared_paths
+      - 'backend/CaseConversionAPI/CppLib/**'
+      - 'backend/CaseConversionAPI/DotNetAPI/**'
+      - 'backend/CaseConversionAPI/tests/DotNetTests/**'
+      - '.github/workflows/dotnet-tests.yml'
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+    paths: *shared_paths
 
 jobs:
   test:
@@ -37,7 +53,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
-    # Sidecar for Linux to verify actual trace ingestion
+    # Orchestrate Jaeger sidecar for Linux to verify trace ingestion
     services:
       jaeger:
         image: ${{ matrix.os == 'ubuntu-latest' && 'jaegertracing/all-in-one:latest' || '' }}
@@ -47,77 +63,93 @@ jobs:
           - 4317:4317
 
     steps:
-      # ======================================================
-      # 1. REPOSITORY & TOOLCHAIN SETUP
-      # ======================================================
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # ------------------------------------------------------------
+      # Resource Initialization & Structured Logging
+      # ------------------------------------------------------------
+
+      - name: Initialize Workflow Logs
+        shell: bash
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          log_event() {
+            jq -n \
+              --arg ts "$TIMESTAMP" \
+              --arg os "${{ matrix.os }}" \
+              --arg lvl "$1" \
+              --arg msg "$2" \
+              '{timestamp: $ts, runner_os: $os, level: $lvl, component: "telemetry-validator", message: $msg}' -c
+          }
+          log_event "INFO" "Starting Multi-Platform .NET Integration suite"
 
       - name: Setup .NET Environment
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # ======================================================
-      # 2. NATIVE LAYER BUILD (C++17)
-      # ======================================================
+      # ------------------------------------------------------------
+      # Native Layer Build (C++17)
+      # ------------------------------------------------------------
+
       - name: Build C++ Library (Unix)
         if: runner.os != 'Windows'
         working-directory: backend/CaseConversionAPI/CppLib
         run: |
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-            cmake --build build --config Release --parallel
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --parallel
 
       - name: Build C++ Library (Windows)
         if: runner.os == 'Windows'
         working-directory: backend/CaseConversionAPI/CppLib
         run: |
-            cmake -S . -B build `
-                  -DCMAKE_BUILD_TYPE=Release `
-                  -DPROCESSSTRING_EXPORTS=ON `
-                  -D_CRT_SECURE_NO_WARNINGS=ON `
-                  -G "Visual Studio 17 2022" -A x64
-            cmake --build build --config Release --parallel
+          cmake -S . -B build `
+                -DCMAKE_BUILD_TYPE=Release `
+                -DPROCESSSTRING_EXPORTS=ON `
+                -D_CRT_SECURE_NO_WARNINGS=ON `
+                -G "Visual Studio 17 2022" -A x64
+          cmake --build build --config Release --parallel
 
-      # ======================================================
-      # 3. MANAGED LAYER BUILD & TELEMETRY RESTORE
-      # ======================================================
+      # ------------------------------------------------------------
+      # Managed Layer Build & ABI Bridge Preparation
+      # ------------------------------------------------------------
+
       - name: Build .NET Tests
         working-directory: backend/CaseConversionAPI/tests/DotNetTests
         run: |
-            dotnet restore
-            dotnet build --configuration Release
+          dotnet restore
+          dotnet build --configuration Release
 
-      # ======================================================
-      # 4. ARTIFACT INJECTION (ABI BRIDGE PREP)
-      # ======================================================
-      - name: Inject Native Library to Test Folder
+      - name: Inject Native Library (Artifact Injection)
         shell: bash
         run: |
-            DEST_PATH="backend/CaseConversionAPI/tests/DotNetTests/bin/Release/net8.0/"
-            mkdir -p "$DEST_PATH"
+          DEST_PATH="backend/CaseConversionAPI/tests/DotNetTests/bin/Release/net8.0/"
+          mkdir -p "$DEST_PATH"
 
-            if [ "${{ runner.os }}" == "Windows" ]; then
-              LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.dll" | head -n 1)
-              TARGET_NAME="ProcessStringDLL.dll"
-            elif [ "${{ runner.os }}" == "macOS" ]; then
-              LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.dylib" | head -n 1)
-              TARGET_NAME="libProcessStringDLL.dylib"
-            else
-              LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.so" | head -n 1)
-              TARGET_NAME="libProcessStringDLL.so"
-            fi
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.dll" | head -n 1)
+            TARGET_NAME="ProcessStringDLL.dll"
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.dylib" | head -n 1)
+            TARGET_NAME="libProcessStringDLL.dylib"
+          else
+            LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.so" | head -n 1)
+            TARGET_NAME="libProcessStringDLL.so"
+          fi
 
-            cp "$LIB_FILE" "$DEST_PATH$TARGET_NAME"
-            cp "$LIB_FILE" "backend/CaseConversionAPI/tests/DotNetTests/$TARGET_NAME"
+          cp "$LIB_FILE" "$DEST_PATH$TARGET_NAME"
+          cp "$LIB_FILE" "backend/CaseConversionAPI/tests/DotNetTests/$TARGET_NAME"
+          
+          echo "{\"event\": \"BRIDGE_READY\", \"lib\": \"$TARGET_NAME\", \"os\": \"${{ matrix.os }}\"}"
 
-      # ======================================================
-      # 5. TEST EXECUTION (WITH TELEMETRY CONTEXT)
-      # ======================================================
-
+      # ------------------------------------------------------------
+      # Test Execution (With Telemetry Context)
+      # ------------------------------------------------------------
+        
       - name: Run Integration Tests
         working-directory: backend/CaseConversionAPI/tests/DotNetTests
-        shell: bash # Standardizing to bash makes path manipulation easier
+        shell: bash
         env:
           OTEL_EXPORTER_OTLP_ENDPOINT: ${{ runner.os == 'Linux' && 'http://localhost:4317' || 'http://localhost:9999' }}
           OTEL_SERVICE_NAME: "CaseConversion-Test-Runner"
@@ -126,3 +158,13 @@ jobs:
             export PATH="$PATH:$(pwd)"
           fi
           dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: Finalize Status
+        if: always()
+        shell: bash
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg st "${{ job.status }}" \
+            '{timestamp: $ts, event: "TELEMETRY_SUITE_COMPLETE", status: $st}' -c

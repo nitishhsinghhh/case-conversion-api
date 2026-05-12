@@ -1,33 +1,42 @@
-#**********************************************************************/
-#  CI Pipeline - Docker Orchestration & Image Distribution            */
-#                                                                     */
-# Purpose   : Packages the CaseConversionAPI ecosystem into           */
-#             separate Backend and Frontend images for DockerHub.     */
-# Trigger   : Push to main / Pull Request to main                     */
-# Runtime   : Ubuntu Latest                                           */
-#                                                                     */
-# Notes     : - Builds Backend from /backend/Dockerfile.              */
-#             - Builds Frontend from /frontend/Dockerfile.            */
-#             - v1.2 adds GHA Caching and Buildx for speed.           */
-#                                                                     */
-# Revision History:                                                   */
-# ------------------------------------------------------------------  */
-# Version    Date        Author          Description                  */
-# ------------------------------------------------------------------  */
-# 1.0        2026-04-14  Nitish Singh    Initial Docker Hub Workflow  */
-# 1.1        2026-04-15  Nitish Singh    Updated for Monorepo Paths   */
-# 1.2        2026-04-24  Nitish Singh    Standardized Header & Naming */
-# 1.3        2026-05-01  Nitish Singh    Added PR safety & name sync  */
-# 1.4        2026-05-07  Nitish Singh    Added Parallel Build Matrix  */
-#**********************************************************************/
+#*********************************************************************/
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Docker Orchestration & Image Distribution            */
+# COMPONENT   : docker-hub-distribution                              */
+# VERSION     : 1.5                                                  */
+#                                                                    */
+# DESCRIPTION : Packages the CaseConversionAPI ecosystem into        */
+#               separate Backend and Frontend images for DockerHub.  */
+#               Utilizes GHA caching and Buildx for optimized        */
+#               delivery cycles.                                     */
+#                                                                    */
+# SIDE EFFECTS: Pushes high-fidelity images to DockerHub on main     */
+#               merges. Generates SBOM and provenance attestations.  */
+#                                                                    */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
+# ------------------------------------------------------------------ */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-14  Nitish Singh     Initial Docker Hub Workflow      */
+# 1.1  2026-04-15  Nitish Singh     Updated for Monorepo Paths       */
+# 1.2  2026-04-24  Nitish Singh     Standardized Header & Naming     */
+# 1.3  2026-05-01  Nitish Singh     Added PR safety & name sync      */
+# 1.4  2026-05-07  Nitish Singh     Added Parallel Build Matrix      */
+# 1.5  2026-05-12  Nitish Singh     Refactored Header & Log Logic    */
+#*********************************************************************/
 
 name: "Docker Hub Distribution"
 
 on:
   push:
     branches: ["main"]
-    # Only trigger on changes to backend, frontend, 
-    # or this workflow file to avoid unnecessary builds
     paths: &shared_paths
       - "backend/**"
       - "frontend/**"
@@ -41,17 +50,40 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write  # Needed for PR checks and status updates
+      pull-requests: write
 
     steps:
-      # ======================================================
-      # 1. WORKSPACE PREPARATION
-      # ======================================================
-      
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Generates metadata (Tags/Labels) based on Git state
+      # ------------------------------------------------------------
+      # Resource Initialization & Structured Logging
+      # ------------------------------------------------------------
+
+      - name: Initialize Workflow Logs
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          REPO="${{ github.repository }}"
+          
+          log_event() {
+            local level=$1
+            local stage=$2
+            local message=$3
+            jq -n \
+              --arg ts "$TIMESTAMP" \
+              --arg repo "$REPO" \
+              --arg lvl "$level" \
+              --arg stg "$stage" \
+              --arg msg "$message" \
+              '{timestamp: $ts, repository: $repo, level: $lvl, stage: $stg, message: $msg}' -c
+          }
+          
+          log_event "INFO" "INIT" "Starting Docker Distribution Pipeline for $REPO"
+
+      # ------------------------------------------------------------
+      # Metadata Extraction & Builder Setup
+      # ------------------------------------------------------------
+
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -62,19 +94,14 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
             type=sha,format=short
-
-      # ======================================================
-      # 2. VIRTUALIZED BUILDER SETUP
-      # ======================================================
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # ======================================================
-      # 3. REGISTRY AUTHENTICATION
-      # ======================================================
+      # ------------------------------------------------------------
+      # Registry Authentication (Conditional)
+      # ------------------------------------------------------------
 
       - name: Login to DockerHub
         if: github.event_name != 'pull_request'
@@ -83,31 +110,27 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # ======================================================
-      # 4. BACKEND: COMPILATION & DISTRIBUTION
-      # ======================================================
+      # ------------------------------------------------------------
+      # Backend Compilation & Layer Distribution
+      # ------------------------------------------------------------
 
       - name: Build and Push Backend
         uses: docker/build-push-action@v5
         with:
-          # Change context to root (.) so paths like 'backend/CaseConversionAPI' work
           context: . 
           file: ./backend/Dockerfile
-          # PUSH: True only on main, False on PRs to avoid 401 errors
           push: ${{ github.event_name != 'pull_request' }}
-          # Uses the automated metadata for cleaner tagging
           tags: |
             nitishhsinghhh/word-case-api:latest
             nitishhsinghhh/word-case-api:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # Generates security attestation
           provenance: true
           sbom: true
 
-      # ======================================================
-      # 5. FRONTEND: COMPILATION & DISTRIBUTION
-      # ======================================================
+      # ------------------------------------------------------------
+      # Frontend Compilation & Layer Distribution
+      # ------------------------------------------------------------
 
       - name: Build and Push Frontend
         uses: docker/build-push-action@v5
@@ -122,3 +145,17 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: true
           sbom: true
+
+      # ------------------------------------------------------------
+      # Final Status Reporting
+      # ------------------------------------------------------------
+
+      - name: Finalize Logs
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg st "$STATUS" \
+            '{timestamp: $ts, event: "WORKFLOW_COMPLETE", status: $st, engine: "docker-buildx"}' -c

@@ -1,23 +1,32 @@
 #*********************************************************************/
-#  CI Pipeline - Cross-Platform Native C++ Engine                    */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Cross-Platform Native C++ Engine                     */
+# COMPONENT   : cross-platform-native-validation                     */
+# VERSION     : 1.4                                                  */
 #                                                                    */
-# Purpose   : Orchestrates a multi-OS build and test matrix for      */
-#              the CaseConversionAPI C++17 core.                     */
-# Trigger   : Push to main / Pull Request to main                    */
-# Runtime   : Matrix Build (Ubuntu, Windows, macOS)                  */
+# DESCRIPTION : Orchestrates a multi-OS build and test matrix for    */
+#               the CaseConversionAPI C++17 core. Validates ABI      */
+#               stability across Ubuntu, Windows, and macOS.         */
 #                                                                    */
-# Notes     : - Uses platform-specific cleanup and config logic.     */
-#             - Injects local app CMake configuration via copy.      */
-#             - Enforces Release configuration for performance.      */
+# SIDE EFFECTS: Cleans build workspaces per platform. Injects        */
+#               specialized CMake configurations for standalone app  */
+#               verification.                                        */
 #                                                                    */
-# Revision History:                                                  */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0-1.2    2026-04-15  Nitish Singh    Initial Setup & Monorepo    */
-#                                         Fix                        */
-# 1.3        2026-04-24  Nitish Singh    Standardized Shell and      */
-#                                         Cleanup                    */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-15  Nitish Singh     Initial Setup & Monorepo Fix     */
+# 1.3  2026-04-24  Nitish Singh     Standardized Shell and Cleanup   */
+# 1.4  2026-05-12  Nitish Singh     Refactored Header & Log Logic    */
 #*********************************************************************/
 
 name: C++ CI CaseConversionAPI - All Platforms (Local App)
@@ -41,21 +50,25 @@ jobs:
     timeout-minutes: 60
 
     env:
-      # Updated path to reflect new backend directory
       BUILD_DIR: backend/CaseConversionAPI/CppLib/build
       CPP_ROOT: backend/CaseConversionAPI/CppLib
 
     steps:
-      # ======================================================
-      # 1. ENVIRONMENT INITIALIZATION
-      # ======================================================
-      
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ------------------------------------------------------------
+      # Resource Initialization & Toolchain Setup
+      # ------------------------------------------------------------
+      - name: Initialize Workflow Logs
+        shell: bash
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"timestamp\": \"$TIMESTAMP\", \"event\": \"MATRIX_INIT\", \"os\": \"${{ matrix.os }}\"}"
+
       - name: Install compiler & CMake (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake jq
 
       - name: Install CMake (macOS)
         if: runner.os == 'macOS'
@@ -65,60 +78,65 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System' --yes
 
-      # ======================================================
-      # 2. WORKSPACE CLEANUP & CONFIG INJECTION
-      # ======================================================
-
+      # ------------------------------------------------------------
+      # Workspace Cleanup & Config Injection
+      # ------------------------------------------------------------
       - name: Clean build directory (Non-Windows)
         if: runner.os != 'Windows'
         run: rm -rf ${{ env.BUILD_DIR }}
 
       - name: Clean build directory (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
           if (Test-Path "$env:BUILD_DIR") {
             Remove-Item -Recurse -Force "$env:BUILD_DIR"
           }
 
       - name: Use local app CMakeLists
-        run: cp ${{ env.CPP_ROOT }}/CMakeListsLocalApp.txt ${{ env.CPP_ROOT }}/CMakeLists.txt
+        shell: bash
+        run: |
+          cp ${{ env.CPP_ROOT }}/CMakeListsLocalApp.txt ${{ env.CPP_ROOT }}/CMakeLists.txt
+          echo "{\"event\": \"LAPP_CONFIG_INJECTION\", \"status\": \"COMPLETE\"}"
 
-      # ======================================================
-      # 3. BUILD ORCHESTRATION (PLATFORM SPECIFIC)
-      # ======================================================
-
+      # ------------------------------------------------------------
+      # Build Orchestration (Release Config)
+      # ------------------------------------------------------------
       - name: Configure (Non-Windows)
         if: runner.os != 'Windows'
         run: cmake -S ${{ env.CPP_ROOT }} -B ${{ env.BUILD_DIR }} -DCMAKE_BUILD_TYPE=Release
 
       - name: Configure (Windows)
         if: runner.os == 'Windows'
-        run: cmake -S ${{ env.CPP_ROOT }} -B $env:BUILD_DIR -G "Visual Studio 17 2022" -A x64
+        run: cmake -S ${{ env.CPP_ROOT }} -B ${{ env.BUILD_DIR }} -G "Visual Studio 17 2022" -A x64
 
       - name: Build project
         run: cmake --build ${{ env.BUILD_DIR }} --config Release --parallel
 
-      # ======================================================
-      # 4. NATIVE TEST EXECUTION (CTEST)
-      # ======================================================
-
+      # ------------------------------------------------------------
+      # Native Test Execution (CTEST Matrix)
+      # ------------------------------------------------------------
       - name: Run tests (Linux/macOS)
         if: runner.os != 'Windows'
         run: ctest -V --output-on-failure --test-dir ${{ env.BUILD_DIR }}
 
       - name: Run tests (Windows)
         if: runner.os == 'Windows'
-        # -C Release is the key—it tells CTest to look specifically 
-        # inside backend/CaseConversionAPI/CppLib/build/Release/
         run: ctest -C Release -V --output-on-failure --test-dir ${{ env.BUILD_DIR }}
 
-      # ======================================================
-      # 5. POST-EXECUTION ARTIFACTS
-      # ======================================================
-
+      # ------------------------------------------------------------
+      # Post-Execution Artifacts
+      # ------------------------------------------------------------
       - name: Upload test logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-logs-${{ matrix.os }}
           path: ${{ env.BUILD_DIR }}/Testing/Temporary/LastTest.log
+
+      - name: Finalize Status
+        if: always()
+        shell: bash
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"timestamp\": \"$TIMESTAMP\", \"event\": \"MATRIX_COMPLETE\", \"status\": \"${{ job.status }}\"}"

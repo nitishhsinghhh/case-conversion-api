@@ -1,24 +1,34 @@
 #*********************************************************************/
-#  CI Pipeline - C++ Static Analysis & Code Quality                  */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Native Engine Code Quality                           */
+# COMPONENT   : static-analysis-pipeline                             */
+# VERSION     : 1.5                                                  */
 #                                                                    */
-# Purpose   : Enforces C++17 standards, formatting, and safety.      */
-# Trigger   : Push / Pull Request affecting C++ source files.        */
-# Runtime   : Ubuntu Latest (Optimized for maximum speed)            */
+# DESCRIPTION : Enforces C++17 standards, formatting, and safety     */
+#               using the LLVM 16 toolchain. Includes structured     */
+#               JSON logging for CI observability.                   */
 #                                                                    */
-# Notes     : - Uses Clang-Format for architectural consistency.     */
-#             - Uses Clang-Tidy to detect memory leaks & code smells.*/
-#             - Requires CMAKE_EXPORT_COMPILE_COMMANDS for Tidy.     */
+# SIDE EFFECTS: Fails the build on any style deviation or detected   */
+#               memory safety issues (warnings-as-errors).           */
 #                                                                    */
-# Revision History:                                                  */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-18  Nitish Singh    Initial Quality Guard CI    */
-# 1.1        2026-04-18  Nitish Singh    Added CMake Swap & Fixes    */
-# 1.2        2026-04-18  Nitish Singh    Refined src path patterns   */
-# 1.3        2026-04-24  Nitish Singh    Standardized Header and     */
-#                                         Naming                     */
-# 1.4        2026-05-01  Nitish Singh    shared_paths                */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-18  Nitish Singh     Initial Quality Guard CI         */
+# 1.1  2026-04-18  Nitish Singh     Added CMake Swap & Fixes         */
+# 1.2  2026-04-18  Nitish Singh     Refined src path patterns        */
+# 1.3  2026-04-24  Nitish Singh     Standardized Header and Naming   */
+# 1.4  2026-05-01  Nitish Singh     Implemented shared_paths anchor  */
+# 1.5  2026-05-12  Nitish Singh     Refactored Header & Step Logic   */
 #*********************************************************************/
 
 name: C++ Quality Guard
@@ -28,6 +38,7 @@ on:
     branches: ["main"]
     paths: &shared_paths
       - 'backend/CaseConversionAPI/CppLib/**'
+      - '.github/workflows/cpp-quality-guard.yml'
   pull_request:
     branches: ["main"]
     paths: *shared_paths
@@ -42,35 +53,53 @@ jobs:
         uses: actions/checkout@v4
 
       # ------------------------------------------------------------
-      # Install deterministic LLVM toolchain (IMPORTANT)
+      # Install deterministic LLVM toolchain (Clang 16)
       # ------------------------------------------------------------
-      - name: Install Toolchain (Clang 16)
+
+      - name: Install Toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format-16 clang-tidy-16 cmake
+          sudo apt-get install -y clang-format-16 clang-tidy-16 cmake jq
 
       # ------------------------------------------------------------
-      # Configure project for clang-tidy
+      # Execution & Structured Logging
       # ------------------------------------------------------------
-      - name: Configure CMake
+        
+      - name: Run Analysis with Logging
         working-directory: backend/CaseConversionAPI/CppLib
         run: |
-          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          REPO="${{ github.repository }}"
+          
+          log_event() {
+            local level=$1
+            local component=$2
+            local message=$3
+            jq -n \
+              --arg ts "$TIMESTAMP" \
+              --arg repo "$REPO" \
+              --arg lvl "$level" \
+              --arg comp "$component" \
+              --arg msg "$message" \
+              '{timestamp: $ts, repository: $repo, level: $lvl, component: $comp, message: $msg}' -c
+          }
 
-      # ------------------------------------------------------------
-      # Clang-Format Check (STRICT)
-      # ------------------------------------------------------------
-      - name: Run Clang-Format Check
-        working-directory: backend/CaseConversionAPI/CppLib
-        run: |
-          find src -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print0 \
-          | xargs -0 clang-format-16 --dry-run --Werror
+          # Step 1: Configure
+          log_event "INFO" "CMake" "Starting configuration with CMAKE_EXPORT_COMPILE_COMMANDS=ON"
+          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON || { log_event "ERROR" "CMake" "Configuration failed"; exit 1; }
 
-      # ------------------------------------------------------------
-      # Clang-Tidy Analysis
-      # ------------------------------------------------------------
-      - name: Run Clang-Tidy
-        working-directory: backend/CaseConversionAPI/CppLib
-        run: |
-          find src -name "*.cpp" -print0 \
-          | xargs -0 clang-tidy-16 -p build --header-filter=src/.* --warnings-as-errors=*
+          # Step 2: Clang-Format
+          log_event "INFO" "Clang-Format" "Initiating strict format check on src/"
+          if ! find src -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print0 | xargs -0 clang-format-16 --dry-run --Werror; then
+            log_event "ERROR" "Clang-Format" "Styling violations detected"
+            exit 1
+          fi
+
+          # Step 3: Clang-Tidy
+          log_event "INFO" "Clang-Tidy" "Starting deep static analysis for memory safety"
+          if ! find src -name "*.cpp" -print0 | xargs -0 clang-tidy-16 -p build --header-filter=src/.* --warnings-as-errors=*; then
+            log_event "ERROR" "Clang-Tidy" "Code smells or memory safety issues detected"
+            exit 1
+          fi
+
+          log_event "INFO" "Quality-Guard" "All static analysis checks passed successfully"

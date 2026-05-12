@@ -1,27 +1,34 @@
 #*********************************************************************/
-#  Security Pipeline - CodeQL Advanced Semantic Analysis             */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Security Pipeline - CodeQL Semantic Analysis         */
+# COMPONENT   : security-audit-polyglot                              */
+# VERSION     : 1.3                                                  */
 #                                                                    */
-# Purpose   : Performs SAST (Static Application Security Testing)    */
-#             across the polyglot stack (C++, C#, TS, Actions).      */
-# Trigger   : Weekly Schedule / Push & PR to main                    */
-# Runtime   : Matrix Build (Multi-language Analysis)                 */
+# DESCRIPTION : Performs SAST (Static Application Security Testing)   */
+#               across the polyglot stack (C++, C#, TS, Actions).     */
+#               Identifies memory safety issues in Native C++ and     */
+#               validates P/Invoke security in the .NET layer.        */
 #                                                                    */
-# Notes     : - Manual build mode enabled for C++ to handle nested   */
-#               monorepo structure in /backend.                      */
-#             - Identifies memory safety issues in Native C++ code.  */
-#             - Validates P/Invoke security in the .NET layer.       */
+# SIDE EFFECTS: Generates SARIF security alerts. Requires manual      */
+#               build orchestration for nested C++ monorepo paths.    */
 #                                                                    */
-# Revision History:                                                  */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-18  Nitish Singh    Initial Security            */
-#                                         Orchestration              */
-# 1.1        2026-04-18  Nitish Singh    Fix: Manual Build for       */
-#                                         C++ Lib                    */
-# 1.2        2026-04-24  Nitish Singh    Finalized Naming & Header   */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-18  Nitish Singh     Initial Security Orchestration   */
+# 1.1  2026-04-18  Nitish Singh     Fix: Manual Build for C++ Lib    */
+# 1.2  2026-04-24  Nitish Singh     Finalized Naming & Header        */
+# 1.3  2026-05-12  Nitish Singh     Refactored Header & Log Logic    */
 #*********************************************************************/
-
 
 name: "Security Audit"
 
@@ -54,26 +61,34 @@ jobs:
           - language: actions
             build-mode: none
           - language: c-cpp
-            build-mode: manual  # Switched to manual to handle nested pathing
+            build-mode: manual
           - language: csharp
             build-mode: none
           - language: javascript-typescript
             build-mode: none
 
     steps:
-      # ======================================================
-      # 1. ENVIRONMENT INITIALIZATION
-      # ======================================================
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ------------------------------------------------------------
+      # Resource Initialization & Logging
+      # ------------------------------------------------------------
+        
+      - name: Initialize Security Audit Logs
+        shell: bash
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"timestamp\": \"$TIMESTAMP\", \"event\": \"SAST_SCAN_INIT\", \"lang\": \"${{ matrix.language }}\"}"
+
       - name: Install compiler & CMake (Linux)
         if: matrix.language == 'c-cpp'
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake jq
 
-      # ======================================================
-      # 2. CODEQL INITIALIZATION
-      # ======================================================
+      # ------------------------------------------------------------
+      # CodeQL Engine Initialization
+      # ------------------------------------------------------------
+
       - name: Initialize CodeQL Engine
         uses: github/codeql-action/init@v4
         with:
@@ -81,23 +96,31 @@ jobs:
           build-mode: ${{ matrix.build-mode }}
           queries: security-extended,security-and-quality
 
-      # ======================================================
-      # 3. COMPILATION LAYER (Manual Pathing)
-      # ======================================================
+      # ------------------------------------------------------------
+      # Compilation Layer (Manual Build for Native Interop)
+      # ------------------------------------------------------------
+
       - name: Run Manual Build (C++ Native Engine)
         if: matrix.build-mode == 'manual' && matrix.language == 'c-cpp'
         shell: bash
         run: |
-          echo "Building C++ Engine for Semantic Analysis..."
-          # Match the path from your successful C++ CI workflow
+          echo "{\"event\": \"SEMANTIC_BUILD_START\", \"path\": \"backend/CaseConversionAPI/CppLib\"}"
           cd backend/CaseConversionAPI/CppLib
           cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release --parallel
 
-      # ======================================================
-      # 4. SEMANTIC ANALYSIS & SARIF GENERATION
-      # ======================================================
+      # ------------------------------------------------------------
+      # Semantic Analysis & SARIF Generation
+      # ------------------------------------------------------------
+
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{matrix.language}}"
+
+      - name: Finalize Status
+        if: always()
+        shell: bash
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"timestamp\": \"$TIMESTAMP\", \"event\": \"SAST_SCAN_COMPLETE\", \"status\": \"${{ job.status }}\"}"
