@@ -28,6 +28,7 @@
 # 1.1  2026-05-11  Nitish Singh    Migrated to AWK parsing to        */
 #                                  resolve --json compatibility bugs.*/
 # 1.2  2026-05-11  Nitish Singh    Updated Trigger Logic & Anchors   */
+# 1.3  2026-05-11  Nitish Singh    Reverted Back to previous logic   */
 #*********************************************************************/
 
 name: Cache Cleanup
@@ -35,13 +36,6 @@ name: Cache Cleanup
 on:
   schedule:
     - cron: '30 18 * * *' # Midnight IST (18:30 UTC)
-  push:
-    branches: ["main"]
-    paths: &shared_paths
-      - '.github/workflows/cache-cleanup.yml' 
-  pull_request:
-    branches: ["main"]
-    paths: *pathClean
   workflow_dispatch: {}
 
 permissions:
