@@ -47,7 +47,9 @@ jobs:
 
     steps:
       # ------------------------------------------------------------
+      # ------------------------------------------------------------
       # 1. REPOSITORY & ENVIRONMENT PREPARATION
+      # ------------------------------------------------------------
       # ------------------------------------------------------------
       
       - name: Checkout repository
@@ -79,7 +81,9 @@ jobs:
         run: ls -R
 
       # ------------------------------------------------------------
+      # ------------------------------------------------------------
       # 2. ARCHITECTURAL CONFIGURATION (Updated Paths)
+      # ------------------------------------------------------------
       # ------------------------------------------------------------
 
       - name: Use local app CMakeLists
@@ -100,6 +104,9 @@ jobs:
       # ------------------------------------------------------------
       # 3. Compilation & Runtime Validation
       # ------------------------------------------------------------
+      # ------------------------------------------------------------
+      # 3. Compilation & Runtime Validation
+      # ------------------------------------------------------------
 
       - name: Build project
         run: cmake --build backend/CaseConversionAPI/CppLib/build --parallel
@@ -113,8 +120,22 @@ jobs:
       # 4. NATIVE TEST EXECUTION (GOOGLE TEST)
       # ------------------------------------------------------------
 
+      # ------------------------------------------------------------
+      # 4. NATIVE TEST EXECUTION (GOOGLE TEST)
+      # ------------------------------------------------------------
+
       - name: Run String Conversion Tests with Logs
         run: ./backend/CaseConversionAPI/CppLib/build/runTests --gtest_output=console --gtest_brief=0
+
+
+      - name: Finalize Status
+        if: always()
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          jq -n \
+            --arg ts "$TIMESTAMP" \
+            --arg st "${{ job.status }}" \
+            '{timestamp: $ts, event: "ENGINE_VALIDATION_COMPLETE", status: $st}' -c
 
 
       - name: Finalize Status
