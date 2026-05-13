@@ -24,6 +24,7 @@ set -euo pipefail
 #*********************************************************************/
 # Logging Utilities                                                  */
 #*********************************************************************/
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -37,6 +38,7 @@ log_success() { echo -e "${GREEN}[$(timestamp)] [SUCCESS]${NC} $1"; }
 #*********************************************************************/
 # 1. Root Initialization                                             */
 #*********************************************************************/
+
 ROOT="CaseConversionAPI"
 
 log_info "===== Building Project Workspace: $ROOT ====="
@@ -47,6 +49,7 @@ mkdir -p "$ROOT"
 #*********************************************************************/
 # 2. Native Layer (C++) - Optimized for Interop                      */
 #*********************************************************************/
+
 log_info "Creating C++ library structure..."
 
 mkdir -p "$ROOT/CppLib/include"
@@ -59,6 +62,7 @@ touch "$ROOT/CppLib/Scripts/run.sh"
 #*********************************************************************/
 # 3. API Layer (.NET 8.0+)                                           */
 #*********************************************************************/
+
 log_info "Creating .NET API project structure..."
 
 mkdir -p "$ROOT/DotNetAPI/Controllers"

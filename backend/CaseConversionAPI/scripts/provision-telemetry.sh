@@ -40,12 +40,14 @@ log_success() { echo -e "${GREEN}[$(timestamp)] [SUCCESS]${NC} $1"; }
 #*********************************************************************/
 # Configuration                                                      */
 #*********************************************************************/
+
 CONTAINER_NAME="jaeger"
 IMAGE="jaegertracing/all-in-one:latest"
 
 #*********************************************************************/
 # Core Logic                                                         */
 #*********************************************************************/
+
 case "${1:-start}" in
     start)
         log_info "===== Starting Telemetry Infrastructure ====="

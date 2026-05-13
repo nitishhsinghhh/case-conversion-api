@@ -8,6 +8,7 @@
 # Version | Date       | Author       | Description
 # --------|------------|--------------|----------------------------------------
 # 1.0.0   | 2026-04-21 | Nitish Singh | Initial Release. Monorepo-aligned setup.
+# 1.1.0   | 2026-05-11 | Nitish Singh | Path correction for /docker directory.
 # -----------------------------------------------------------------------------
 # ARCHITECTURAL STRATEGY:
 # * Monorepo Integration: Bridges ./backend and ./frontend root directories.
@@ -15,13 +16,11 @@
 # * Isolation: Employs anonymous volumes to preserve container-side node_modules.
 # -----------------------------------------------------------------------------
 
-version: "3.9"
-
 services:
   # --- BACKEND: .NET 8 API + Native C++ Engine ---
   backend:
     build:
-      context: ./backend
+      context: ../backend
       dockerfile: Dockerfile
     container_name: case-api
     ports:
@@ -36,7 +35,7 @@ services:
     container_name: case-ui
     working_dir: /app
     volumes:
-      - ./frontend:/app
+      - ../frontend:/app
       - /app/node_modules # Anonymous volume to protect container dependencies
     ports:
       - "5173:5173"

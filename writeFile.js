@@ -2,8 +2,8 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 export const options = {
-  vus: 100,
-  iterations: 1500000, 
+  vus:100,
+  iterations: 2000000, 
 };
 
 const payload = JSON.stringify({
@@ -19,7 +19,8 @@ const params = {
 
 export default function () {
   // Use localhost if running k6 from your Mac; host.docker.internal if in a container
-  const url = 'http://loadbalancer/api/WordCase/convert';
+  //const url = 'http://loadbalancer/api/WordCase/convert';
+  const url = 'http://host.docker.internal:80/api/WordCase/convert';
   const res = http.post(url, payload, params);
 
   check(res, {

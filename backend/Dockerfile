@@ -34,8 +34,11 @@ RUN rm -rf backend/CaseConversionAPI/CppLib/build
 
 # 2. Build Native C++ Engine
 # Path matches the monorepo structure: backend -> CaseConversionAPI -> CppLib
-RUN cmake -S backend/CaseConversionAPI/CppLib -B backend/CaseConversionAPI/CppLib/build -DCMAKE_BUILD_TYPE=Release
-RUN cmake --build backend/CaseConversionAPI/CppLib/build --parallel
+RUN cmake -S backend/CaseConversionAPI/CppLib \
+          -B backend/CaseConversionAPI/CppLib/build \
+          -DCMAKE_BUILD_TYPE=Release
+
+RUN cmake --build backend/CaseConversionAPI/CppLib/build --parallel $(nproc)
 
 # 3. Publish Managed .NET API
 RUN dotnet publish backend/CaseConversionAPI/DotNetAPI -c Release -o /app/publish

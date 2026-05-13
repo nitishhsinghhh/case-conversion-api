@@ -8,6 +8,8 @@
 # Version | Date       | Author       | Description
 # --------|------------|--------------|----------------------------------------
 # 1.0.0   | 2026-04-21 | Nitish Singh | Initial Release. Integrated Backend/Frontend.
+# 1.1.0   | 2026-05-11 | Nitish Singh | Refactored paths for /docker directory.
+#                                      Fixed build context and volume mappings.
 # -----------------------------------------------------------------------------
 # ARCHITECTURAL STRATEGY:
 # * Network Isolation: Services communicate over dedicated bridge 'case-network'.
@@ -20,7 +22,7 @@ services:
   backend:
     container_name: case-api-dev
     build:
-      context: .
+      context: ..
       dockerfile: backend/Dockerfile
     image: nitishhsinghhh/case-api:dev   
     ports:
@@ -28,7 +30,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     volumes:
-      - ./backend:/src/backend # Mount backend source for live code updates
+      # Adjusted to mount source from the project root
+      - ../backend:/src/backend
     networks:
       - case-network
 
@@ -38,7 +41,7 @@ services:
     image: node:20
     working_dir: /app
     volumes:
-      - ./frontend:/app
+      - ../frontend:/app
       - /app/node_modules # Protective mount for container-side dependencies
     ports:
       - "5173:5173"

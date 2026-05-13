@@ -24,6 +24,7 @@ set -euo pipefail
 #*********************************************************************/
 # Logging Utilities                                                  */
 #*********************************************************************/
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -39,6 +40,7 @@ log_success() { echo -e "${GREEN}[$(timestamp)] [SUCCESS]${NC} $1"; }
 #*********************************************************************/
 # 1. Path Synchronization                                            */
 #*********************************************************************/
+
 log_info "Synchronizing workspace context..."
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -48,6 +50,7 @@ log_success "Context: Switched to $(pwd)"
 #*********************************************************************/
 # 2. Dependency Sync (Cross-Platform)                                */
 #*********************************************************************/
+
 log_info "===== Syncing Native Library for Test Environment ====="
 
 # Detect extension based on OS
@@ -80,6 +83,7 @@ fi
 #*********************************************************************/
 # 3. Execution & Validation                                          */
 #*********************************************************************/
+
 log_info "Verifying Binary Architecture..."
 file "$ABS_TEST_BIN/libProcessStringDLL.$LIB_EXT"
 
@@ -94,6 +98,7 @@ dotnet test "$(pwd)/tests/DotNetTests/DotNetAPI.Tests.csproj" \
 #*********************************************************************/
 # 4. Workspace Restoration                                           */
 #*********************************************************************/
+
 cd "$SCRIPT_DIR/../../.."
 log_info "Restored to project root: $(pwd)"
 log_success "Test Orchestration Complete."

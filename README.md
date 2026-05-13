@@ -309,7 +309,7 @@ High-frequency processing maintained a peak average response time of 1.13ms. Eve
 
 Temporal Density: The engine achieves a sustained processing density of ~424k operations per minute, scaling to a ~434k peak during high-concurrency bursts. This throughput enables near-real-time ETL workflows on consumer-grade hardware.
 
-[View Full Performance Logs & Scaling Data](ITERATIONS/README.md)
+[View Full Performance Logs & Scaling Data](docs/performance/ITERATIONS/README.md)
 
 ---
 

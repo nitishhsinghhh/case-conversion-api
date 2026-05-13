@@ -8,6 +8,8 @@
 # Version | Date       | Author       | Description
 # --------|------------|--------------|----------------------------------------
 # 1.0.0   | 2026-04-24 | Nitish Singh | Initial Release. Added Nginx Load Balancer.
+# 1.1.0   | 2026-05-11 | Nitish Singh | Refactored paths for monorepo migration.
+#                                       Fixed context path to project root.
 # -----------------------------------------------------------------------------
 # ARCHITECTURAL STRATEGY:
 # * Scalability: Backend service configured with 4 replicas for high availability.
@@ -15,16 +17,19 @@
 # * Network Isolation: Internal communication restricted to 'app-network'.
 # -----------------------------------------------------------------------------
 
-version: "3.9"
-
 services:
   # --- BACKEND: Replicated API Instances ---
   backend:
     build:
-      context: .
+      # Context is now '..' to reach the root 'backend/' folder from 'docker/'
+      context: .. 
       dockerfile: backend/Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
     deploy:
       replicas: 4
+      restart_policy:
+        condition: on-failure
     networks:
       - app-network
 
@@ -34,7 +39,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # Path adjusted to find nginx.conf at the root level
+      - ../nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - backend
     networks:

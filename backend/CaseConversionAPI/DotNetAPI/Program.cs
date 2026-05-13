@@ -16,9 +16,12 @@
  * 1.0         2026-04-11     Nitish Singh     Initial implementation of application bootstrap
  * 1.1         2026-04-16     Nitish Singh     Optimized DI lifetime and refined CORS handling.
  * 1.2         2026-04-18     Nitish Singh     Integrated OpenTelemetry (OTLP) for distributed 
- * tracing across the native ABI boundary. Corrected OTLP namespace.
+ *                                             tracing across the native ABI boundary. Corrected 
+ *                                             OTLP namespace.
  * 1.3         2026-05-06     Nitish Singh     Restructured middleware pipeline for CORS preflight
- * support and pinned Kestrel to Port 5050.
+ *                                             support and pinned Kestrel to Port 5050.
+ * 1.4         2026-06-01     Nitish Singh     Refactored for Containerization: Removed hardcoded 
+ *                                             localhost bindings and parameterized OTEL endpoints.
  **************************************************************************************************/
 
 using Microsoft.OpenApi.Models;
@@ -30,7 +33,9 @@ using OpenTelemetry.Exporter;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. OpenTelemetry & Observability ---
+// --- 1. Environment-Aware Configuration ---
+// Allow OTEL endpoint to be injected via environment variable for containerized deployments, defaulting to localhost for local development.
+var otelEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:4317";
 const string serviceName = "CaseConversion-Gateway";
 
 builder.Services.AddOpenTelemetry()
@@ -41,8 +46,8 @@ builder.Services.AddOpenTelemetry()
         .AddHttpClientInstrumentation()      
         .AddOtlpExporter(options =>
         {
-            options.Endpoint = new Uri("http://localhost:4317");
-            options.ExportProcessorType = ExportProcessorType.Simple;
+            options.Endpoint = new Uri(otelEndpoint);
+            options.ExportProcessorType = ExportProcessorType.Batch;    // Changed to Batch for performance
         }));
 
 // --- 2. Controller & Documentation Services ---
@@ -67,15 +72,15 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .SetPreflightMaxAge(TimeSpan.FromMinutes(10)); 
+              .SetPreflightMaxAge(TimeSpan.FromMinutes(30)); 
     });
 });
 
 // --- 4. Core Business Services ---
 builder.Services.AddSingleton<ProcessStringService>();
 
-// Pinning the WebHost to Port 5050 to avoid macOS AirPlay (Port 5000) conflict
-builder.WebHost.UseUrls("http://localhost:5050"); 
+// REMOVED: builder.WebHost.UseUrls(...) - We let the environment or launchSettings handle this.
+// builder.WebHost.UseUrls("http://localhost:5050"); 
 
 var app = builder.Build();
 
@@ -99,10 +104,10 @@ app.UseSwaggerUI(c =>
 app.UseAuthorization();
 app.MapControllers();
 
-// E. Execution Boundary
-if (app.Environment.EnvironmentName != "Testing")
-{
-    app.Run("http://localhost:5050");
-}
+// --- 6. Execution Boundary (Cleaned) ---
+// By calling Run() without arguments, Kestrel will bind to:
+// 1. ASPNETCORE_URLS environment variable (Standard Docker practice)
+// 2. Default http://localhost:5000 (if no variable is present)
+app.Run();
 
 public partial class Program { }
