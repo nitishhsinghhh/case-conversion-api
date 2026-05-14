@@ -1,7 +1,7 @@
 #!/bin/bash
 #*********************************************************************/
-#  Utility Script - Local CLI App Runner (Temporary Context)         */
-#  Version     : 1.2                                                 */
+#  Utility Script - Local CLI App Runner (macOS Optimized)           */
+#  Version     : 1.3                                                 */
 #                                                                    */
 # Purpose   : Temporarily swaps CMakeLists to build/run the CLI app  */
 #              without modifying the main project architecture.      */
@@ -14,9 +14,9 @@
 # 1.0        2026-04-16  Nitish Singh    Initial Swap Logic Script   */
 # 1.1        2026-04-16  Nitish Singh    Added Absolute Path Trap    */
 # 1.2        2026-05-09  Nitish Singh    Optimized for M2 P-Cores    */
-#                                        and enhanced error cleanup. */
-# 1.3       2026-05-16  Nitish Singh     Standardized logging,       */
-#                                        UI consistency & sync logic.*/
+#                                        and enhanced error cleanup. *
+# 1.3       2026-05-16  Nitish Singh     Added execution context     */
+#                                        validation and dynamic path */
 #*********************************************************************/
 
 set -euo pipefail
@@ -24,6 +24,7 @@ set -euo pipefail
 #*********************************************************************/
 # Logging Utilities                                                  */
 #*********************************************************************/
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -43,13 +44,15 @@ log_success() { echo -e "${GREEN}[$(timestamp)] [SUCCESS]${NC} $1"; }
 log_info "Synchronizing workspace context..."
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-CPP_ROOT="$SCRIPT_DIR/.."
+CPP_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$CPP_ROOT"
 
 if [ ! -f "CMakeListsLocalApp.txt" ]; then
     log_error "Critical file missing: CMakeListsLocalApp.txt not found in $CPP_ROOT"
     exit 1
 fi
+
+readonly BUILD_DIR="$CPP_ROOT/build/macos-latest"
 
 log_success "Workspace synchronized: $(pwd)"
 
@@ -65,55 +68,58 @@ cp CMakeLists.txt CMakeLists.txt.bak
 # Overwrite with the standalone CLI App configuration
 cp CMakeListsLocalApp.txt CMakeLists.txt
 
-# --- Safety Trap ---
-# Ensures the original CMakeLists.txt is restored regardless of success or failure
 cleanup() {
-    cp "$CPP_ROOT/CMakeLists.txt.bak" "$CPP_ROOT/CMakeLists.txt"
-    rm "$CPP_ROOT/CMakeLists.txt.bak"
-    log_success "Configuration context restored."
+    if [ -f "$CPP_ROOT/CMakeLists.txt.bak" ]; then
+        mv "$CPP_ROOT/CMakeLists.txt.bak" "$CPP_ROOT/CMakeLists.txt"
+        log_success "Configuration context restored."
+    fi
 }
 trap cleanup EXIT
 
 #*********************************************************************/
 # 3. Build Phase (M2 Optimization)                                   */
 #*********************************************************************/
+
 log_info "===== Building CLI Application ====="
 
-mkdir -p build_local && cd build_local
+mkdir -p "$BUILD_DIR"
 
-# Detect available cores for max performance (M2 P-Cores / Linux nproc)
-NUM_CORES=$(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 1)
+# Corrected M2 P-Core detection
+NUM_CORES=$(sysctl -n hw.perflevel0.logicalcpu 2>/dev/null || sysctl -n hw.ncpu || echo 2)
 
-# Configure with high-performance flags
-cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_PCORES=ON
+# FIX: Changed -arch arm6 to -arch arm64
+cmake -S "$CPP_ROOT" -B "$BUILD_DIR" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DARCH_ARM64=ON \
+      -DUSE_PCORES=ON \
+      -DCMAKE_OSX_ARCHITECTURES=arm64
+
 log_info "Utilizing $NUM_CORES cores for parallel compilation..."
-cmake --build . --config Release --parallel "$NUM_CORES"
+cmake --build "$BUILD_DIR" --config Release --parallel "$NUM_CORES"
 
 log_success "CLI App built successfully."
 
 #*********************************************************************/
 # 4. Execution Phase                                                 */
 #*********************************************************************/
+
 echo -e "\n===== Running CLI App (sourcecode.cpp) ====="
 
-APP_BIN=""
-for bin in "./app" "./app.exe" "./Release/app" "./Release/app.exe"; do
-    if [ -f "$bin" ]; then APP_BIN="$bin"; break; fi
-done
+APP_BIN=$(find "$BUILD_DIR" -maxdepth 2 \( -name "app" -o -name "app.exe" \) | head -n 1)
 
-if [ -n "$APP_BIN" ]; then
-    $APP_BIN
+if [[ -n "$APP_BIN" && -f "$APP_BIN" ]]; then
+    cd "$(dirname "$APP_BIN")"
+    ./$(basename "$APP_BIN")
     log_success "Execution completed."
 else
-    log_error "Binary 'app' not found. Checking build directory:"
-    ls -R
+    log_error "Binary 'app' not found."
     exit 1
 fi
 
 #*********************************************************************/
 # 5. Workspace Restoration                                           */
 #*********************************************************************/
-# Navigation back to root: backend/CaseConversionAPI/CppLib/Scripts/
-cd ../../../..
-log_info "Current project root: $(pwd)"
-# Restoration of CMakeLists.txt is handled by the EXIT trap.
+
+# The trap handles the CMakeLists restoration.
+cd "$SCRIPT_DIR"
+log_info "Returned to scripts directory."

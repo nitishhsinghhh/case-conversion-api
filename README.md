@@ -51,6 +51,7 @@ This is a high-concurrency, cross-platform string processing ecosystem. It demon
   * [7. Memory Sovereignty and The Interop Lifecycle](#7-memory-sovereignty-and-the-interop-lifecycle)
   * [8. Performance Benchmarks and Engineering Insights](#8-performance-benchmarks-and-engineering-insights)
     * [Key Performance Drivers](#key-performance-drivers)
+  * [9. The Challenge of Native Compilation on Apple Silicon](#9-the-challenge-of-native-compilation-on-apple-silicon)
 * [Quick Start](#quick-start)
   * [Run the Load-Balanced Cluster](#run-the-load-balanced-cluster)
 * [Project Timeline and Roadmap](#project-timeline-and-roadmap)
@@ -164,6 +165,32 @@ The engine serves as the high-performance foundation of the system, encapsulatin
   * Windows → `libProcessStringDLL.dll`
   * macOS → `libProcessStringDLL.dylib`
   * Linux → `libProcessStringDLL.so`
+
+#### Native Build Orchestration
+
+To maintain a consistent CI/CD gate, we use a master orchestrator script. This script handles local compilation (targeting M2 P-Cores on macOS) and triggers a Docker-based toolchain for other platforms.
+
+[Orchestrator Script](backend/CaseConversionAPI/scripts/orchestrate-native-docker.sh)
+
+```Bash
+# LOCAL MACOS BUILD ---
+NATIVE_SCRIPT_REL="backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native.sh"
+```
+
+#### Multi-Platform Docker Toolchain
+
+The cross-compilation environment is encapsulated in a multi-stage Dockerfile. This ensures that the Linux .so and Windows .dll (via MinGW) are built in a clean, reproducible environment before being exported back to the host.
+
+```Bash
+# DOCKER CROSS-BUILD (LINUX & WINDOWS) ---
+DOCKERFILE_PATH="backend/CaseConversionAPI/CppLib/Scripts/Dockerfile"
+```
+
+| Target | Format   | Toolchain      | Environment          |
+|--------|----------|----------------|--------------------  |
+| macOS  | `.dylib` | Clang / CMake  | Local M2 (Native)    |
+| Linux  | `.so`    | GCC / CMake    | Docker (Ubuntu)      |
+| Windows| `.dll`   | MinGW / CMake  | Docker (Cross-Build) |
 
 ### 2. Managed Gateway: .NET REST API
 
@@ -310,6 +337,24 @@ High-frequency processing maintained a peak average response time of 1.13ms. Eve
 Temporal Density: The engine achieves a sustained processing density of ~424k operations per minute, scaling to a ~434k peak during high-concurrency bursts. This throughput enables near-real-time ETL workflows on consumer-grade hardware.
 
 [View Full Performance Logs & Scaling Data](docs/performance/ITERATIONS/README.md)
+
+### 9. The Challenge of Native Compilation on Apple Silicon
+
+Building cross-platform native binaries on a modern Mac (M1/M2/M3) introduces a "Triple-Threat" of architectural and OS barriers that make a single-command build difficult:
+
+* The Mach-O vs. ELF vs. PE Barrier:
+MacOS uses the Mach-O executable format, Linux uses ELF, and Windows uses PE (Portable Executable). A compiler running natively on macOS (Clang) is designed to link against the macOS SDK. While cross-compilers exist, they often struggle to find the correct system headers for Linux or Windows without a dedicated, containerized sysroot.
+
+* Instruction Set Divergence:
+The M2 is an ARM64 (AArch64) processor. Most production servers are x86_64 (Intel/AMD). If you build a Linux .so inside a standard Docker container on a Mac, you are likely building an ARM64 binary. To target a standard server, you must use QEMU Emulation or a dedicated Cross-Compiler Toolchain (like x86_64-linux-gnu-gcc), both of which introduce significant configuration overhead.
+
+* Docker's Virtualization Layer:
+On macOS, Docker does not run natively; it runs inside a lightweight Linux VM. This means a Docker container has no visibility into the host Mac's system libraries or the Apple SDK. Consequently, you cannot build a macOS .dylib from within a Docker container.
+
+**Architectural Solution:**
+We solved this by using a Hybrid Orchestration Strategy. The Mac host handles the .dylib (Native M2 P-Core optimization), while the Docker VM handles the Linux and Windows toolchains in an isolated, reproducible environment.
+
+[Native Build Orchestration](#native-build-orchestration)
 
 ---
 

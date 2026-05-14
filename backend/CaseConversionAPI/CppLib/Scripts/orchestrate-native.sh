@@ -4,7 +4,7 @@
 #  Version     : 1.5                                                 */
 #                                                                    */
 # Purpose   : Configures, builds, and executes C++ logic & tests.    */
-# Location  : backend/CaseConversionAPI/CppLib/Scripts/run.sh        */
+# Location  : CppLib/Scripts/orchestrate-native.sh                   */
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
@@ -16,8 +16,9 @@
 # 1.3        2026-05-02  Nitish Singh    Added Matrix OS Support     */
 # 1.4        2026-05-09  Nitish Singh    Enhanced M2 P-Core detection*/
 #                                        and script versioning.      */
-# 1.5        2026-05-16  Nitish Singh    Integrated logging,         */
-#                                        validation & structured UI. */
+# 1.5        2026-05-16  Nitish Singh    Standardized logging,       */
+#                                        execution context validation*/
+#                                        and dynamic path handling.  */
 #*********************************************************************/
 
 set -euo pipefail
@@ -62,10 +63,15 @@ if ! command -v cmake >/dev/null 2>&1; then
     exit 1
 fi
 
+# FIX: Define SCRIPT_DIR and CPP_ROOT before using them
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-CPP_ROOT="$SCRIPT_DIR/.."
-cd "$CPP_ROOT"
-log_success "Workspace context set to: $(pwd)"
+CPP_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Define the structured build path
+readonly BUILD_DIR="$CPP_ROOT/build/$OS_TARGET"
+
+log_success "Workspace context set: $CPP_ROOT"
+log_success "Build directory set: $BUILD_DIR"
 
 #*********************************************************************/
 # 3. OS-Specific Configuration                                       */
@@ -104,52 +110,56 @@ esac
 # 4. Compilation Layer                                               */
 #*********************************************************************/
 
-log_info "===== Configuring & Building C++ Core ($OS_TARGET) ====="
+log_info "===== Building C++ Core ($OS_TARGET) ====="
 
-mkdir -p build && cd build
+mkdir -p "$BUILD_DIR"
 
-# Use the array expansion syntax to preserve argument boundaries
-cmake .. "${CMAKE_ARGS[@]}"
+# FIX: Define NUM_CORES for parallel build performance
+if [[ "$OS_TARGET" == *"macos"* ]]; then
+    NUM_CORES=$(sysctl -n hw.perflevel0.logicalcpu 2>/dev/null || sysctl -n hw.ncpu || echo 4)
+else
+    NUM_CORES=$(nproc 2>/dev/null || echo 2)
+fi
 
-# Detect available cores for max performance (M2 P-Cores / Linux nproc)
-NUM_CORES=$(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 1)
+# Modern CMake build
+cmake -S "$CPP_ROOT" -B "$BUILD_DIR" "${CMAKE_ARGS[@]}"
+
 log_info "Utilizing $NUM_CORES cores for parallel build..."
+cmake --build "$BUILD_DIR" --config Release --parallel "$NUM_CORES"
 
-cmake --build . --config Release --parallel "$NUM_CORES"
 log_success "C++ Core built successfully."
 
 #*********************************************************************/
 # 5. Execution & Testing Layer                                       */
 #*********************************************************************/
 
-# Skip execution if cross-compiling for Windows on a non-Windows host
-if [[ "$OS_TARGET" == *"windows"* ]] && [[ "$(uname)" != "Darwin" && "$(uname)" != *"MINGW"* && "$(uname)" != *"MSYS"* ]]; then
-    log_warn "Windows binary built successfully. Skipping execution on current host."
-else
+# Logic to determine if we can run the binary on the current host
+CAN_RUN=false
+[[ "$OS_TARGET" == *"macos"* && "$(uname)" == "Darwin" ]] && CAN_RUN=true
+[[ "$OS_TARGET" == *"ubuntu"* && "$(uname)" == "Linux" ]] && CAN_RUN=true
+
+if [ "$CAN_RUN" = true ]; then
     echo -e "\n===== Running Core Tests ====="
     
-    TEST_BIN=""
-    for bin in "./runTests" "./runTests.exe" "./Release/runTests.exe"; do
-        if [ -f "$bin" ]; then TEST_BIN="$bin"; break; fi
-    done
+    # Search for test binary in the new structure
+    TEST_BIN=$(find "$BUILD_DIR" -maxdepth 3 \( -name "runTests" -o -name "runTests.exe" \) | head -n 1)
 
-    if [ -n "$TEST_BIN" ]; then
-        $TEST_BIN
-        log_success "Tests completed successfully."
+    if [[ -n "$TEST_BIN" && -f "$TEST_BIN" ]]; then
+        # Run from the binary's directory to ensure relative assets resolve
+        cd "$(dirname "$TEST_BIN")"
+        ./$(basename "$TEST_BIN")
+        log_success "Tests completed."
     else
-        log_error "Test binary not found. Checking directory: $(pwd)"
-        ls -R
+        log_error "Test binary not found in $BUILD_DIR."
         exit 1
     fi
+else
+    log_warn "Target $OS_TARGET is not native to host $(uname). Skipping execution."
 fi
 
 #*********************************************************************/
 # 6. Workspace Restoration
 #*********************************************************************/
 
-# Navigation back to root: backend/CaseConversionAPI/CppLib/Scripts/
-
-cd ../../../..
-
-log_info "Restored to project root: $(pwd)"
-log_success "C++ Orchestration Complete."
+cd "$SCRIPT_DIR"
+log_info "Returned to scripts directory."
