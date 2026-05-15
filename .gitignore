@@ -104,4 +104,5 @@ docker-compose.override.yml
 // Solution files should not be ignored as they are essential for the .NET project structure
 *word-case-api.sln
 
-scripts/command.txt
+*DotNetAPI.Tests.csproj.lscache
+*DotNetAPI.csproj.lscache
