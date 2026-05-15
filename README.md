@@ -376,7 +376,7 @@ This engine is engineered for high-density concurrent processing and long-durati
 |-----------------|------------|-----|---------------|--------------|---------------------------------|
 | Cold Start      | 100        | 1   | ~1,200 RPS    | < 1ms        | JIT & Memory Initialization     |
 | Baseline        | 1,000      | 4   | 4,526 RPS     | 1.82ms       | Perfect P-Core alignment        |
-| Peak Efficiency | 100,000    | 8   | 7,242 RPS     | 2.66ms       | Full Hardware Saturation        |
+| Peak Efficiency | 1,000,000  | 8   | 7,242 RPS     | 2.66ms       | Full Hardware Saturation        |
 | Endurance       | 1,500,000  | 100 | 7,067 RPS     | 41.0ms       | Long-duration stability         |
 
 #### Key Performance Drivers
@@ -427,7 +427,7 @@ To maintain architectural integrity and enforce standardizations across the poly
 #### Usage
 
 ```Bash
-./CppLib/Scripts/gh-automate.sh <branch-name> "<message>"
+./scripts/gh-automate.sh <branch-name> "<message>"
 ```
 
 ---
@@ -471,6 +471,7 @@ To support high-concurrency workloads and horizontal scalability, the platform u
 | v2.1.0 Release     | April 25, 2026  | Industrial Hardening: Full OpenTelemetry integration, CI/CD pipeline domain-standardization, and CodeQL security alignment. |
 | v2.2.0 Release     | April 30, 2026  | Achieved a 25% throughput increase (2,827 req/s) and 42% median latency reduction by implementing RAII.                     |
 | v3.0.0 Release     | May 7, 2026     | Finalized 1.5M request stress test (7,067 RPS), ARM64 native releases, and automated staged deployment pipeline.            |
+| v3.1.0 Release     | May 15, 2026.   | Refactored CI with structured JSON logging, Apache 2.0 Licensing, and Security-Hardened NuGet dependencies.                 |
 
 ---
 
