@@ -45,6 +45,9 @@ This project is a high-concurrency, cross-platform string processing and spell-c
 * [Engineering Deep Dive](#engineering-deep-dive)
   * [1. Concurrency & Thread-Safety](#1-concurrency--thread-safety)
   * [2. Design Patterns Used](#2-design-patterns-used)
+    * [Architectural and Interop Patterns](#architectural-and-interop-patterns)
+    * [Native Execution Core (C++17)](#native-execution-core-c17)
+    * [Managed Infrastructure (.NET 8)](#managed-infrastructure-net-8)
   * [3. Defensive Interop Design](#3-defensive-interop-design)
   * [4. Telemetry & Observability](#4-telemetry--observability)
   * [5. Hardware-Specific Optimization (Apple M2)](#5-hardware-specific-optimization-apple-m2)
@@ -250,17 +253,29 @@ In a high-throughput REST environment, thread safety is critical. The integratio
 
 The system applies multiple architectural and behavioral design patterns to maintain modularity, extensibility, and deterministic resource management across both native and managed runtimes.
 
+#### Architectural and Interop Patterns
+
+* Bridge Pattern (Interop Layer): Decouples the managed .NET abstraction from the native C++ implementation. This allows the high-level API service to evolve independently of the low-level ABI, enabling seamless swaps between different native engines (e.g., Clang vs. MSVC compiled binaries) without breaking the service contract.
+
+* Proxy Pattern (Service Orchestration): The ProcessStringService acts as a managed proxy for the unmanaged DLL. It encapsulates the complexity of platform-specific library loading, symbol resolution, and marshaling, providing a clean, idiomatic C# interface to external consumers.
+
+* Circuit Breaker Pattern (Fault Tolerance): Implemented within the managed gateway to protect the ASP.NET Core host process. By monitoring native execution health, the circuit breaker can preemptively "trip" during native heap exhaustion or engine instability, preventing cascading failures and ensuring a deterministic fallback path.
+
+#### Native Execution Core (C++17)
+
 * Strategy Pattern: Encapsulates individual string transformation algorithms behind a common interface, enabling runtime selection of conversion behaviors without modifying the execution pipeline.
 
 * Factory Pattern: Centralizes strategy creation and decouples the client layer from concrete implementation details, simplifying extensibility and reducing dependency coupling.
 
-* Client Dispatcher: Coordinates request execution, strategy lifecycle management, validation flow, and dispatch orchestration between managed and unmanaged layers.
+* RAII (Resource Acquisition Is Initialization): Applied throughout the C++17 engine to guarantee deterministic cleanup of unmanaged resources through scoped object lifetimes and automatic destructor execution.
+
+#### Managed Infrastructure (.NET 8)
 
 * Singleton Pattern (.NET 8): Shared infrastructure services such as telemetry providers, configuration loaders, native library managers, and orchestration services are registered as Singleton instances within the ASP.NET Core dependency injection container to ensure centralized lifecycle control and reduced allocation overhead.
 
-* RAII (Resource Acquisition Is Initialization): Applied throughout the C++17 engine to guarantee deterministic cleanup of unmanaged resources through scoped object lifetimes and automatic destructor execution.
-
 * IDisposable / SafeHandle Pattern (.NET): The managed layer uses IDisposable, try/finally, and SafeHandle-oriented cleanup semantics to ensure deterministic release of unmanaged buffers and native library handles acquired through P/Invoke.
+
+* Client Dispatcher: Coordinates request execution, strategy lifecycle management, validation flow, and dispatch orchestration between managed and unmanaged layers.
 
 ### 3. Defensive Interop Design
 
@@ -292,8 +307,8 @@ The platform integrates OpenTelemetry (OTLP) to provide end-to-end distributed t
 
 * Low-Overhead Instrumentation: The tracing pipeline is engineered to minimize runtime overhead during high-concurrency execution, ensuring observability does not materially impact throughput or latency characteristics.
 Operational Endpoints:
-  * Jaeger UI Dashboard: http://localhost:16686
-  * OTLP gRPC Endpoint: http://localhost:4317
+  * Jaeger UI Dashboard: <http://localhost:16686>
+  * OTLP gRPC Endpoint: <http://localhost:4317>
 
 * Production Diagnostics: Distributed tracing enables rapid identification of performance bottlenecks, native execution hotspots, interop failures, and container-level service degradation during sustained load conditions.
 
@@ -311,7 +326,7 @@ The execution model is explicitly tuned for Apple Silicon, with optimization str
   * Global Managed Ceiling: A 20MB batch-processing ceiling prevents excessive Unified Memory pressure and reduces the likelihood of SSD swap activation on 8GB Apple Silicon systems.
 
   * Native Allocation Ceiling: A strict 5MB unmanaged payload limit is enforced at the DLL boundary to mitigate buffer overflow risks and prevent uncontrolled native heap growth.
-* Contention-Free Buffering:** The managed orchestration layer utilizes ConcurrentBag<T> for parallel result aggregation, eliminating the synchronization bottlenecks and lock contention commonly associated with shared List<T> mutation under multi-threaded workloads.
+* Contention-Free Buffering: The managed orchestration layer utilizes `ConcurrentBag<T>` for parallel result aggregation, eliminating the synchronization bottlenecks and lock contention commonly associated with shared `List<T>` mutation under multi-threaded workloads.
 
 * P-Core Optimized Execution Affinity: The scheduling model minimizes OS-level load balancing across Efficiency Cores by maintaining execution affinity toward high-performance compute paths. This reduces the probability of priority inversion and improves latency consistency during sustained concurrent execution.
 
