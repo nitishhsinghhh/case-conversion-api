@@ -53,6 +53,7 @@ This project is a high-concurrency, cross-platform string processing and spell-c
   * [8. Performance Benchmarks and Engineering Insights](#8-performance-benchmarks-and-engineering-insights)
     * [Key Performance Drivers](#key-performance-drivers)
   * [9. The Challenge of Native Compilation on Apple Silicon](#9-the-challenge-of-native-compilation-on-apple-silicon)
+  * [10. Automated PR Workflow (Local Orchestration)](#10-automated-pr-workflow-local-orchestration)
 * [Quick Start](#quick-start)
   * [Run the Load-Balanced Cluster](#run-the-load-balanced-cluster)
 * [Project Timeline and Roadmap](#project-timeline-and-roadmap)
@@ -410,6 +411,24 @@ Building cross-platform native binaries on modern Apple Silicon systems (M1/M2/M
 We solved this by using a Hybrid Orchestration Strategy. The Mac host handles the .dylib (Native M2 P-Core optimization), while the Docker VM handles the Linux and Windows toolchains in an isolated, reproducible environment.
 
 [Native Build Orchestration](#native-build-orchestration)
+
+### 10. Automated PR Workflow (Local Orchestration)
+
+To maintain architectural integrity and enforce standardizations across the polyglot codebase, the project utilizes a custom GitHub PR Automator ([gh-automate.sh](scripts/gh-automate.sh)). This tool abstracts the complexity of branch management, CI/CD monitoring, and administrative merging into a single execution context.
+
+#### Workflow Features
+
+* Atomic Standardization: Automatically stages all metadata and core changes to ensure documentation never drifts from implementation.
+
+* CI/CD Verification Gate: Leverages the GitHub CLI to stream live status checks (Actions, CodeQL, Security Audits) directly to the terminal.
+
+* Administrative Cleanup: Executes squash-merges and performs local/remote branch pruning to maintain a clean, linear git history.
+
+#### Usage
+
+```Bash
+./CppLib/Scripts/gh-automate.sh <branch-name> "<message>"
+```
 
 ---
 
