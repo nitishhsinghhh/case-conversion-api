@@ -117,25 +117,90 @@ This project follows a strict **Architectural Decision Log (ADL)** to document t
 
 ```mermaid
 graph TD
+
+    %% =========================
+    %% LOCAL DEVELOPMENT
+    %% =========================
     subgraph Local_Development
-        A[M2 MacBook Air] -->|git push| B(GitHub Repository)
+        A[M2 MacBook Air / ARM64 Workstation]
+        A -->|git push| B(GitHub Repository)
     end
 
-    subgraph CI_CD_Pipeline
-        B --> C{GitHub Actions}
-        C --> D[C++17 Build Matrix]
-        C --> E[.NET 8 Build]
-        D & E --> F[Multi-Stage Docker Build]
-        F --> G[GHCR.io Registry]
+    %% =========================
+    %% CI/CD ORCHESTRATION
+    %% =========================
+    subgraph GitHub_Actions_CI_CD
+        B --> C{GitHub Actions Pipeline}
+
+        %% Native Builds
+        C --> D1[macOS Native Build<br/>Clang + CMake]
+        C --> D2[Linux Cross Build<br/>GCC + Docker]
+        C --> D3[Windows Cross Build<br/>MinGW + Docker]
+
+        %% Managed + Frontend
+        C --> E1[.NET 8 Gateway Build]
+        C --> E2[React/TS Frontend Build]
+
+        %% Validation
+        D1 --> F
+        D2 --> F
+        D3 --> F
+        E1 --> F
+        E2 --> F
+
+        F[Integration + ABI Validation]
+
+        %% Quality & Security
+        F --> G1[GoogleTest / Integration Tests]
+        F --> G2[Clang Quality Guard]
+        F --> G3[CodeQL Security Scan]
+        F --> G4[Telemetry E2E Verification]
+
+        %% Packaging
+        G1 --> H[Multi-Stage Docker Build]
+        G2 --> H
+        G3 --> H
+        G4 --> H
+
+        %% Registry
+        H --> I[GHCR.io / Docker Hub Registry]
+
+        %% Release
+        I --> J[Semantic Version Release Pipeline]
     end
 
+    %% =========================
+    %% DEPLOYMENT RUNTIME
+    %% =========================
     subgraph Production_Runtime
-        G --> H[NGINX Load Balancer]
-        H --> I[Backend Replica 1]
-        H --> J[Backend Replica 2]
-        H --> K[Backend Replica 3]
-        H --> L[Backend Replica 4]
-        I & J & K & L --> M[Native C++ Engine]
+        J --> K[NGINX Layer 7 Load Balancer]
+
+        K --> L1[Backend Replica 1]
+        K --> L2[Backend Replica 2]
+        K --> L3[Backend Replica 3]
+        K --> L4[Backend Replica 4]
+
+        %% Native Engine
+        L1 --> M[Native C++17 Engine]
+        L2 --> M
+        L3 --> M
+        L4 --> M
+
+        %% Observability
+        L1 --> N[OpenTelemetry Collector]
+        L2 --> N
+        L3 --> N
+        L4 --> N
+
+        N --> O[Jaeger Distributed Tracing]
+    end
+
+    %% =========================
+    %% CACHE & MAINTENANCE
+    %% =========================
+    subgraph Infrastructure_Maintenance
+        P[Daily Cache Cleanup Workflow]
+        P --> Q[GitHub Cache Lifecycle Management]
     end
 ```
 
