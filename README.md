@@ -95,7 +95,7 @@ This project is built to safely expose high-performance C++ logic to a managed .
 
 * The Pipeline (Docker): A multi-stage orchestration pipeline supporting immutable deployments. We build the binary once and promote the same artifact from Development to Production, ensuring environmental consistency and deployment reproducibility.
 
-![alt text](assets/API.png)
+![alt text](assets/Arch.png)
 
 ---
 
