@@ -95,7 +95,7 @@ This project is built to safely expose high-performance C++ logic to a managed .
 
 * The Pipeline (Docker): A multi-stage orchestration pipeline supporting immutable deployments. We build the binary once and promote the same artifact from Development to Production, ensuring environmental consistency and deployment reproducibility.
 
-![alt text](assets/Arch.png)
+![alt text](assets/Arch_V1.1.png)
 
 ---
 
@@ -523,19 +523,53 @@ Before running the platform locally, ensure the following dependencies are avail
 * .NET 8 SDK (optional for local development)
 * CMake and Clang/GCC toolchains (required for native builds outside Docker)
 
+```Bash
+# 1. Build and Start Containers
+docker compose -f 'docker/docker-compose.yml' up -d --build
+
+# 2. Verify Health
+docker ps
+# Ensure 'case-api' is Up and mapped to 0.0.0.0:8080
+```
+
+### Authentication & API Contract
+
+The API is secured with JWT. Follow this two-steps to process data:
+
+#### 1. Obtain Bearer Token
+
+Endpoint: POST /api/Auth/login
+
+```Bash
+curl -X POST http://localhost:8080/api/Auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"username": "admin", "password": "password"}'
+```
+
+#### 2. Execute Conversion
+
+Endpoint: POST /api/WordCase/convert
+
+```Bash
+curl -X POST http://localhost:8080/api/WordCase/convert \
+     -H "Authorization: Bearer <YOUR_TOKEN>" \
+     -H "Content-Type: application/json" \
+     -d '{"Text": "hello m2", "Choice": 1}'
+```
+
 ### Run the Load-Balanced Cluster
 
-To support high-concurrency workloads and horizontal scalability, the platform utilizes an NGINX Reverse Proxy operating as a Layer 7 Load Balancer. This architecture enables request distribution across multiple isolated backend containers while maintaining stable latency characteristics under sustained load.
+To support high-concurrency workloads and horizontal scalability, the platform uses NGINX as a Layer 7 reverse proxy and traffic distribution layer across multiple backend replicas.
 
-* Dynamic Scaling: Container orchestration is managed through Docker Compose using a replicas: 4 deployment model. On Apple M2 systems, this configuration aligns closely with the available Performance Cores, maximizing throughput efficiency during concurrent request execution.
+* Dynamic Scaling: To support high-concurrency workloads and horizontal scalability, the platform uses NGINX as a Layer 7 reverse proxy and traffic distribution layer across multiple backend replicas.
 
 * Health-Aware Routing: NGINX routes traffic exclusively to healthy .NET 8 backend instances, enabling graceful failover behavior, rolling deployments, and zero-downtime service maintenance.
 
-* Latency Smoothing: By distributing workloads across multiple backend replicas, the system minimizes tail-latency spikes commonly caused by parallel Garbage Collection events and managed-runtime contention under burst traffic conditions.
+* Latency Smoothing: minimizes tail-latency spikes caused by concurrent garbage collection cycles and managed runtime contention under burst traffic.
 
 * Immutable Deployment Flow: The deployment pipeline follows a “Build Once, Promote Anywhere” strategy. Native binaries and application artifacts are generated once during CI/CD execution and promoted unchanged across Development, Staging, and Production environments to preserve runtime consistency.
 
-* Cross-Platform Runtime Support: The orchestration stack supports macOS, Linux, and Windows container hosts while maintaining identical API behavior and native ABI compatibility across all supported platforms.
+* Cross-Platform Runtime Support: while preserving consistent API behavior and ABI compatibility across all supported operating systems.
 
 [Read the Load Balancing & Orchestration Guide →](docs/LoadBalancer/LOAD_BALANCER.md)
 

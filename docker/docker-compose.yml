@@ -25,6 +25,14 @@ services:
     container_name: case-api
     ports:
       - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # JWT Configuration (Injected via Environment Variables)
+      - Jwt__Issuer=CaseConversion-Gateway
+      - Jwt__Audience=CaseConversion-Client
+      - Jwt__Key=SuperSecretKey_NitishSingh_2026_HighPerformance
+      # OpenTelemetry Endpoint (Pointing to the Jaeger service below)
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     restart: unless-stopped
     networks:
       - case-network

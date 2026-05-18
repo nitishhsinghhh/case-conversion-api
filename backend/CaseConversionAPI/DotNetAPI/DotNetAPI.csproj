@@ -1,31 +1,27 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>StringConversionAPI</RootNamespace>
+    <UserSecretsId>01a5a7b3-b364-42b2-9f4c-bbab55de8d89</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
   </ItemGroup>
 
-  <ItemGroup >
+  <ItemGroup>
   <!-- Windows DLL -->
-  <None Include="../CppLib/build_dll/Release/libProcessStringDLL.dll"
-        CopyToOutputDirectory="Always"
-        Condition=" '$(CI)' != 'true' AND '$(OS)' == 'Windows_NT' " />
+  <None Include="../CppLib/build_dll/Release/libProcessStringDLL.dll" CopyToOutputDirectory="Always" Condition=" '$(CI)' != 'true' AND '$(OS)' == 'Windows_NT' " />
 
   <!-- macOS DLL -->
-  <None Include="../CppLib/build_dll/lib/libProcessStringDLL.dylib"
-        CopyToOutputDirectory="Always"
-        Condition=" '$(CI)' != 'true' AND  '$(OS)' == 'OSX' " />
+  <None Include="../CppLib/build_dll/lib/libProcessStringDLL.dylib" CopyToOutputDirectory="Always" Condition=" '$(CI)' != 'true' AND  '$(OS)' == 'OSX' " />
 
   <!-- Linux DLL -->
-  <None Include="../CppLib/build_dll/lib/libProcessStringDLL.so"
-        CopyToOutputDirectory="Always"
-        Condition=" '$(CI)' != 'true' AND '$(OS)' == 'Linux' " />
+  <None Include="../CppLib/build_dll/lib/libProcessStringDLL.so" CopyToOutputDirectory="Always" Condition=" '$(CI)' != 'true' AND '$(OS)' == 'Linux' " />
 </ItemGroup>
 
 <ItemGroup>
@@ -34,6 +30,10 @@
   <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
   <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
   <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
+</ItemGroup>
+
+<ItemGroup>
+  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
 </ItemGroup>
 
 </Project>
