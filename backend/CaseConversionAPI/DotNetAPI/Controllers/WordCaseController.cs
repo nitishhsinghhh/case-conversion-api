@@ -35,11 +35,44 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StringConversionAPI.Controllers
 {
+    public record LoginRequest(string Username, string Password);
+
+    /// <summary>
+    /// Model for Parallel Batch Requests.
+    /// </summary>
+    public class BatchRequest
+    {
+        public IEnumerable<string> Texts { get; set; } = new List<string>();
+        public int Choice { get; set; }
+    }
     [ApiController]
     [Route("api/[controller]")]
+    public class AuthController : ControllerBase
+    {
+        private readonly ITokenService _tokenService;
+
+        public AuthController(ITokenService tokenService) 
+            => _tokenService = tokenService;
+
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginRequest request)
+        {
+            if (request.Username == "admin" && request.Password == "password")
+            {
+                var token = _tokenService.GenerateToken(request.Username, new[] { "Admin", "User" });
+                return Ok(new { Token = token });
+            }
+            return Unauthorized(new { Message = "Invalid credentials" });
+        }
+    }
+
+    [ApiController]
+    [Route("api/[controller]")]
+    [AllowAnonymous]
     public class WordCaseController : ControllerBase 
     {
         private readonly ProcessStringService _service;
@@ -121,14 +154,5 @@ namespace StringConversionAPI.Controllers
                 return StatusCode(500, "Internal batch processing error.");
             }
         }
-    }
-
-    /// <summary>
-    /// Model for Parallel Batch Requests.
-    /// </summary>
-    public class BatchRequest
-    {
-        public IEnumerable<string> Texts { get; set; } = new List<string>();
-        public int Choice { get; set; }
     }
 }

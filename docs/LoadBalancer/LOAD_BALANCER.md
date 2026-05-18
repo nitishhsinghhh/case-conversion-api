@@ -14,7 +14,7 @@ This document explains the Layer 7 load balancing strategy used to scale the Pol
 
 ## 1. What is a Load Balancer?
 
-A Load Balancer acts as a "traffic cop" sitting in front of your servers. It routes incoming client requests across all servers capable of fulfilling those requests in a manner that maximizes speed and capacity utilization and ensures that no one server is overworked.
+A Load Balancer sits in front of backend services and intelligently distributes requests across multiple servers to improve scalability, availability, and system stability under concurrent load.
 
 ### Why use one?
 
@@ -23,6 +23,77 @@ A Load Balancer acts as a "traffic cop" sitting in front of your servers. It rou
 - Scalability: You can add more backend "workers" without changing the URL the user sees.
 
 - Performance: It distributes the heavy C++ string transformation tasks across multiple CPU cores.
+
+---
+
+## Load Balancing Fundamentals
+
+### 1. The Round Robin Algorithm (The "Fair Share" Rule)
+
+Round Robin is the most common and simplest method of load balancing.
+
+- The Logic: It works like a dealer at a card table. It gives the 1st request to Server A, the 2nd to Server B, the 3rd to Server C, and then loops back to A.
+
+- Why it works for us: Since our native C++ engine is stateless (it doesn't need to "remember" the user from the previous request), any server can handle any request. So there’s no need for complex "sticky sessions."
+
+### 2. Least Connections (The "Smart" Choice)
+
+Least Connections is a dynamic strategy that looks at the current workload of each backend.
+
+- How it works: NGINX keeps a tally of how many active requests each .NET replica is handling. It sends the next request to the server with the fewest active connections.
+
+- Best For: When requests vary wildly in processing time (e.g., one request is a 10-character string, while another is a 2.1MB block that locks up a C++ thread).
+
+- Mechanical Win: It prevents "clumping," where one server gets stuck with three heavy 5MB conversion tasks while another server sits idle.
+
+### Configuration in NGINX
+
+We can toggle between these strategies by modifying your nginx.conf.
+
+For Round Robin:
+
+This is the default behavior. We don't need to specify a directive.
+
+```Ngnix
+upstream backend_servers {
+    server backend:8080; # Round Robin is implied
+}
+```
+
+For Least Connections:
+
+Simply add the least_conn directive at the top of the upstream block.
+
+```Ngnix
+upstream backend_servers {
+    least_conn;
+    server backend:8080;
+}
+```
+
+#### Performance Comparison
+
+| Strategy          | Behavior        | Impact on M2 P-Cores                                                                                                   |
+|-------------------|-----------------|--------------------------------------------------------------------------------------                                  |
+| Round Robin       | Fixed sequence  | Excellent for high-speed, small-string throughput. Predictable and low-latency.                                        |
+| Least Connections | Load-aware      | Critical for the Batch Processing endpoint. Ensures a 20MB batch does not overwhelm one core while others remain idle. |
+
+### Layer 4 vs Layer 7 Load Balancing
+
+| Feature             | Layer 4 (L4) Load Balancer         | Layer 7 (L7) Load Balancer        |
+| ------------------- | ---------------------------------- | --------------------------------- |
+| OSI Layer           | Transport Layer                    | Application Layer                 |
+| Works With          | TCP / UDP                          | HTTP / HTTPS / WebSockets         |
+| Decision Based On   | IP address and port                | URL, headers, cookies, hostnames  |
+| Performance         | Faster, lower overhead             | Slightly slower, more intelligent |
+| SSL Termination     | Usually no                         | Usually yes                       |
+| Content Awareness   | Cannot inspect HTTP content        | Can inspect requests deeply       |
+| Routing Capability  | Basic connection routing           | Advanced request routing          |
+| Example             | AWS NLB, HAProxy TCP mode          | NGINX, AWS ALB, Traefik           |
+| Best Use Case       | Ultra-high throughput, low latency | APIs, microservices, web apps     |
+| Sticky Sessions     | Limited                            | Full support                      |
+| Path-Based Routing  | No                                 | Yes                               |
+| Header Manipulation | No                                 | Yes                               |
 
 ---
 
