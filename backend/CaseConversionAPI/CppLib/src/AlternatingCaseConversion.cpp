@@ -20,7 +20,7 @@
 /*               starting with uppercase for each word.              */
 /*                                                                   */
 /* Notes       : - Reuses LowerCaseConversion and                    */
-/*               UpperCaseConversion implementations.                */
+/*                 UpperCaseConversion implementations.              */
 /*               - Alternation resets after whitespace characters.   */
 /*               - Non-alphabetic characters are preserved.          */
 /*                                                                   */
