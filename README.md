@@ -9,7 +9,7 @@ This project is a high-concurrency, cross-platform string processing and spell-c
 ![.NET API Integeration Tests](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/dotnet-integration-tests.yml?branch=main&label=Integeration%20Tests&style=flat-square)
 ![Full Project Build](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/native-engine-ci_Non_DLL.yml?branch=main&label=Build%3A%20Multi-OS&style=flat-square)
 ![Docker Push](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/docker-hub-distribution.yml?branch=main&label=Registry%3A%20Image&style=flat-square)
-![Deployment](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/production-release.yml?label=Release%3A%20v3.0.0&style=flat-square)
+![Deployment](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/production-release.yml?label=Release%3A%20v3.1.0&style=flat-square)
 ![Quality](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/cpp-quality-guard.yml?branch=main&label=Quality%3A%20Clang&style=flat-square)
 ![Telemetry E2E](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/telemetry-e2e-verification.yml?branch=main&label=Observability%3A%20E2E&style=flat-square)
 ![Security Audit](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/security-analysis.yml?branch=main&label=Security%3A%20CodeQL&style=flat-square)
@@ -23,8 +23,6 @@ This project is a high-concurrency, cross-platform string processing and spell-c
 ![CI/CD](https://img.shields.io/badge/CI/CD-GitHub%20Actions-2088FF?style=flat-square&logo=github-actions&logoColor=white)
 ![Telemetry](https://img.shields.io/badge/Telemetry-OpenTelemetry-F48420?style=flat-square&logo=opentelemetry&logoColor=white)
 ![License](https://img.shields.io/github/license/nitishhsinghhh/case-conversion-api?style=flat-square&color=blue)
-
-![Code Base](https://img.shields.io/badge/Code_Base-194k_Lines-blueviolet?style=flat-square)
 
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=nitishhsinghhh/CaseConversionAPI&label=Project%20Views&countColor=%232088ff&style=flat-square)
 
