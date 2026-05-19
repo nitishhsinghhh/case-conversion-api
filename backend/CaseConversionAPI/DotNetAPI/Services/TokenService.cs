@@ -2,80 +2,103 @@
  * File         : TokenService.cs
  *
  * Copyright    : (c) 2016–2026 Nitish Singh. All rights reserved.
- * This material may be reproduced for teaching and learning purposes only.
- * It is not to be used in industry or for commercial purposes.
+ * License      : Licensed under the Apache License, Version 2.0 (the "License");
+ *                you may not use this file except in compliance with the License.
+ *                You may obtain a copy of the License at
  *
- * Class        : TokenService
- * Interface    : ITokenService
+ *                http://www.apache.org/licenses/LICENSE-2.0
  *
- * Description  : Provides JWT token generation services for the Case Conversion API.
- * Handles secure claim construction, role-based authorization claims,
- * HMAC-SHA256 signing, issuer/audience configuration, and token expiration.
+ *                Unless required by applicable law or agreed to in writing, software
+ *                distributed under the License is distributed on an "AS IS" BASIS,
+ *                WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *                See the License for the specific language governing permissions and
+ *                limitations under the License.
  *
- * Notes        : - Implements stateless JWT generation for authentication workflows.
- *               - Uses symmetric key cryptography (HMAC-SHA256).
- *               - Supports role-based authorization claims.
- *               - Designed for ASP.NET Core authentication middleware integration.
- *               - Compatible with distributed API gateway deployments.
- *               - Security key should be externally configured via IConfiguration.
- *               - Tokens include JTI claim for replay tracking and observability.
- *               - Intended for short-lived access token generation.
+ * Description  : Provides JSON Web Token (JWT) generation services for the Case Conversion API.
+ *                Handles secure claims construction, identity mapping, cryptographic signing 
+ *                via HMAC-SHA256, and multi-environment fallback configuration mechanisms.
  *
- * Security     : - Enforces signed JWT tokens using HMAC-SHA256.
- *               - Prevents unsigned token generation.
- *               - Supports issuer/audience validation workflows.
- *               - Intended to operate behind HTTPS transport security.
- *               - Compatible with zero-trust API authentication architecture.
- *
- * Thread Safe  : Yes (stateless service)
- * Complexity   : O(n) relative to number of roles
- * API Status   : Stable
- * Exception Safety : Strong Guarantee
+ * Author       : Nitish Singh <me.singhnitish@yandex.com>
  *
  * Revision History:
  * ------------------------------------------------------------------------------------------------
  * Version     Date           Author           Description
  * ------------------------------------------------------------------------------------------------
- * 1.0         2026-05-18     Nitish Singh     Initial JWT token service implementation
+ * 1.0         2026-05-18     Nitish Singh     Initial stateless JWT token service implementation.
  **************************************************************************************************/
 
+using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace StringConversionAPI.Services
 {
+    /// <summary>
+    /// Defines the contract for processing authentication assertions and provisioning short-lived access tokens.
+    /// </summary>
     public interface ITokenService
     {
+        /// <summary>
+        /// Generates a cryptographically signed JSON Web Token (JWT) with authorization claims.
+        /// </summary>
+        /// <param name="username">The unique identifier of the authenticated user or application client.</param>
+        /// <param name="roles">The collection of logical roles associated with the authenticated user.</param>
+        /// <returns>A string representing the serialized compact JWT bearer token.</returns>
         string GenerateToken(string username, IEnumerable<string> roles);
     }
 
-    public class TokenService : ITokenService
+    /// <summary>
+    /// Implements a stateless, thread-safe security token service leveraging symmetric cryptography.
+    /// Designed for seamless integration into standard ASP.NET Core authentication middleware workflows.
+    /// </summary>
+    public sealed class TokenService : ITokenService
     {
         private readonly IConfiguration _config;
-        public TokenService(IConfiguration config) => _config = config;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TokenService"/> class.
+        /// </summary>
+        /// <param name="config">The system configuration provider containing authorization metadata settings.</param>
+        public TokenService(IConfiguration config)
+        {
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+        }
+
+        /// <inheritdoc />
         public string GenerateToken(string username, IEnumerable<string> roles)
         {
-            var jwtSettings = _config.GetSection("Jwt");
-            // Use the exact key from the Program.cs
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SuperSecretKey_NitishSingh_2026_HighPerformance"));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentException("Username payload assertions cannot be empty or null values.", nameof(username));
+            }
 
-            var claims = new List<Claim>
+            IConfigurationSection jwtSettings = _config.GetSection("Jwt");
+            
+            // Establish the symmetric validation key matching the application gateway program entry parameters
+            SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes("SuperSecretKey_NitishSingh_2026_HighPerformance"));
+            SigningCredentials creds = new(key, SecurityAlgorithms.HmacSha256);
+
+            List<Claim> claims = new()
             {
                 new Claim(JwtRegisteredClaimNames.Sub, username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("name", username)
             };
 
-            foreach (var role in roles)
+            if (roles != null)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                foreach (string role in roles.Where(role => !string.IsNullOrWhiteSpace(role)))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
             }
 
-            var token = new JwtSecurityToken(
+            JwtSecurityToken token = new(
                 issuer: jwtSettings["Issuer"] ?? "CaseConversion-Gateway",
                 audience: jwtSettings["Audience"] ?? "CaseConversion-Client",
                 claims: claims,
