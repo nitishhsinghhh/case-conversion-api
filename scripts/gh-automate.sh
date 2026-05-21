@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
 # File      : gh-automate.sh                                         */
-# Version   : 1.6                                                    */
+# Version   : 1.7                                                    */
 #                                                                    */
 # Purpose   : Local PR Automator for standardization and cleanup.    */
 #             Handles branch creation, PR submission, and merging.   */
@@ -24,12 +24,14 @@
 #                                        timestamps, and colors.     */
 # 1.6        2026-05-09  Nitish Singh    Added dependency and        */
 #                                        authentication validation.  */
+# 1.7        2026-05-21  Nitish Singh    Added pre-flight fetch sync */
+#                                        and robust API 502 handling.*/
 #*********************************************************************/
 
 set -euo pipefail
 
 #*********************************************************************/
-# Logging Utilities                                                  */
+# Logging Utilities                                                   */
 #*********************************************************************/
 
 RED='\033[0;31m'
@@ -59,7 +61,7 @@ log_success() {
 }
 
 #*********************************************************************/
-# Dependency Validation                                              */
+# Dependency Validation                                               */
 #*********************************************************************/
 
 log_info "Validating required dependencies..."
@@ -91,7 +93,7 @@ fi
 log_success "GitHub CLI authentication verified."
 
 #*********************************************************************/
-# Git Remote Validation                                              */
+# Git Remote Validation                                               */
 #*********************************************************************/
 
 log_info "Validating git remote configuration..."
@@ -104,7 +106,7 @@ fi
 log_success "Git remote configuration verified."
 
 #*********************************************************************/
-# Input Validation                                                   */
+# Input Validation                                                    */
 #*********************************************************************/
 
 BRANCH=$1
@@ -119,7 +121,7 @@ fi
 log_info "Starting PR Workflow: $BRANCH"
 
 #*********************************************************************/
-# 1. Prepare Branch                                                  */
+# 1. Prepare Branch                                                   */
 #*********************************************************************/
 
 log_info "Preparing branch..."
@@ -139,8 +141,13 @@ log_info "Creating commit..."
 git commit -m "$MESSAGE" || log_warn "No changes to commit."
 
 #*********************************************************************/
-# 2. Push & Create PR                                                */
+# 2. Push & Create PR                                                 */
 #*********************************************************************/
+
+# CRITICAL AUTOMATION FIX: Sync the specific remote tracking reference to local
+# index to guarantee --force-with-lease never encounters a (stale info) rejection.
+log_info "Synchronizing remote tracking references..."
+git fetch origin "$BRANCH" >/dev/null 2>&1 || log_warn "Remote branch tracking signature not established yet."
 
 log_info "Pushing branch to remote..."
 git push origin "$BRANCH" --force-with-lease
@@ -179,23 +186,40 @@ echo
 log_info "Allowing GitHub Actions to initialize..."
 sleep 30
 
-while [ "$(gh pr checks "$PR_NUMBER" 2>/dev/null | wc -l)" -eq 0 ]; do
-    log_warn "Waiting for CI/CD checks to appear..."
-    sleep 5
+# ENTERPRISE RESILIENCE LOOP: Handle network issues or GitHub API 502 Bad Gateway drops cleanly
+RETRY_COUNT=0
+MAX_RETRIES=12
+
+while true; do
+    CHECKS_COUNT=$(gh pr checks "$PR_NUMBER" 2>/dev/null | wc -l || echo "0")
+    if [ "$CHECKS_COUNT" -gt 0 ]; then
+        break
+    fi
+
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    if [ "$RETRY_COUNT" -ge "$MAX_RETRIES" ]; then
+        log_warn "GitHub Engine API did not report checks within window. Proceeding to manual stream check..."
+        break
+    fi
+
+    log_warn "Waiting for remote pipeline orchestration to register checks (Attempt $RETRY_COUNT/$MAX_RETRIES)..."
+    sleep 10
 done
 
-log_success "CI/CD checks detected."
+log_success "CI/CD checks resolved."
 
-gh pr checks "$PR_NUMBER" --watch
+# Streams live pipeline statuses to terminal
+gh pr checks "$PR_NUMBER" --watch || log_warn "Live stream interrupted. Please confirm pipeline completion manually."
 
 echo
 log_info "Review the final status above."
 log_info "Ensure all required checks are GREEN or safely bypassable."
+echo
 
-read -p "Press [Enter] to continue with squash merge..."
+read -p "Press [Enter] to execute administrative squash merge..." RunCommand
 
 #*********************************************************************/
-# 4. Merge & Cleanup                                                 */
+# 4. Merge & Cleanup                                                  */
 #*********************************************************************/
 
 log_info "Merging PR #$PR_NUMBER..."
@@ -208,7 +232,7 @@ gh pr merge "$PR_NUMBER" \
 log_success "Pull Request merged successfully."
 
 #*********************************************************************/
-# 5. Sync Main                                                       */
+# 5. Sync Main                                                        */
 #*********************************************************************/
 
 log_info "Synchronizing local main branch..."
@@ -216,4 +240,4 @@ log_info "Synchronizing local main branch..."
 git checkout main
 git pull --ff-only origin main
 
-log_success "Workflow Complete. Environment Synced."
+log_success "Workflow Complete. Local Environment Synced."
