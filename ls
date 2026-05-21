@@ -1,12 +1,0 @@
-Script started on Thu May 21 18:47:24 2026
-/dev/fd/12:25: command not found: compdef
-[1m[7m%[27m[1m[0m                                                                                                                                                           [0m[27m[24m[Jnitishsingh@Nitishs-MacBook-Air word-case-api % [K[?2004hccs scrp ipt[?2004l
-zsh: command not found: cs
-[1m[7m%[27m[1m[0m                                                                                                                                                           [0m[27m[24m[Jnitishsingh@Nitishs-MacBook-Air word-case-api % [K[?2004hccd scrp ipt[?2004l
-cd: no such file or directory: script
-[1m[7m%[27m[1m[0m                                                                                                                                                           [0m[27m[24m[Jnitishsingh@Nitishs-MacBook-Air word-case-api % [K[?2004hccd scripts[1m/[0m[0m [?2004l
-[1m[7m%[27m[1m[0m                                                                                                                                                           [0m[27m[24m[Jnitishsingh@Nitishs-MacBook-Air scripts % [K[?2004hlls[?2004l
-gh-automate.sh		init-ui-workspace.sh
-[1m[7m%[27m[1m[0m                                                                                                                                                           [0m[27m[24m[Jnitishsingh@Nitishs-MacBook-Air scripts % [K[?2004hccd ../[?2004l
-[1m[7m%[27m[1m[0m                                                                                                                                                           [0m[27m[24m[Jnitishsingh@Nitishs-MacBook-Air word-case-api % [K[?2004hsscript[1m [0m[0m     s  cchod   od   mod +x scripts[1m/[0m[0m/gh-automate.sh[1m [0m[0m [?2004l
-[1m[7m%[27m[1m[0m                                                                                                                                                           [0m[27m[24m[Jnitishsingh@Nitishs-MacBook-Air word-case-api % [K[?2004h../scripts[1m/[0m[0m/gh-automate.sh[1m [0m[0m doc   scr ipt/
