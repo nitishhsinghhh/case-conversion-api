@@ -191,7 +191,7 @@ RETRY_COUNT=0
 MAX_RETRIES=12
 
 while true; do
-    CHECKS_COUNT=$(gh pr checks "$PR_NUMBER" 2>/dev/null | wc -l || echo "0")
+    CHECKS_COUNT=$(gh pr checks "$PR_NUMBER" 2>/dev/null | wc -l | tr -d '[:space:]' || echo "0")
     if [ "$CHECKS_COUNT" -gt 0 ]; then
         break
     fi
