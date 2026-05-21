@@ -496,11 +496,19 @@ To maintain architectural integrity and enforce standardizations across the poly
 
 #### Workflow Features
 
-* Atomic Standardization: Automatically stages all metadata and core changes to ensure documentation never drifts from implementation.
+* Atomic Standardization: Automatically stages all metadata and core changes to ensure documentation never drifts from implementation layers.
 
-* CI/CD Verification Gate: Leverages the GitHub CLI to stream live status checks (Actions, CodeQL, Security Audits) directly to the terminal.
+* Asynchronous Integration Initialization: Pauses for 30 seconds following PR registration to allow remote webhooks and GitHub Actions virtual runners to establish and instantiate workflow instances before making telemetry calls.
 
-* Administrative Cleanup: Executes squash-merges and performs local/remote branch pruning to maintain a clean, linear git history.
+* Live Telemetry Stream Gating: Leverages the GitHub CLI engine to track raw status checks (Actions, CodeQL analysis, and Security Audits). It runs an ongoing verification loop until remote runners publish initial states, then streams updates directly to the developer's terminal.
+
+* Interactive Administrative Gate: Pauses execution after the monitoring stream finishes, prompting the operator for confirmation. This ensures a developer explicitly verifies the health of the pipeline before running administrative merges.
+
+* Administrative Cleanup: Executes squash-merges through administrative bypass routes, deletes the tracking branch on the remote repository, and cleans up local references to maintain a clean, linear Git history.
+
+#### Execution Sequence & Terminal Gating
+
+The script automatically blocks upstream merging until all checks return healthy, requiring a manual [Enter] checkpoint acknowledgment to commit changes to the main branch.
 
 #### Usage
 
