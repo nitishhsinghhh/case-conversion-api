@@ -6,7 +6,7 @@ This project is a high-concurrency, cross-platform string processing and spell-c
 
 ![C++ CI](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/native-engine-ci.yml?branch=main&label=Engine%3A%20Native&style=flat-square)
 ![.NET API Status](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/dotnet-tests.yml?branch=main&label=Gateway%3A%20.NET%208&style=flat-square)
-![.NET API Integeration Tests](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/dotnet-integration-tests.yml?branch=main&label=Integeration%20Tests&style=flat-square)
+![.NET API Integration Tests](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/dotnet-integration-tests.yml?branch=main&label=Integration%20Tests&style=flat-square)
 ![Full Project Build](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/native-engine-ci_Non_DLL.yml?branch=main&label=Build%3A%20Multi-OS&style=flat-square)
 ![Docker Push](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/docker-hub-distribution.yml?branch=main&label=Registry%3A%20Image&style=flat-square)
 ![Deployment](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/production-release.yml?label=Release%3A%20v3.1.0&style=flat-square)
@@ -70,7 +70,7 @@ This project explores a hybrid architecture where high-performance native C++17
 processing is exposed safely through a modern .NET 8 web stack using a custom
 C-style ABI layer.
 
-The goal is to demonstrate:
+The primary goal is to demonstrate:
 
 * Safe managed/unmanaged interoperability
 * Deterministic memory ownership
@@ -111,9 +111,9 @@ This project is built to safely expose high-performance C++ logic to a managed .
 
 * The Engine (C++17): This is our performance core. It uses Strategy and Factory patterns so we can add new processing logic without touching the core engine.
 
-* The Bridge (C-style ABI): Since .NET can't talk to C++ classes directly, we built a custom wrapper. It defines a clear memory contract (who allocates, who frees) to prevent memory leaks across the native-managed boundary.
+* The Bridge (C-style ABI): Since .NET cannot communicate directly with C++ classes, we built a custom wrapper. It defines a clear memory contract (who allocates, who frees) to prevent memory leaks across the native-managed boundary.
 
-* The Gateway (.NET 8): Our REST API orchestration layer. We use Dynamic P/Invoke to load the native engine at runtime, making the service platform-agnostic and easy to swap across operating systems. The managed layer also utilizes the Singleton pattern for shared runtime services such as native library loaders, configuration providers, and telemetry orchestration to ensure centralized lifecycle management and reduced allocation overhead under high concurrency.
+* The Gateway (.NET 8): Our REST API orchestration layer. We use Dynamic P/Invoke to load the native engine at runtime, making the service platform-agnostic and easy to deploy across operating systems. The managed layer also utilizes the Singleton pattern for shared runtime services such as native library loaders, configuration providers, and telemetry orchestration to ensure centralized lifecycle management and reduced allocation overhead under high concurrency.
 
 * The Frontend (React/TS): A type-safe UI built on Vite. We prioritized sub-second reload times to keep the frontend development loop as fast as the backend.
 
@@ -311,7 +311,7 @@ To maintain deterministic behavior and enforce environmental uniformity across p
 
 * Containerized Cross-Compilation (Linux & Windows): Spins up a dedicated multi-stage cross-build Docker container to produce Linux ELF binaries (.so via GCC) and Windows Portable Executables (.dll via MinGW), ensuring build environments remain isolated and reproducible.
 
-* Automated Lifecycle Extraction: Hooks into the container boundary post-build via virtual image layers, cleanly mirror-extracts target binaries directly into localized unmanaged workspace subdirectories (/build/*), and purges transient builder containers immediately to minimize disk footprints.
+* Automated Lifecycle Extraction: Hooks into the container boundary post-build via virtual image layers, cleanly extracts target binaries directly into localized unmanaged workspace subdirectories (/build/*), and purges transient builder containers immediately to minimize disk footprints.
 
 [Master Orchestrator Script](backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native-docker.sh)
 
@@ -578,7 +578,7 @@ docker ps
 
 ### Authentication & API Contract
 
-The API is secured with JWT. Follow this two-steps to process data:
+The API is secured with JWT. Follow this two-step to process data:
 
 #### 1. Obtain Bearer Token
 
