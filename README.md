@@ -277,6 +277,18 @@ DOCKERFILE_PATH="backend/CaseConversionAPI/CppLib/Scripts/Dockerfile"
 | Linux  | `.so`    | GCC / CMake    | Docker (Ubuntu)      |
 | Windows| `.dll`   | MinGW / CMake  | Docker (Cross-Build) |
 
+#### Master Native Build Orchestration
+
+To maintain deterministic behavior and enforce environmental uniformity across platforms, the project utilizes a centralized cross-platform build orchestration loop. This engine strategically splits target environments between the host operating system and virtualized container boundaries:
+
+* Unified Binary Management Loop: Host System Optimization (macOS ARM64): Directly compiles platform-native Mach-O binaries (.dylib) leveraging local Clang toolchains to guarantee physical Apple Silicon P-Core alignment.
+
+* Containerized Cross-Compilation (Linux & Windows): Spins up a dedicated multi-stage cross-build Docker container to produce Linux ELF binaries (.so via GCC) and Windows Portable Executables (.dll via MinGW), ensuring build environments remain isolated and reproducible.
+
+* Automated Lifecycle Extraction: Hooks into the container boundary post-build via virtual image layers, cleanly mirror-extracts target binaries directly into localized unmanaged workspace subdirectories (/build/*), and purges transient builder containers immediately to minimize disk footprints.
+
+[Master Orchestrator Script](backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native-docker.sh)
+
 ### 2. Managed Gateway: .NET REST API
 
 The .NET 8 API layer functions as the managed orchestration boundary between the native C++ execution engine and external client applications.
