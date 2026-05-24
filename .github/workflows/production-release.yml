@@ -63,7 +63,7 @@ jobs:
 
       - name: "Build Native Engine"
         run: |
-          cmake -S backend/CaseConversionAPI/CppLib -B build \
+          cmake -S Backend/CaseConversionAPI/CppLib -B build \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DCMAKE_OSX_ARCHITECTURES=arm64
           cmake --build build --config Release --parallel
@@ -74,7 +74,7 @@ jobs:
 
       - name: "Publish API"
         run: |
-          dotnet publish backend/CaseConversionAPI/DotNetAPI/DotNetAPI.csproj \
+          dotnet publish Backend/CaseConversionAPI/DotNetAPI/DotNetAPI.csproj \
                  -c Release -o ./publish
           
           DYLIB_PATH=$(find build -name "libProcessStringDLL.dylib" | head -n 1)
@@ -95,8 +95,8 @@ jobs:
         run: |
           zip -rj WordCaseEngine-ARM64.zip ./publish
           
-          if [ -d "backend/database" ]; then
-            zip -r SourceCode-Metadata.zip backend/database README.md
+          if [ -d "Backend/CaseConversionAPI/Database" ]; then
+            zip -r SourceCode-Metadata.zip Backend/CaseConversionAPI/Database README.md
           else
             zip -r SourceCode-Metadata.zip README.md
           fi

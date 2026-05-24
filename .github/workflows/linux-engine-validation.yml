@@ -35,7 +35,7 @@ on:
   push:
     branches: ["main"]
     paths: &shared_paths
-      - 'backend/CaseConversionAPI/CppLib/**'
+      - 'Backend/CaseConversionAPI/CppLib/**'
       - '.github/workflows/linux-engine-validation.yml'
   pull_request:
     branches: ["main"]
@@ -91,14 +91,14 @@ jobs:
         # for local/standalone app building. This allows us to build 
         # a testable executable without modifying the core API build logic.
         run: |
-          cp backend/CaseConversionAPI/CppLib/CMakeListsLocalApp.txt \
-             backend/CaseConversionAPI/CppLib/CMakeLists.txt
+          cp Backend/CaseConversionAPI/CppLib/CMakeListsLocalApp.txt \
+             Backend/CaseConversionAPI/CppLib/CMakeLists.txt
           echo "{\"event\": \"CONFIG_SWAP\", \"status\": \"SUCCESS\", \"target\": \"LocalApp\"}"
 
       - name: Configure String Conversion
         run: |
-          cmake -S backend/CaseConversionAPI/CppLib \
-                -B backend/CaseConversionAPI/CppLib/build \
+          cmake -S Backend/CaseConversionAPI/CppLib \
+                -B Backend/CaseConversionAPI/CppLib/build \
                 -DCMAKE_BUILD_TYPE=Release
       
       # ------------------------------------------------------------
@@ -109,11 +109,11 @@ jobs:
       # ------------------------------------------------------------
 
       - name: Build project
-        run: cmake --build backend/CaseConversionAPI/CppLib/build --parallel
+        run: cmake --build Backend/CaseConversionAPI/CppLib/build --parallel
 
       - name: Run String Conversion App
         run: |
-          ./backend/CaseConversionAPI/CppLib/build/app
+          ./Backend/CaseConversionAPI/CppLib/build/app
           echo "{\"event\": \"RUNTIME_EXECUTION\", \"binary\": \"app\", \"status\": \"PASSED\"}"
 
       # ------------------------------------------------------------
@@ -125,7 +125,7 @@ jobs:
       # ------------------------------------------------------------
 
       - name: Run String Conversion Tests with Logs
-        run: ./backend/CaseConversionAPI/CppLib/build/runTests --gtest_output=console --gtest_brief=0
+        run: ./Backend/CaseConversionAPI/CppLib/build/runTests --gtest_output=console --gtest_brief=0
 
 
       - name: Finalize Status

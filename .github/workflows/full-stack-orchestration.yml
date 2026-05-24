@@ -36,8 +36,8 @@ on:
   push:
     branches: ["main"]
     paths: &shared_paths
-      - 'backend/CaseConversionAPI/CppLib/**'
-      - 'backend/CaseConversionAPI/DotNetAPI/**'
+      - 'Backend/CaseConversionAPI/CppLib/**'
+      - 'Backend/CaseConversionAPI/DotNetAPI/**'
       - '.github/workflows/full-stack-orchestration.yml'
   pull_request:
     branches: ["main"]
@@ -86,21 +86,21 @@ jobs:
       - name: Configure DLL (Unix)
         if: runner.os != 'Windows'
         run: |
-          cmake -S backend/CaseConversionAPI/CppLib \
-                -B backend/CaseConversionAPI/CppLib/build_dll \
+          cmake -S Backend/CaseConversionAPI/CppLib \
+                -B Backend/CaseConversionAPI/CppLib/build_dll \
                 -DCMAKE_BUILD_TYPE=Release
 
       - name: Configure DLL (Windows)
         if: runner.os == 'Windows'
         run: |
-          cmake -S backend/CaseConversionAPI/CppLib `
-                -B backend/CaseConversionAPI/CppLib/build_dll `
+          cmake -S Backend/CaseConversionAPI/CppLib `
+                -B Backend/CaseConversionAPI/CppLib/build_dll `
                 -DCMAKE_BUILD_TYPE=Release `
                 -DPROCESSSTRING_EXPORTS=ON `
                 -G "Visual Studio 17 2022" -A x64
 
       - name: Build DLL
-        run: cmake --build backend/CaseConversionAPI/CppLib/build_dll --config Release --parallel
+        run: cmake --build Backend/CaseConversionAPI/CppLib/build_dll --config Release --parallel
 
       # Managed Layer (.NET 8)
       - name: Setup .NET
@@ -110,19 +110,19 @@ jobs:
 
       - name: Restore & Publish .NET API
         run: |
-          dotnet restore backend/CaseConversionAPI/DotNetAPI
-          dotnet publish backend/CaseConversionAPI/DotNetAPI -c Release -o ./publish
+          dotnet restore Backend/CaseConversionAPI/DotNetAPI
+          dotnet publish Backend/CaseConversionAPI/DotNetAPI -c Release -o ./publish
 
       # ABI Bridge (Artifact Injection)
       - name: Inject Native Artifacts
         shell: bash
         run: |
           if [ "${{ runner.os }}" == "Linux" ]; then
-            cp backend/CaseConversionAPI/CppLib/build_dll/libProcessStringDLL.so ./publish/
+            cp Backend/CaseConversionAPI/CppLib/build_dll/libProcessStringDLL.so ./publish/
           elif [ "${{ runner.os }}" == "macOS" ]; then
-            cp backend/CaseConversionAPI/CppLib/build_dll/libProcessStringDLL.dylib ./publish/
+            cp Backend/CaseConversionAPI/CppLib/build_dll/libProcessStringDLL.dylib ./publish/
           elif [ "${{ runner.os }}" == "Windows" ]; then
-            find backend/CaseConversionAPI/CppLib/build_dll -name "ProcessStringDLL.dll" -exec cp {} ./publish/ \;
+            find Backend/CaseConversionAPI/CppLib/build_dll -name "ProcessStringDLL.dll" -exec cp {} ./publish/ \;
           fi
           echo "{\"event\": \"ABI_SYNC_COMPLETE\", \"os\": \"${{ matrix.os }}\"}"
 
@@ -146,7 +146,7 @@ jobs:
         with:
           node-version: 20
       - name: Build Frontend
-        working-directory: ./frontend
+        working-directory: ./Frontend
         run: |
           npm install
           npm run build
@@ -184,7 +184,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./backend/Dockerfile
+          file: ./Backend/Dockerfile
           push: true
           tags: |
             ghcr.io/${{ github.repository }}:latest
