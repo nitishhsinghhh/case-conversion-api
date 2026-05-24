@@ -104,8 +104,8 @@ jobs:
         if: matrix.build-mode == 'manual' && matrix.language == 'c-cpp'
         shell: bash
         run: |
-          echo "{\"event\": \"SEMANTIC_BUILD_START\", \"path\": \"backend/CaseConversionAPI/CppLib\"}"
-          cd backend/CaseConversionAPI/CppLib
+          echo "{\"event\": \"SEMANTIC_BUILD_START\", \"path\": \"Backend/CaseConversionAPI/CppLib\"}"
+          cd Backend/CaseConversionAPI/CppLib
           cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release --parallel
 

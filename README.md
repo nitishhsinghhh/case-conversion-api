@@ -127,7 +127,7 @@ This project is built to safely expose high-performance C++ logic to a managed .
 
 This project follows a strict **Architectural Decision Log (ADL)** to document the strategic reasoning behind our technical choices. This ensures long-term maintainability and provides a clear audit trail for the system's evolution.
 
-**[View the Full Architectural Decision Log (ADL) →](docs/adr/DECISION_LOG.md)**
+**[View the Full Architectural Decision Log (ADL) →](Docs/adr/DECISION_LOG.md)**
 
 ### Key Decisions at a Glance
 
@@ -228,7 +228,7 @@ graph TD
     end
 ```
 
-**[Read the Full Deployment & Infrastructure Guide→](docs/deployment/deployment.md)**
+**[Read the Full Deployment & Infrastructure Guide→](Docs/deployment/deployment.md)**
 
 ---
 
@@ -236,12 +236,12 @@ graph TD
 
 | Document                                                  | Focus                                                      | Target Audience              |
 |-----------------------------------------------------------|------------------------------------------------------------|----------------------------- |
-| [Architecture Decisions](docs/adr/DECISION_LOG.md)        | Architectural rationale behind P/Invoke and NGINX design   | Architects / Technical Leads |
-| [Performance Report](docs/performance/PERFORMANCE.md)     | Stress testing, soak testing, and throughput analysis      | QA Engineers / DevOps        |
-| [Deployment Guide](docs/deployment/deployment.md)         | Multi-stage Docker deployment and orchestration            | SREs / Platform Engineers    |
-| [Release Process](docs/releases/RELEASING.md)             | Semantic Versioning and release optimization strategy      | Release Managers             |
-| [Load Balancer Guide](docs/LoadBalancer/LOAD_BALANCER.md) | NGINX Layer 7 routing, scaling, and traffic orchestration  | SREs / Platform Engineers    |
-| [DLL Internals](docs/DLL_INTERNALS/README.md)             | Native interop, DLL lifecycle, and memory ownership model  | Systems / Backend Engineers  |
+| [Architecture Decisions](Docs/adr/DECISION_LOG.md)        | Architectural rationale behind P/Invoke and NGINX design   | Architects / Technical Leads |
+| [Performance Report](Docs/performance/PERFORMANCE.md)     | Stress testing, soak testing, and throughput analysis      | QA Engineers / DevOps        |
+| [Deployment Guide](Docs/deployment/deployment.md)         | Multi-stage Docker deployment and orchestration            | SREs / Platform Engineers    |
+| [Release Process](Docs/releases/RELEASING.md)             | Semantic Versioning and release optimization strategy      | Release Managers             |
+| [Load Balancer Guide](Docs/LoadBalancer/LOAD_BALANCER.md) | NGINX Layer 7 routing, scaling, and traffic orchestration  | SREs / Platform Engineers    |
+| [DLL Internals](Docs/DLL_INTERNALS/README.md)             | Native interop, DLL lifecycle, and memory ownership model  | Systems / Backend Engineers  |
 
 ---
 
@@ -413,6 +413,16 @@ Operational Endpoints:
 
 * Production Diagnostics: Distributed tracing enables rapid identification of performance bottlenecks, native execution hotspots, interop failures, and container-level service degradation during sustained load conditions.
 
+> **Architecture Note:** OpenTelemetry acts as the standardized instrumentation factory that builds and emits the data metrics from within the C# codebase, while Jaeger acts as the visual dashboard backend that aggregates those metrics into a readable timeline.
+
+#### Managed-to-Native Latency Breakdown (Jaeger Trace)
+
+The trace below demonstrates the system boundary crossing during execution. The parent span captures the total HTTP request lifecycle inside the .NET gateway, while the nested internal child span captures the isolated compute duration inside the native C++ engine.
+
+As shown in the trace visualization below, the nested `Native-C++-Process` child span maps directly under the gateway execution tree, proving seamless context propagation while confirming a pure native compute duration of just **222µs**.
+
+![Jaeger Distributed Trace](Assets/jagger_V1.2.png)
+
 ### 5. Hardware-Specific Optimization (Apple M2)
 
 The execution model is explicitly tuned for Apple Silicon, with optimization strategies focused on maximizing Performance Core utilization, minimizing scheduler contention, and preserving deterministic memory behavior under sustained high-concurrency workloads.
@@ -509,7 +519,7 @@ This engine is engineered for high-density concurrent processing and long-durati
 
 * Sustained Throughput Under Concurrent Load: The platform sustained an average processing density of approximately 424k operations per minute, peaking near 434k operations per minute during high-concurrency bursts. This level of throughput enables near-real-time ETL and transformation workloads on consumer-grade ARM64 hardware.
 
-[View Full Performance Logs & Scaling Data](docs/performance/ITERATIONS/README.md)
+[View Full Performance Logs & Scaling Data](Docs/performance/ITERATIONS/README.md)
 
 ### 9. The Challenge of Native Compilation on Apple Silicon
 
@@ -615,7 +625,7 @@ To support high-concurrency workloads and horizontal scalability, the platform u
 
 * Cross-Platform Runtime Support: while preserving consistent API behavior and ABI compatibility across all supported operating systems.
 
-[Read the Load Balancing & Orchestration Guide →](docs/LoadBalancer/LOAD_BALANCER.md)
+[Read the Load Balancing & Orchestration Guide →](Docs/LoadBalancer/LOAD_BALANCER.md)
 
 ---
 
@@ -647,4 +657,4 @@ This project follows Semantic Versioning (SemVer) and utilizes an automated CI/C
 
 * Cross-Platform Artifact Distribution: The release pipeline produces platform-specific native binaries (.dll, .so, .dylib) alongside containerized deployment artifacts, enabling consistent runtime behavior across macOS, Linux, and Windows environments.
 
-[Read the Full Release & Versioning Guide →](docs/releases/RELEASING.md)
+[Read the Full Release & Versioning Guide →](Docs/releases/RELEASING.md)

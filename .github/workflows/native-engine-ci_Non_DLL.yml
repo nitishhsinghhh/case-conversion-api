@@ -50,8 +50,8 @@ jobs:
     timeout-minutes: 60
 
     env:
-      BUILD_DIR: backend/CaseConversionAPI/CppLib/build
-      CPP_ROOT: backend/CaseConversionAPI/CppLib
+      BUILD_DIR: Backend/CaseConversionAPI/CppLib/build
+      CPP_ROOT: Backend/CaseConversionAPI/CppLib
 
     steps:
       - name: Checkout repository

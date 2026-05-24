@@ -39,18 +39,22 @@ on:
   push:
     branches: ["main"]
     paths: &shared_paths
-      - 'backend/CaseConversionAPI/CppLib/**'
-      - 'backend/CaseConversionAPI/DotNetAPI/**'
-      - 'backend/CaseConversionAPI/tests/DotNetTests/**'
+      - 'Backend/CaseConversionAPI/CppLib/**'
+      - 'Backend/CaseConversionAPI/DotNetAPI/**'
+      - 'Backend/CaseConversionAPI/tests/DotNetTests/**'
       - '.github/workflows/dotnet-integration-tests.yml'
+    paths-ignore:
+      - '**/*.md'
   pull_request:
     branches: ["main"]
     paths: *shared_paths
+    paths-ignore:
+      - '**/*.md'
 
 env:
-  CPP_LIB_DIR: "backend/CaseConversionAPI/CppLib"
-  DOTNET_TEST_DIR: "backend/CaseConversionAPI/tests/DotNetTests"
-  DOTNET_BIN_REL: "bin/Release/net8.0"
+  CPP_LIB_DIR: "Backend/CaseConversionAPI/CppLib"
+  DOTNET_TEST_DIR: "Backend/CaseConversionAPI/tests/DotNetTests"
+  DOTNET_BIN_REL: "Backend/CaseConversionAPI/DotNetAPI/bin/Release/net8.0"
 
 jobs:
   test:

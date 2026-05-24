@@ -83,15 +83,15 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          if (Test-Path "backend/CaseConversionAPI/CppLib/build") {
-            Remove-Item -Recurse -Force "backend/CaseConversionAPI/CppLib/build"
+          if (Test-Path "Backend/CaseConversionAPI/CppLib/build") {
+            Remove-Item -Recurse -Force "Backend/CaseConversionAPI/CppLib/build"
           }
 
       - name: Use local app CMakeLists
         shell: bash
         run: |
-          cp backend/CaseConversionAPI/CppLib/CMakeListsLocalApp.txt \
-             backend/CaseConversionAPI/CppLib/CMakeLists.txt
+          cp Backend/CaseConversionAPI/CppLib/CMakeListsLocalApp.txt \
+             Backend/CaseConversionAPI/CppLib/CMakeLists.txt
           echo "{\"event\": \"CLI_CONFIG_SWAP\", \"status\": \"SUCCESS\"}"
 
       # ------------------------------------------------------------
@@ -99,10 +99,10 @@ jobs:
       # ------------------------------------------------------------
 
       - name: Configure project
-        run: cmake -S backend/CaseConversionAPI/CppLib -B backend/CaseConversionAPI/CppLib/build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S Backend/CaseConversionAPI/CppLib -B Backend/CaseConversionAPI/CppLib/build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build project
-        run: cmake --build backend/CaseConversionAPI/CppLib/build --config Release --parallel
+        run: cmake --build Backend/CaseConversionAPI/CppLib/build --config Release --parallel
 
       # ------------------------------------------------------------
       # Execution & CLI Validation
@@ -110,11 +110,11 @@ jobs:
 
       - name: Run app (Linux/macOS)
         if: runner.os != 'Windows'
-        run: ./backend/CaseConversionAPI/CppLib/build/app
+        run: ./Backend/CaseConversionAPI/CppLib/build/app
 
       - name: Run app (Windows)
         if: runner.os == 'Windows'
-        run: ./backend/CaseConversionAPI/CppLib/build/Release/app.exe
+        run: ./Backend/CaseConversionAPI/CppLib/build/Release/app.exe
 
       # ------------------------------------------------------------
       # Test Suite (CTest / GoogleTest)
@@ -122,11 +122,11 @@ jobs:
 
       - name: Run tests (Linux/macOS)
         if: runner.os != 'Windows'
-        run: ctest --verbose --test-dir backend/CaseConversionAPI/CppLib/build
+        run: ctest --verbose --test-dir Backend/CaseConversionAPI/CppLib/build
 
       - name: Run tests (Windows)
         if: runner.os == 'Windows'
-        run: ctest -C Release --verbose --output-on-failure --test-dir backend/CaseConversionAPI/CppLib/build
+        run: ctest -C Release --verbose --output-on-failure --test-dir Backend/CaseConversionAPI/CppLib/build
 
       # ------------------------------------------------------------
       # Post-Execution Governance
@@ -137,7 +137,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-logs-${{ matrix.os }}
-          path: backend/CaseConversionAPI/CppLib/build/Testing/Temporary/LastTest.log
+          path: Backend/CaseConversionAPI/CppLib/build/Testing/Temporary/LastTest.log
 
       - name: Finalize Status
         if: always()

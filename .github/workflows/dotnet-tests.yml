@@ -36,13 +36,17 @@ on:
   push:
     branches: ["main", "develop"]
     paths: &shared_paths
-      - 'backend/CaseConversionAPI/CppLib/**'
-      - 'backend/CaseConversionAPI/DotNetAPI/**'
-      - 'backend/CaseConversionAPI/tests/DotNetTests/**'
+      - 'Backend/CaseConversionAPI/CppLib/**'
+      - 'Backend/CaseConversionAPI/DotNetAPI/**'
+      - 'Backend/CaseConversionAPI/tests/DotNetTests/**'
       - '.github/workflows/dotnet-tests.yml'
+    paths-ignore:
+      - '**/*.md'
   pull_request:
     branches: ["main"]
     paths: *shared_paths
+    paths-ignore:
+        - '**/*.md'
 
 jobs:
   test:
@@ -95,14 +99,14 @@ jobs:
 
       - name: Build C++ Library (Unix)
         if: runner.os != 'Windows'
-        working-directory: backend/CaseConversionAPI/CppLib
+        working-directory: Backend/CaseConversionAPI/CppLib
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build --config Release --parallel
 
       - name: Build C++ Library (Windows)
         if: runner.os == 'Windows'
-        working-directory: backend/CaseConversionAPI/CppLib
+        working-directory: Backend/CaseConversionAPI/CppLib
         run: |
           cmake -S . -B build `
                 -DCMAKE_BUILD_TYPE=Release `
@@ -116,7 +120,7 @@ jobs:
       # ------------------------------------------------------------
 
       - name: Build .NET Tests
-        working-directory: backend/CaseConversionAPI/tests/DotNetTests
+        working-directory: Backend/CaseConversionAPI/tests/DotNetTests
         run: |
           dotnet restore
           dotnet build --configuration Release
@@ -124,22 +128,22 @@ jobs:
       - name: Inject Native Library (Artifact Injection)
         shell: bash
         run: |
-          DEST_PATH="backend/CaseConversionAPI/tests/DotNetTests/bin/Release/net8.0/"
+          DEST_PATH="Backend/CaseConversionAPI/tests/DotNetTests/bin/Release/net8.0/"
           mkdir -p "$DEST_PATH"
 
           if [ "${{ runner.os }}" == "Windows" ]; then
-            LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.dll" | head -n 1)
+            LIB_FILE=$(find Backend/CaseConversionAPI/CppLib/build -name "*.dll" | head -n 1)
             TARGET_NAME="ProcessStringDLL.dll"
           elif [ "${{ runner.os }}" == "macOS" ]; then
-            LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.dylib" | head -n 1)
+            LIB_FILE=$(find Backend/CaseConversionAPI/CppLib/build -name "*.dylib" | head -n 1)
             TARGET_NAME="libProcessStringDLL.dylib"
           else
-            LIB_FILE=$(find backend/CaseConversionAPI/CppLib/build -name "*.so" | head -n 1)
+            LIB_FILE=$(find Backend/CaseConversionAPI/CppLib/build -name "*.so" | head -n 1)
             TARGET_NAME="libProcessStringDLL.so"
           fi
 
           cp "$LIB_FILE" "$DEST_PATH$TARGET_NAME"
-          cp "$LIB_FILE" "backend/CaseConversionAPI/tests/DotNetTests/$TARGET_NAME"
+          cp "$LIB_FILE" "Backend/CaseConversionAPI/tests/DotNetTests/$TARGET_NAME"
           
           echo "{\"event\": \"BRIDGE_READY\", \"lib\": \"$TARGET_NAME\", \"os\": \"${{ matrix.os }}\"}"
 
@@ -148,7 +152,7 @@ jobs:
       # ------------------------------------------------------------
         
       - name: Run Integration Tests
-        working-directory: backend/CaseConversionAPI/tests/DotNetTests
+        working-directory: Backend/CaseConversionAPI/tests/DotNetTests
         shell: bash
         env:
           OTEL_EXPORTER_OTLP_ENDPOINT: ${{ runner.os == 'Linux' && 'http://localhost:4317' || 'http://localhost:9999' }}

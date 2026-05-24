@@ -2,15 +2,15 @@
 # SYSTEM      : CaseConversionAPI Infrastructure                     */
 # SUBSYSTEM   : Telemetry E2E Integration & Verification             */
 # COMPONENT   : telemetry-verification-pipeline                      */
-# VERSION     : 1.2                                                  */
+# VERSION     : 1.3                                                  */
 #                                                                    */
-# DESCRIPTION : Orchestrates a full-stack smoke test by building the  */
-#               C++ engine, running the .NET API, and verifying       */
-#               trace ingestion into a live Jaeger instance.          */
+# DESCRIPTION : Orchestrates a full-stack smoke test by building the */
+#               C++ engine, running the .NET API, and verifying      */
+#               trace ingestion into a live Jaeger instance.         */
 #                                                                    */
-# SIDE EFFECTS: Validates cross-language Span propagation. Requires   */
-#               Jaeger sidecar with OTLP enabled. Flushes buffers     */
-#               via SIGTERM for accurate trace indexing.              */
+# SIDE EFFECTS: Validates cross-language Span propagation. Requires  */
+#               Jaeger sidecar with OTLP enabled. Flushes buffers    */
+#               via SIGTERM for accurate trace indexing.             */
 #                                                                    */
 # LICENSE     : Apache License, Version 2.0                          */
 #               Licensed under the Apache License, Version 2.0.      */
@@ -27,6 +27,7 @@
 # 1.0  2026-04-18  Nitish Singh     Initial E2E Telemetry CI         */
 # 1.1  2026-04-24  Nitish Singh     Standardized Header & Paths      */
 # 1.2  2026-05-12  Nitish Singh     Refactored Header & Log Logic    */
+# 1.3  2026-05-24  Nitish Singh     Standardized to PascalCase Backend*/
 #*********************************************************************/
 
 name: "Telemetry E2E Verification"
@@ -75,8 +76,8 @@ jobs:
 
       - name: Compile C++ Conversion Engine
         run: |
-          cmake -S backend/CaseConversionAPI/CppLib -B backend/CaseConversionAPI/CppLib/build -DCMAKE_BUILD_TYPE=Release
-          cmake --build backend/CaseConversionAPI/CppLib/build --parallel
+          cmake -S Backend/CaseConversionAPI/CppLib -B Backend/CaseConversionAPI/CppLib/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build Backend/CaseConversionAPI/CppLib/build --parallel
 
       # ------------------------------------------------------------
       # Managed Layer & Sidecar Orchestration
@@ -87,9 +88,9 @@ jobs:
           OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:4317
           ASPNETCORE_URLS: http://localhost:5050 
           ASPNETCORE_ENVIRONMENT: Development
-          LD_LIBRARY_PATH: .:${{ github.workspace }}/backend/CaseConversionAPI/CppLib/build
+          LD_LIBRARY_PATH: .:${{ github.workspace }}/Backend/CaseConversionAPI/CppLib/build
         run: |
-          cd backend/CaseConversionAPI/DotNetAPI
+          cd Backend/CaseConversionAPI/DotNetAPI
           dotnet build -c Release
           
           # Synchronize Native Binary with API Runtime
@@ -142,7 +143,7 @@ jobs:
           done
           
           echo "{\"event\": \"TRACE_VALIDATION_TIMEOUT\"}"
-          cat backend/CaseConversionAPI/DotNetAPI/api.log
+          cat Backend/CaseConversionAPI/DotNetAPI/api.log
           exit 1
 
       - name: Finalize Status
