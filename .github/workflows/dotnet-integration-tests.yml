@@ -43,6 +43,8 @@ on:
       - 'Backend/CaseConversionAPI/DotNetAPI/**'
       - 'Backend/CaseConversionAPI/tests/DotNetTests/**'
       - '.github/workflows/dotnet-integration-tests.yml'
+    paths-ignore:
+      - '**/*.md'
   pull_request:
     branches: ["main"]
     paths: *shared_paths
