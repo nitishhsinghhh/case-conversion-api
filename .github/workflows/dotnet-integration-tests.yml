@@ -1,7 +1,7 @@
 #*********************************************************************/
 # SYSTEM      : CaseConversionAPI Infrastructure                     */
 # SUBSYSTEM   : .NET + API Integration Tests (Multi-Platform)        */
-# COMPONENT   : dotnet-integration-tests                             */
+# COMPONENT   : dotnet-integration-Tests                             */
 # VERSION     : 1.7                                                  */
 #                                                                    */
 # DESCRIPTION : Validates the P/Invoke bridge and API logic across   */
@@ -41,20 +41,17 @@ on:
     paths: &shared_paths
       - 'Backend/CaseConversionAPI/CppLib/**'
       - 'Backend/CaseConversionAPI/DotNetAPI/**'
-      - 'Backend/CaseConversionAPI/tests/DotNetTests/**'
+      - 'Backend/CaseConversionAPI/Tests/DotNetTests/**'
       - '.github/workflows/dotnet-integration-tests.yml'
-    paths-ignore:
-      - '**/*.md'
   pull_request:
     branches: ["main"]
     paths: *shared_paths
-    paths-ignore:
-      - '**/*.md'
 
 env:
   CPP_LIB_DIR: "Backend/CaseConversionAPI/CppLib"
-  DOTNET_TEST_DIR: "Backend/CaseConversionAPI/tests/DotNetTests"
-  DOTNET_BIN_REL: "Backend/CaseConversionAPI/DotNetAPI/bin/Release/net8.0"
+  DOTNET_TEST_DIR: "Backend/CaseConversionAPI/Tests/DotNetTests"
+  # Point this directly to the Test project's release output context
+  DOTNET_TEST_BIN_REL: "bin/Release/net8.0"
 
 jobs:
   test:
@@ -143,7 +140,8 @@ jobs:
       - name: Inject Native Library (ABI Bridge)
         shell: bash
         run: |
-          FULL_DEST="${{ env.DOTNET_TEST_DIR }}/${{ env.DOTNET_BIN_REL }}/"
+          # Target the actual test execution directory directly
+          FULL_DEST="${{ env.DOTNET_TEST_DIR }}/${{ env.DOTNET_TEST_BIN_REL }}/"
           mkdir -p "$FULL_DEST"
           
           # Find and inject OS-specific binary
@@ -164,6 +162,10 @@ jobs:
         shell: bash
         env:
           OTEL_SERVICE_NAME: "CaseConversion-Test-Runner"
+          # Informs Linux where to find unlinked shared libraries at runtime
+          LD_LIBRARY_PATH: ${{ github.workspace }}/${{ env.DOTNET_TEST_DIR }}:${{ github.workspace }}/${{ env.DOTNET_TEST_DIR }}/bin/Release/net8.0
+          # Informs macOS where to find unlinked shared libraries at runtime
+          DYLD_LIBRARY_PATH: ${{ github.workspace }}/${{ env.DOTNET_TEST_DIR }}:${{ github.workspace }}/${{ env.DOTNET_TEST_DIR }}/bin/Release/net8.0
         run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
             export PATH="$PATH:$(pwd)"

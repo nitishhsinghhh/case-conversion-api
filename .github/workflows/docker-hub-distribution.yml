@@ -44,8 +44,6 @@ on:
   pull_request:
     branches: ["main"]
     paths: *shared_paths
-    paths-ignore:
-      - '**/*.md'
 
 jobs:
   docker:
@@ -120,7 +118,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: . 
-          file: ./Backend/CaseConversionAPI/Dockerfile
+          file: ./Backend/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             nitishhsinghhh/word-case-api:latest
