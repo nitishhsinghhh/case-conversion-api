@@ -19,7 +19,6 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
-# Install native toolchain constraints
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -27,36 +26,29 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /src
 
-# Copy the entire repo context (Crucial for multi-stage relative folder parsing)
+# Copy the entire repo context
 COPY . .
 
-# 1. Purge potential local build dirtiness
+# 1. Clean cache
 RUN rm -rf Backend/CaseConversionAPI/CppLib/build
 
-# 2. Build Native C++ Engine via explicit monorepo anchor paths
+# 2. Build Native C++ Engine
+# Path matches the monorepo structure: Backend -> CaseConversionAPI -> CppLib
 RUN cmake -S Backend/CaseConversionAPI/CppLib \
           -B Backend/CaseConversionAPI/CppLib/build \
           -DCMAKE_BUILD_TYPE=Release
 
 RUN cmake --build Backend/CaseConversionAPI/CppLib/build --parallel $(nproc)
 
-# 3. Publish Managed .NET API (Cd directly into context to prevent build path breakage)
-RUN cd Backend/CaseConversionAPI/DotNetAPI && \
-    dotnet publish -c Release -o /app/publish
+# 3. Publish Managed .NET API
+RUN dotnet publish Backend/CaseConversionAPI/DotNetAPI -c Release -o /app/publish
 
-# 4. ABI Bridge Promotion (Copying runtime native engine into publish directory root)
+# 4. ABI Bridge
 RUN cp Backend/CaseConversionAPI/CppLib/build/libProcessStringDLL.so /app/publish/
 
-
-# --- STAGE 2: RUNTIME ENGINE ---
+# --- STAGE 2: RUNTIME ---
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-
-# Bring forward only the polished production binaries
 COPY --from=build /app/publish .
-
-# Configure system environment to evaluate current directory first for dynamic linkage (.so loading)
-ENV LD_LIBRARY_PATH=.
-
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "DotNetAPI.dll"]
