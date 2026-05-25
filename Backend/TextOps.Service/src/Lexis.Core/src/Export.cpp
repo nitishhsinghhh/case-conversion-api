@@ -34,7 +34,7 @@
 /* Dependencies                                                      */
 /*********************************************************************/
 
-#include "spellcheck/SpellChecker.hpp"
+#include "SpellChecker.hpp"
 #include <iostream>
 #include <string>
 #include <limits>
