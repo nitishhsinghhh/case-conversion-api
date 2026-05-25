@@ -1,0 +1,121 @@
+#!/bin/bash
+#*********************************************************************/
+#  Utility Script - Local CLI App Runner (macOS Optimized)           */
+#  Version     : 1.0                                                 */
+#                                                                    */
+# Purpose   : Temporarily swaps CMakeLists to build/run the CLI app  */
+#              without modifying the main project architecture.      */
+# Location  : backend/CaseConversionAPI/CppLib/Scripts/run-local.sh  */
+#                                                                    */
+# Revision History:                                                  */
+# ------------------------------------------------------------------ */
+# Version    Date        Author          Description                 */
+# ------------------------------------------------------------------ */
+# 1.0        2026-04-16  Nitish Singh    Initial Swap Logic Script   */
+#*********************************************************************/
+
+set -euo pipefail
+
+#*********************************************************************/
+# Logging Utilities                                                  */
+#*********************************************************************/
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+timestamp() { date +"%Y-%m-%d %H:%M:%S"; }
+log_info() { echo -e "${BLUE}[$(timestamp)] [INFO]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[$(timestamp)] [WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[$(timestamp)] [ERROR]${NC} $1"; }
+log_success() { echo -e "${GREEN}[$(timestamp)] [SUCCESS]${NC} $1"; }
+
+#*********************************************************************/
+# 1. Environment & Path Synchronization                              */
+#*********************************************************************/
+
+log_info "Synchronizing workspace context..."
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+CPP_ROOT="$(cd "$SCRIPT_DIR/../src/Lexis.Core" && pwd)"
+cd "$CPP_ROOT"
+
+if [ ! -f "CMakeListsLocalApp.txt" ]; then
+    log_error "Critical file missing: CMakeListsLocalApp.txt not found in $CPP_ROOT"
+    exit 1
+fi
+
+readonly BUILD_DIR="$CPP_ROOT/build/macos-latest"
+
+log_success "Workspace synchronized: $(pwd)"
+
+#*********************************************************************/
+# 2. Safety Backup & Context Swap                                    */
+#*********************************************************************/
+
+log_info "Swapping to Local App Configuration..."
+
+# Create a backup of the original C++ library CMakeLists
+cp CMakeLists.txt CMakeLists.txt.bak
+
+# Overwrite with the standalone CLI App configuration
+cp CMakeListsLocalApp.txt CMakeLists.txt
+
+cleanup() {
+    if [ -f "$CPP_ROOT/CMakeLists.txt.bak" ]; then
+        mv "$CPP_ROOT/CMakeLists.txt.bak" "$CPP_ROOT/CMakeLists.txt"
+        log_success "Configuration context restored."
+    fi
+}
+trap cleanup EXIT
+
+#*********************************************************************/
+# 3. Build Phase (M2 Optimization)                                   */
+#*********************************************************************/
+
+log_info "===== Building CLI Application ====="
+
+mkdir -p "$BUILD_DIR"
+
+# Corrected M2 P-Core detection
+NUM_CORES=$(sysctl -n hw.perflevel0.logicalcpu 2>/dev/null || sysctl -n hw.ncpu || echo 2)
+
+# FIX: Changed -arch arm6 to -arch arm64
+cmake -S "$CPP_ROOT" -B "$BUILD_DIR" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DARCH_ARM64=ON \
+      -DUSE_PCORES=ON \
+      -DCMAKE_OSX_ARCHITECTURES=arm64
+
+log_info "Utilizing $NUM_CORES cores for parallel compilation..."
+cmake --build "$BUILD_DIR" --config Release --parallel "$NUM_CORES"
+
+log_success "CLI App built successfully."
+
+#*********************************************************************/
+# 4. Execution Phase                                                 */
+#*********************************************************************/
+
+echo -e "\n===== Running CLI App (sourcecode.cpp) ====="
+
+# CHANGE THIS LINE: Change "app" to "LexisApp"
+APP_BIN=$(find "$BUILD_DIR" -maxdepth 2 \( -name "LexisApp" -o -name "LexisApp.exe" \) | head -n 1)
+
+if [[ -n "$APP_BIN" && -f "$APP_BIN" ]]; then
+    cd "$(dirname "$APP_BIN")"
+    ./$(basename "$APP_BIN")
+    log_success "Execution completed."
+else
+    log_error "Binary 'LexisApp' not found."
+    exit 1
+fi
+
+#*********************************************************************/
+# 5. Workspace Restoration                                           */
+#*********************************************************************/
+
+# The trap handles the CMakeLists restoration.
+cd "$SCRIPT_DIR"
+log_info "Returned to scripts directory."

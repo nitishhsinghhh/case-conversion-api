@@ -40,7 +40,7 @@
 // ---------------------------
 // Core Includes
 // ---------------------------
-#include "spellcheck/SpellChecker.hpp"
+#include "SpellChecker.hpp"
 
 // ---------------------------
 // System / STL Includes
