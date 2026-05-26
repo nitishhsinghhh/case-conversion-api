@@ -2,7 +2,7 @@
 
 This project is a high-concurrency, cross-platform string processing and spell-check service system engineered around a native C++17 execution core integrated with a .NET 8 managed runtime through a custom C-style ABI layer. The architecture demonstrates low-level managed/unmanaged interoperability, deterministic memory ownership, and scalable service orchestration while applying Strategy and Factory design patterns within an immutable Docker-driven deployment pipeline.
 
-<img width="1024" height="384" alt="API" src="https://github.com/user-attachments/assets/2c1def71-630a-4721-808a-4ed2aeb7d1c2" />
+<img width="1024" height="384" alt="API" src="Assets/logo.jpeg"/>
 
 ![C++ CI](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/native-engine-ci.yml?branch=main&label=Engine%3A%20Native&style=flat-square)
 ![.NET API Status](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/dotnet-tests.yml?branch=main&label=Gateway%3A%20.NET%208&style=flat-square)
