@@ -1,10 +1,10 @@
-#**********************************************************************/
+#*********************************************************************/
 # SYSTEM      : CaseConversionAPI Infrastructure                     */
 # SUBSYSTEM   : Production Release (ARM64 Optimized)                 */
 # COMPONENT   : production-release-workflow                          */
 # VERSION     : 3.1.0                                                */
 #                                                                    */
-# DESCRIPTION : Packages high-performance binaries and metadata       */
+# DESCRIPTION : Packages high-performance binaries and metadata      */
 #               for official GitHub Releases. Targets Apple Silicon  */
 #               M2 Performance Cores via native ARM64 build flags.   */
 #                                                                    */
@@ -20,7 +20,7 @@
 # CONTACT     : me.singhnitish@yandex.com                            */
 #                                                                    */
 # REVISION HISTORY:                                                  */
-# ------------------------------------------------------------------  */
+# ------------------------------------------------------------------ */
 # Ver    Date        Author           Description                    */
 # ---    ----------  --------------   ------------------------------ */
 # 1.0    2026-04-14  Nitish Singh     Initial Release Workflow       */
@@ -28,7 +28,8 @@
 # 2.2.0  2026-04-30  Nitish Singh     RAII & Memory Sovereignty      */
 # 3.0.0  2026-05-06  Nitish Singh     1.5M Millionaire Milestone     */
 # 3.1.0  2026-05-12  Nitish Singh     Refactored Header & Log Logic  */
-#**********************************************************************/
+# 3.2.0  2026-05-26  Nitish Singh     Added Spellcheck Interop Fixes */
+#*********************************************************************/
 
 name: "Production Release"
 
@@ -108,19 +109,15 @@ jobs:
             WordCaseEngine-ARM64.zip
             SourceCode-Metadata.zip
           body: |
-            ## Word Case Conversion Engine v3.1.0
+            ## Word Case Conversion Engine v3.2.0
 
-            This release optimizes the stable v3.0 architecture, focusing on hardware-level execution density and ARM64-specific throughput.
+            This release formalizes the production-grade deployment layout, focusing on high-throughput execution density, hardware-aligned memory guards, and cross-boundary interop stability.
 
-            ### Performance Metrics:
-            - **1.5M Request Endurance:** Verified engine stability under peak temporal density.
-            - **7,067 RPS Peak:** Achieved maximum throughput on Apple M2 Silicon.
-            - **SIMD Foundation:** Integrated build-flags for future C++20 vectorization.
-
-            ### Architectural Integrity:
-            - **Hardware Affinity:** Thread-pinning optimizations for M2 P-Cores.
-            - **Memory Sovereignty:** RAII-compliant native memory management.
-            - **ABI Stability:** Verified P/Invoke bridge across managed/unmanaged boundaries.
+            ### Core Additions: Managed Spellcheck Service
+            - **Dynamic Engine Interop:** Fully integrated `ManagedSpellCheckService` utilizing runtime OS-specific binary module resolution (`.dll` / `.so` / `.dylib`).
+            - **Defensive ABI Boundaries:** Implemented explicit `IntPtr` memory layouts and double-indirection pointer tracking (`ref IntPtr`) to guarantee faultless register execution on ARM64 calling topologies.
+            - **Deterministic Memory Sovereignty:** Enforced zero-leak operational metrics with complete RAII compliance and unmanaged allocations isolated within protected `finally` execution blocks.
+            - **Distributed Observability:** Embedded standard `ActivitySource` telemetry hooks to capture cross-boundary execution latency.
 
             **Installation:**
             1. Extract `WordCaseEngine-ARM64.zip`.
