@@ -2,7 +2,7 @@
 # SYSTEM      : CaseConversionAPI Infrastructure                     */
 # SUBSYSTEM   : Native Engine Code Quality                           */
 # COMPONENT   : static-analysis-pipeline                             */
-# VERSION     : 1.5                                                  */
+# VERSION     : 1.6                                                  */
 #                                                                    */
 # DESCRIPTION : Enforces C++17 standards, formatting, and safety     */
 #               using the LLVM 16 toolchain. Includes structured     */
@@ -29,6 +29,8 @@
 # 1.3  2026-04-24  Nitish Singh     Standardized Header and Naming   */
 # 1.4  2026-05-01  Nitish Singh     Implemented shared_paths anchor  */
 # 1.5  2026-05-12  Nitish Singh     Refactored Header & Step Logic   */
+# 1.6  2026-06-01  Nitish Singh     Added spell check Service        */
+#                                   Integration                      */
 #*********************************************************************/
 
 name: C++ Quality Guard
@@ -49,6 +51,19 @@ jobs:
   static-analysis:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+           - 'Backend/CaseConversionAPI/CppLib'
+           - 'Backend/TextOps.Service/src/Lexis.Core'
+
+    name: "Static Analysis for ${{ matrix.module }}"
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,11 +82,12 @@ jobs:
       # ------------------------------------------------------------
         
       - name: Run Analysis with Logging
-        working-directory: Backend/CaseConversionAPI/CppLib
+        working-directory: ${{ matrix.module }}
         run: |
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           REPO="${{ github.repository }}"
-          
+          MODULE="${{ matrix.module }}"
+
           log_event() {
             local level=$1
             local component=$2
@@ -79,24 +95,44 @@ jobs:
             jq -n \
               --arg ts "$TIMESTAMP" \
               --arg repo "$REPO" \
+              --arg module "$MODULE" \
               --arg lvl "$level" \
               --arg comp "$component" \
               --arg msg "$message" \
-              '{timestamp: $ts, repository: $repo, level: $lvl, component: $comp, message: $msg}' -c
+              '{
+                  timestamp: $ts, 
+                  repository: $repo,
+                  module: $module, 
+                  level: $lvl, 
+                  component: $comp, 
+                  message: $msg
+                }' -c
           }
 
+          # --------------------------------------------------------
           # Step 1: Configure
-          log_event "INFO" "CMake" "Starting configuration with CMAKE_EXPORT_COMPILE_COMMANDS=ON"
-          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON || { log_event "ERROR" "CMake" "Configuration failed"; exit 1; }
+          # --------------------------------------------------------
 
+          log_event "INFO" "CMake" "Starting configuration with CMAKE_EXPORT_COMPILE_COMMANDS=ON"
+          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON || { 
+            log_event "ERROR" "CMake" "Configuration failed"; 
+            exit 1; 
+          }
+
+          # --------------------------------------------------------
           # Step 2: Clang-Format
+          # --------------------------------------------------------
+
           log_event "INFO" "Clang-Format" "Initiating strict format check on src/"
           if ! find src -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print0 | xargs -0 clang-format-16 --dry-run --Werror; then
             log_event "ERROR" "Clang-Format" "Styling violations detected"
             exit 1
           fi
 
+          # --------------------------------------------------------
           # Step 3: Clang-Tidy
+          # --------------------------------------------------------
+
           log_event "INFO" "Clang-Tidy" "Starting deep static analysis for memory safety"
           if ! find src -name "*.cpp" -print0 | xargs -0 clang-tidy-16 -p build --header-filter=src/.* --warnings-as-errors=*; then
             log_event "ERROR" "Clang-Tidy" "Code smells or memory safety issues detected"
