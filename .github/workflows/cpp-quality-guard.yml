@@ -38,6 +38,7 @@ on:
     branches: ["main"]
     paths: &shared_paths
       - 'Backend/CaseConversionAPI/CppLib/**'
+      - 'Backend/TextOps.Service/src/Lexis.Core/**'
       - '.github/workflows/cpp-quality-guard.yml'
   pull_request:
     branches: ["main"]
