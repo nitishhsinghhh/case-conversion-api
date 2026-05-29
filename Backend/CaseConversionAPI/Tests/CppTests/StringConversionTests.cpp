@@ -33,11 +33,11 @@
 
 // Core Interfaces
 #include "Client.hpp"
+#include "ConversionResult.hpp"
 #include "IStringConversion.hpp"
 #include "ProcessString.hpp"
 #include "StringConversionFactory.hpp"
 #include "TestHelpers.hpp"
-#include "ConversionResult.hpp"
 
 // Basic Conversions
 #include "AlternatingCaseConversion.hpp"
@@ -114,12 +114,14 @@ TEST(InvertWordsConversionTest, Basic) {
 
 TEST(KebabCaseConversionTest, Basic) {
   KebabCaseConversion conv;
-  EXPECT_STREQ(conv.convert("Hello World Example").get_c_str(), "hello-world-example");
+  EXPECT_STREQ(conv.convert("Hello World Example").get_c_str(),
+               "hello-world-example");
 }
 
 TEST(SnakeCaseConversionTest, Basic) {
   SnakeCaseConversion conv;
-  EXPECT_STREQ(conv.convert("Hello World Example").get_c_str(), "hello_world_example");
+  EXPECT_STREQ(conv.convert("Hello World Example").get_c_str(),
+               "hello_world_example");
 }
 
 TEST(RemoveSpacesConversionTest, Basic) {
@@ -136,7 +138,7 @@ TEST(LeetSpeakConversionTest, Basic) {
   LeetSpeakConversion conv;
   EXPECT_STREQ(conv.convert("Hello").get_c_str(), "H3ll0");
   EXPECT_STREQ(conv.convert("Testing").get_c_str(),
-            "73571ng"); // ensure mapping matches implementation
+               "73571ng"); // ensure mapping matches implementation
 }
 
 //
@@ -237,47 +239,63 @@ TEST(ClientTest, NoStrategySet) {
 
 TEST(ProcessStringTest, BasicFlow) {
   EXPECT_STREQ(processString("hello world",
-                          static_cast<int>(ConversionChoice::Alternating)).get_c_str(),
-            "HeLlO WoRlD");
+                             static_cast<int>(ConversionChoice::Alternating))
+                   .get_c_str(),
+               "HeLlO WoRlD");
   EXPECT_STREQ(processString("hello world",
-                          static_cast<int>(ConversionChoice::Capitalize)).get_c_str(),
-            "Hello World");
-  EXPECT_STREQ(processString("Hello", static_cast<int>(ConversionChoice::Lower)).get_c_str(),
-            "hello");
-  EXPECT_STREQ(processString("Hello", static_cast<int>(ConversionChoice::Upper)).get_c_str(),
-            "HELLO");
-  EXPECT_STREQ(processString("hELLO wORLD",
-                          static_cast<int>(ConversionChoice::Sentence)).get_c_str(),
-            "Hello world");
-  EXPECT_STREQ(processString("HeLLo", static_cast<int>(ConversionChoice::Toggle)).get_c_str(),
-            "hEllO");
-  EXPECT_STREQ(processString("Hello", static_cast<int>(ConversionChoice::Reverse)).get_c_str(),
-            "olleH");
+                             static_cast<int>(ConversionChoice::Capitalize))
+                   .get_c_str(),
+               "Hello World");
+  EXPECT_STREQ(processString("Hello", static_cast<int>(ConversionChoice::Lower))
+                   .get_c_str(),
+               "hello");
+  EXPECT_STREQ(processString("Hello", static_cast<int>(ConversionChoice::Upper))
+                   .get_c_str(),
+               "HELLO");
+  EXPECT_STREQ(
+      processString("hELLO wORLD", static_cast<int>(ConversionChoice::Sentence))
+          .get_c_str(),
+      "Hello world");
+  EXPECT_STREQ(
+      processString("HeLLo", static_cast<int>(ConversionChoice::Toggle))
+          .get_c_str(),
+      "hEllO");
+  EXPECT_STREQ(
+      processString("Hello", static_cast<int>(ConversionChoice::Reverse))
+          .get_c_str(),
+      "olleH");
 }
 
 TEST(ProcessStringTest, AdvancedChoices) {
   EXPECT_STREQ(processString("Hello World",
-                          static_cast<int>(ConversionChoice::RemoveVowels)).get_c_str(),
-            "Hll Wrld");
+                             static_cast<int>(ConversionChoice::RemoveVowels))
+                   .get_c_str(),
+               "Hll Wrld");
   EXPECT_STREQ(processString("Hello World",
-                          static_cast<int>(ConversionChoice::RemoveSpaces)).get_c_str(),
-            "HelloWorld");
+                             static_cast<int>(ConversionChoice::RemoveSpaces))
+                   .get_c_str(),
+               "HelloWorld");
   EXPECT_STREQ(processString("Hello World",
-                          static_cast<int>(ConversionChoice::InvertWords)).get_c_str(),
-            "olleH dlroW");
+                             static_cast<int>(ConversionChoice::InvertWords))
+                   .get_c_str(),
+               "olleH dlroW");
   EXPECT_STREQ(processString("Hello World",
-                          static_cast<int>(ConversionChoice::SnakeCase)).get_c_str(),
-            "hello_world");
+                             static_cast<int>(ConversionChoice::SnakeCase))
+                   .get_c_str(),
+               "hello_world");
   EXPECT_STREQ(processString("Hello World",
-                          static_cast<int>(ConversionChoice::KebabCase)).get_c_str(),
-            "hello-world");
+                             static_cast<int>(ConversionChoice::KebabCase))
+                   .get_c_str(),
+               "hello-world");
   EXPECT_STREQ(
-      processString("Test", static_cast<int>(ConversionChoice::LeetSpeak)).get_c_str(),
+      processString("Test", static_cast<int>(ConversionChoice::LeetSpeak))
+          .get_c_str(),
       "7357");
 }
 
 TEST(ProcessStringTest, InvalidChoice) {
-  EXPECT_STREQ(processString("Hello", 99).get_c_str(), "hello"); // invalid choice falls back
+  EXPECT_STREQ(processString("Hello", 99).get_c_str(),
+               "hello"); // invalid choice falls back
 }
 
 //

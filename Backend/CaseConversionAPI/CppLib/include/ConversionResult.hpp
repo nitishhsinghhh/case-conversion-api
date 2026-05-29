@@ -55,60 +55,60 @@
  */
 class ConversionResult {
 private:
-    /// Pointer to heap-allocated C-style string
-    char* data;
+  /// Pointer to heap-allocated C-style string
+  char *data;
 
 public:
-    /**
-     * @brief Constructs a ConversionResult from input string.
-     * @param input Null-terminated C-string to copy.
-     */
-    explicit ConversionResult(const char* input);
+  /**
+   * @brief Constructs a ConversionResult from input string.
+   * @param input Null-terminated C-string to copy.
+   */
+  explicit ConversionResult(const char *input);
 
-    /**
-     * @brief Destructor releases allocated memory.
-     */
-    ~ConversionResult();
+  /**
+   * @brief Destructor releases allocated memory.
+   */
+  ~ConversionResult();
 
-    /*****************************************************************/
-    /* Rule of 5: Copy Semantics                                     */
-    /*****************************************************************/
+  /*****************************************************************/
+  /* Rule of 5: Copy Semantics                                     */
+  /*****************************************************************/
 
-    /**
-     * @brief Copy constructor (deep copy).
-     * @param other Source object to copy from.
-     */
-    ConversionResult(const ConversionResult& other);
+  /**
+   * @brief Copy constructor (deep copy).
+   * @param other Source object to copy from.
+   */
+  ConversionResult(const ConversionResult &other);
 
-    /**
-     * @brief Copy assignment operator (deep copy).
-     * @param other Source object to assign from.
-     * @return Reference to current object.
-     */
-    ConversionResult& operator=(const ConversionResult& other);
+  /**
+   * @brief Copy assignment operator (deep copy).
+   * @param other Source object to assign from.
+   * @return Reference to current object.
+   */
+  ConversionResult &operator=(const ConversionResult &other);
 
-    /*****************************************************************/
-    /* Rule of 5: Move Semantics (Performance Optimization)           */
-    /*****************************************************************/
+  /*****************************************************************/
+  /* Rule of 5: Move Semantics (Performance Optimization)           */
+  /*****************************************************************/
 
-    /**
-     * @brief Move constructor (transfers ownership).
-     * @param other Source object to move from.
-     */
-    ConversionResult(ConversionResult&& other) noexcept;
+  /**
+   * @brief Move constructor (transfers ownership).
+   * @param other Source object to move from.
+   */
+  ConversionResult(ConversionResult &&other) noexcept;
 
-    /**
-     * @brief Move assignment operator (transfers ownership).
-     * @param other Source object to move from.
-     * @return Reference to current object.
-     */
-    ConversionResult& operator=(ConversionResult&& other) noexcept;
+  /**
+   * @brief Move assignment operator (transfers ownership).
+   * @param other Source object to move from.
+   * @return Reference to current object.
+   */
+  ConversionResult &operator=(ConversionResult &&other) noexcept;
 
-    /**
-     * @brief Returns the underlying C-style string.
-     * @return Pointer to null-terminated string.
-     */
-    [[nodiscard]] const char* get_c_str() const;
+  /**
+   * @brief Returns the underlying C-style string.
+   * @return Pointer to null-terminated string.
+   */
+  [[nodiscard]] const char *get_c_str() const;
 };
 
 #endif // CONVERSION_RESULT_HPP

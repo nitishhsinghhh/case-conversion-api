@@ -56,6 +56,7 @@ This project is a high-concurrency, cross-platform string processing and spell-c
     * [Key Performance Drivers](#key-performance-drivers)
   * [9. The Challenge of Native Compilation on Apple Silicon](#9-the-challenge-of-native-compilation-on-apple-silicon)
   * [10. Automated PR Workflow (Local Orchestration)](#10-automated-pr-workflow-local-orchestration)
+  * [11. Cross-Platform Build Engineering and Validation](#11-cross-platform-build-engineering-and-validation)
 * [Quick Start](#quick-start)
   * [Run the Load-Balanced Cluster](#run-the-load-balanced-cluster)
 * [Project Timeline and Roadmap](#project-timeline-and-roadmap)
@@ -563,6 +564,93 @@ The script automatically blocks upstream merging until all checks return healthy
 ```Bash
 ./scripts/gh-automate.sh <branch-name> "<message>"
 ```
+
+### 11. Cross-Platform Build Engineering and Validation
+
+Beyond application-level functionality, the platform emphasizes deterministic cross-platform native build engineering and runtime verification across heterogeneous operating systems and toolchains.
+
+The native orchestration pipeline is designed to validate not only successful compilation, but also runtime compatibility, artifact integrity, and execution correctness across all supported targets.
+
+#### Multi-Platform Native Validation
+
+The build system produces and validates platform-native shared libraries for:
+
+| Platform | Artifact | Toolchain               |
+| -------- | -------- | ----------------------- |
+| macOS    | `.dylib` | Clang / Apple SDK       |
+| Linux    | `.so`    | GCC / CMake             |
+| Windows  | `.dll`   | MinGW Cross-Compilation |
+
+To ensure runtime correctness rather than simple compilation success, Windows-native GoogleTest executables are executed through Wine-based compatibility validation directly from Linux container environments.
+
+```Bash
+===== Running Windows GoogleTests via Wine =====
+wine64 ./runTests.exe
+```
+
+This validation layer confirms:
+
+* successful PE executable generation
+* runtime dependency correctness
+* exported symbol integrity
+* cross-platform ABI compatibility
+* automated Windows test execution
+
+This approach provides significantly stronger guarantees than cross-compilation alone by validating the produced Windows binaries under execution conditions rather than merely verifying linker success.
+
+#### Deterministic Containerized Toolchains
+
+Linux and Windows builds are isolated within Dockerized cross-compilation environments to ensure reproducibility and eliminate host-environment drift.
+
+Key engineering characteristics include:
+
+* deterministic Docker-based build environments
+* isolated cross-platform toolchains
+* automated artifact extraction
+* parallelized native compilation
+* structured logging pipelines
+* failure-aware orchestration
+* reproducible CI/CD execution paths
+
+The orchestration layer separates:
+
+* local host compilation responsibilities
+* Docker-based cross-platform builds
+* artifact synchronization
+* runtime validation
+* binary extraction workflows
+
+This separation enables consistent multi-platform binary generation while preserving clean environmental boundaries between host and containerized toolchains.
+
+#### Runtime Verification & Observability
+
+The platform incorporates explicit runtime validation and observability throughout the native build lifecycle.
+
+Engineering considerations include:
+
+* GoogleTest integration across all targets
+* structured build and execution logging
+* runtime test output propagation
+* failure-state visibility
+* environment verification
+* automated validation orchestration
+
+During implementation, additional attention was required to expose suppressed runtime logs generated inside Docker BuildKit execution layers. This ensured native test execution output remained observable during CI/CD operations and improved debugging visibility for containerized builds.
+
+#### Engineering Focus
+
+The broader objective of the build pipeline is not only portability, but operational reliability and delivery-system ownership.
+
+The project emphasizes:
+
+* systems-level engineering
+* infrastructure-aware development
+* cross-platform runtime behavior
+* deterministic deployment workflows
+* practical DevEx tooling
+* automated verification pipelines
+
+Rather than treating native compilation as an isolated build step, the platform approaches compilation, validation, testing, orchestration, and artifact lifecycle management as a unified engineering system.
 
 ---
 

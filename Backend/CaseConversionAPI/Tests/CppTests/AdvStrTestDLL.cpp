@@ -104,7 +104,8 @@
 #include "StringConversionFactory.hpp"
 
 extern "C" {
-char *processStringDLL(const char *input, int len, int choice, const char *traceId);
+char *processStringDLL(const char *input, int len, int choice,
+                       const char *traceId);
 void freeString(char *str);
 }
 
@@ -254,9 +255,9 @@ TEST(ProcessStringDLL, MultipleCalls) {
 // 5. MEMORY MANAGEMENT TESTS FOR DLL
 // ============================================================
 
-TEST(ProcessStringDLL, MemoryNotNull) { 
-  const char *result = processStringDLL("hello", 4, 4, "test-trace-id"); 
+TEST(ProcessStringDLL, MemoryNotNull) {
+  const char *result = processStringDLL("hello", 4, 4, "test-trace-id");
   ASSERT_NE(result, nullptr);
   // Cast to char* if your freeString expects it, or keep it consistent
-  freeString(const_cast<char*>(result)); 
+  freeString(const_cast<char *>(result));
 }

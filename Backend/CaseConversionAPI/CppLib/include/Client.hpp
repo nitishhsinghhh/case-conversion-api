@@ -72,7 +72,7 @@ public:
    */
   ConversionResult execute(const std::string &input) const;
 
-  void setTraceId(const std::string& traceId);
+  void setTraceId(const std::string &traceId);
 };
 
 #endif // CLIENT_HPP
