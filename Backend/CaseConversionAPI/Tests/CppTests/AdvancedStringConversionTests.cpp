@@ -132,7 +132,8 @@ TEST(ProcessStringTest, ProcessStringAlternating) {
   std::string input = "Hello World!";
   int choice = 1; // Alternating case
 
-  std::string output = ConversionResult(processString(input, choice)).get_c_str();
+  std::string output =
+      ConversionResult(processString(input, choice)).get_c_str();
 
   logConversion("ProcessString Alternating", input, output);
 
@@ -143,7 +144,8 @@ TEST(ProcessStringTest, ProcessStringReverse) {
   std::string input = "Hello World!";
   int choice = 7; // Reverse
 
-  std::string output = ConversionResult(processString(input, choice)).get_c_str();
+  std::string output =
+      ConversionResult(processString(input, choice)).get_c_str();
 
   logConversion("ProcessString Reverse", input, output);
 
@@ -175,8 +177,8 @@ TEST(UpperCasePerformanceTest, LargeInput) {
   std::string largeInput(1'000'000, 'a');
 
   auto start = std::chrono::high_resolution_clock::now();
-  auto resultObj = converter.convert(largeInput); 
-  const char* resultStr = resultObj.get_c_str();
+  auto resultObj = converter.convert(largeInput);
+  const char *resultStr = resultObj.get_c_str();
   auto end = std::chrono::high_resolution_clock::now();
 
   auto duration =

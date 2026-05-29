@@ -11,12 +11,14 @@
 # ------------------------------------------------------------------ */
 # Version    Date        Author          Description                 */
 # ------------------------------------------------------------------ */
-# 1.0        2026-04-16  Nitish Singh    Initial Swap Logic Script   */
-# 1.1        2026-04-16  Nitish Singh    Added Absolute Path Trap    */
-# 1.2        2026-05-09  Nitish Singh    Optimized for M2 P-Cores    */
-#                                        and enhanced error cleanup. *
-# 1.3       2026-05-16  Nitish Singh     Added execution context     */
-#                                        validation and dynamic path */
+# 1.0       2026-04-16  Nitish Singh    Initial Swap Logic Script    */
+# 1.1       2026-04-16  Nitish Singh    Added Absolute Path Trap     */
+# 1.2       2026-05-09  Nitish Singh    Optimized for M2 P-Cores     */
+#                                       and enhanced error cleanup.  */
+# 1.3       2026-05-16  Nitish Singh    Added execution context      */
+#                                       validation and dynamic path  */
+#  1.4      2026-05-28  Nitish Singh    Automated clang-format via   */
+#                                       set +e error isolation.      */
 #*********************************************************************/
 
 set -euo pipefail
@@ -93,6 +95,17 @@ cmake -S "$CPP_ROOT" -B "$BUILD_DIR" \
       -DARCH_ARM64=ON \
       -DUSE_PCORES=ON \
       -DCMAKE_OSX_ARCHITECTURES=arm64
+
+# Temporarily disable strict exit-on-error for the formatter target
+set +e
+log_info "Executing source workspace auto-formatting via clang-format..."
+cmake --build "$BUILD_DIR" --target format
+if [ $? -eq 0 ]; then
+    log_success "Workspace formatting complete."
+else
+    log_warn "Formatting target encountered an initialization anomaly; proceeding to compilation."
+fi
+set -e # Re-enable strict error tracking for compilation safety
 
 log_info "Utilizing $NUM_CORES cores for parallel compilation..."
 cmake --build "$BUILD_DIR" --config Release --parallel "$NUM_CORES"

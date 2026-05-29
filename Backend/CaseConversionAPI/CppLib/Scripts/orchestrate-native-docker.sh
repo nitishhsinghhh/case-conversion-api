@@ -4,8 +4,10 @@
 #  Version     : 1.0                                                 */
 #                                                                    */
 # Purpose   : Coordinates Local (macOS) and Dockerized (Linux/Win)   */
-#             builds to generate a unified multi-platform binary set.*/
-# Location  : backend/CaseConversionAPI/CppLib/Scripts/master-build.sh*/
+#             builds to generate a unified multi-platform binary     */
+#             set.                                                   */
+# Location  : Backend/CaseConversionAPI/CppLib/Scripts/              */
+#             orchestrate-native-docker.sh                           */
 #                                                                    */
 # Revision History:                                                  */
 # ------------------------------------------------------------------ */
@@ -13,6 +15,10 @@
 # ------------------------------------------------------------------ */
 # 1.0        2026-05-14  Nitish Singh     Initial Master Orchestrator*/
 #                                         with Docker extraction.    */
+# 1.1        2026-05-16  Nitish Singh     Added changed backend root */
+#                                         path handling.             */
+# 1.2        2026-05-20  Nitish Singh     Aded google test execution */
+#                                         inside the docker container*/ 
 #*********************************************************************/
 
 set -euo pipefail
@@ -25,7 +31,7 @@ REPO_ROOT=$(realpath "$BACKEND_ROOT/..")
 # Configuration
 DOCKERFILE_PATH="$BACKEND_ROOT/CaseConversionAPI/CppLib/Scripts/Dockerfile"
 DIST_DIR="$BACKEND_ROOT/CaseConversionAPI/CppLib/build"
-NATIVE_SCRIPT_REL="backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native.sh"
+NATIVE_SCRIPT_REL="Backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native.sh"
 
 log_info() { echo -e "\033[0;34m[$(date +'%T')] [INFO]\033[0m $1"; }
 log_success() { echo -e "\033[0;32m[$(date +'%T')] [SUCCESS]\033[0m $1"; }
@@ -38,7 +44,6 @@ cd "$REPO_ROOT"
 if [[ "$(uname)" == "Darwin" ]]; then
     log_info "MacOS detected. Running local native build & tests..."
     
-    # Execute native script with the macos-latest target
     if bash "$NATIVE_SCRIPT_REL" macos-latest; then
         log_success "MacOS Local Build & Testing Complete."
     else
@@ -52,41 +57,49 @@ fi
 # --- STEP 2: DOCKER CROSS-BUILD (LINUX & WINDOWS) ---
 log_info "Initiating Docker Build for Linux (.so) and Windows (.dll)..."
 
-# Build the native-only Docker image
-if docker build -t cpp-native-cross -f "$DOCKERFILE_PATH" .; then
+if docker build \
+    --progress=plain \
+    --platform linux/amd64 \
+    -t cpp-native-cross \
+    -f "$DOCKERFILE_PATH" .; then
+
+    # 1. Run Linux Tests
+    log_info "Running C++ Core GoogleTest suite inside Linux Container Environment..."
+    if docker run --rm cpp-native-cross /src/Backend/CaseConversionAPI/CppLib/build/ubuntu-latest/runTests; then
+        log_success "Linux (Ubuntu) Container Core Tests Passed Successfully."
+    else
+        log_error "Linux Core Tests Failed within the container context."
+        exit 1
+    fi
+
+    # 3. Extract and Sync Artifacts
     log_info "Extracting virtual artifacts from Docker..."
-    
     CONTAINER_ID=$(docker create cpp-native-cross)
     TEMP_EXTRACT="$DIST_DIR/docker_temp"
     mkdir -p "$TEMP_EXTRACT"
-
-    # Copy the internal build directory to local temp
-    # The dot at the end ensures we copy contents of 'build'
-    docker cp "$CONTAINER_ID:/src/backend/CaseConversionAPI/CppLib/build/." "$TEMP_EXTRACT/"
-
-    # Cleanup Docker immediately
+    
+    docker cp "$CONTAINER_ID:/src/Backend/CaseConversionAPI/CppLib/build/." "$TEMP_EXTRACT/"
     docker rm "$CONTAINER_ID"
-    docker rmi cpp-native-cross
 
-    # --- STEP 3: SYNC VIRTUAL ARTIFACTS ---
     log_info "Syncing cross-platform target folders..."
-
-    # Target: ubuntu-latest
+    
+    # Sync Linux
     if [ -d "$TEMP_EXTRACT/ubuntu-latest" ]; then
         mkdir -p "$DIST_DIR/ubuntu-latest"
         cp "$TEMP_EXTRACT/ubuntu-latest/libProcessStringDLL.so" "$DIST_DIR/ubuntu-latest/"
         log_success "Artifact Secured: ubuntu-latest/libProcessStringDLL.so"
     fi
 
-    # Target: windows-latest
+    # Sync Windows
     if [ -d "$TEMP_EXTRACT/windows-latest" ]; then
         mkdir -p "$DIST_DIR/windows-latest"
         cp "$TEMP_EXTRACT/windows-latest/libProcessStringDLL.dll" "$DIST_DIR/windows-latest/"
         log_success "Artifact Secured: windows-latest/libProcessStringDLL.dll"
     fi
 
-    # Final Cleanup
+    # 4. Final Cleanup
     rm -rf "$TEMP_EXTRACT"
+    docker rmi cpp-native-cross
 else
     log_error "Docker build failed. Check Dockerfile and native toolchains."
     exit 1

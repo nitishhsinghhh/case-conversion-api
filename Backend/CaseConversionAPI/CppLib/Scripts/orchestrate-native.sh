@@ -19,6 +19,8 @@
 # 1.5        2026-05-16  Nitish Singh    Standardized logging,       */
 #                                        execution context validation*/
 #                                        and dynamic path handling.  */
+#  1.6       2026-05-28  Nitish Singh    Injected pre-build format   */
+#                                        automation with set +e.     */
 #*********************************************************************/
 
 set -euo pipefail
@@ -123,6 +125,17 @@ fi
 
 # Modern CMake build
 cmake -S "$CPP_ROOT" -B "$BUILD_DIR" "${CMAKE_ARGS[@]}"
+
+# Temporarily drop strict exit tracking to execute target code formatting safely
+set +e
+log_info "Executing shared framework auto-formatting via clang-format..."
+cmake --build "$BUILD_DIR" --target format
+if [ $? -eq 0 ]; then
+    log_success "Workspace formatting complete."
+else
+    log_warn "Formatting target encountered an initialization anomaly or was skipped; proceeding."
+fi
+set -e # Re-engage strict execution tracking for compilation safety
 
 log_info "Utilizing $NUM_CORES cores for parallel build..."
 cmake --build "$BUILD_DIR" --config Release --parallel "$NUM_CORES"
