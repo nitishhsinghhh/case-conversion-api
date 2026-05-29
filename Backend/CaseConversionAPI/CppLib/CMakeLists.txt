@@ -41,17 +41,31 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 enable_testing()
 
 # 2. Apply explicit static linking constraints globally for cross-compilation
-if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
-    # Force underlying components to compile with matching runtime definitions
-    set(gtest_force_shared_crt OFF CACHE BOOL "" FORCE)
-else()
+# --------------------------------------------------------
+# Runtime / Linking Strategy
+# --------------------------------------------------------
+
+if(MSVC)
+
+    # Using dynamic MSVC runtime consistently across all targets
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+
+    # GoogleTest must match the same runtime model
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+elseif(MINGW)
+
+    # MinGW-specific static runtime linking
+    set(CMAKE_EXE_LINKER_FLAGS
+        "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
+
+    set(CMAKE_SHARED_LINKER_FLAGS
+        "${CMAKE_SHARED_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
+
 endif()
 
 # 3. Restrict AddressSanitizer strictly to native explicit Debug builds
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if(CMAKE_BUILD_TYPE MATCHES Debug)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         message(STATUS "Enabling AddressSanitizer for Debug build")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer -g")
@@ -96,10 +110,6 @@ target_include_directories(StringConversionLib PUBLIC include)
 add_library(ProcessStringDLL SHARED src/ProcessStringDLL.cpp)
 target_compile_definitions(ProcessStringDLL PRIVATE PROCESSSTRING_EXPORTS)
 
-if(WIN32)
-    target_compile_definitions(ProcessStringDLL PRIVATE _CRT_SECURE_NO_WARNINGS)
-endif()
-
 target_link_libraries(ProcessStringDLL PRIVATE StringConversionLib)
 set_target_properties(ProcessStringDLL PROPERTIES PREFIX "lib")
 
@@ -129,8 +139,12 @@ add_executable(runTests
 target_link_libraries(runTests StringConversionLib gtest gtest_main)
 
 # Force the test runner to link dependencies statically under MinGW
-if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_link_options(runTests PRIVATE "-static" "-static-libgcc" "-static-libstdc++")
+if(MINGW)
+    target_link_options(runTests PRIVATE
+        "-static"
+        "-static-libgcc"
+        "-static-libstdc++"
+    )
 endif()
 
 add_test(NAME AllTests COMMAND runTests)
