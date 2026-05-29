@@ -178,7 +178,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build and Push to Packages
         uses: docker/build-push-action@v5
@@ -187,9 +187,9 @@ jobs:
           file: ./Backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:v3.0.0
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/nitishhsinghhh/case-conversion-api:latest
+            ghcr.io/nitishhsinghhh/case-conversion-api:v3.0.0
+            ghcr.io/nitishhsinghhh/case-conversion-api:${{ github.sha }}
 
       - name: Finalize Status
         if: always()
