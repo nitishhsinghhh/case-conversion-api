@@ -27,6 +27,8 @@
 
 cmake_minimum_required(VERSION 3.14)
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
