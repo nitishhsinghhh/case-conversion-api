@@ -35,8 +35,8 @@
 #define PROCESSSTRINGDLL_HPP
 
 /*********************************************************************/
-/* Platform-Specific API Macros                                      */     
-/*                                                                   */                                           
+/* Platform-Specific API Macros                                      */
+/*                                                                   */
 /*  Configures symbol visibility for the dynamic linker.             */
 /* - Windows: Uses __declspec to manage DLL export/import tables.    */
 /* - macOS/Linux: Uses visibility attributes to ensure P/Invoke      */
@@ -68,7 +68,8 @@ extern "C" {
  * @return C-string result (valid until next call). Caller must free using
  * freeString.
  */
-API const char *processStringDLL(const char *input, int len, int choice, const char *traceId);
+API const char *processStringDLL(const char *input, int len, int choice,
+                                 const char *traceId);
 
 /**
  * @brief Frees memory allocated by processStringDLL

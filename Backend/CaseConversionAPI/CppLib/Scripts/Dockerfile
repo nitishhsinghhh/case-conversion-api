@@ -9,6 +9,9 @@
 # --------|------------|--------------|----------------------------------------
 # 1.0.0   | 2026-05-14 | Nitish Singh | Initial Orchestration Layer.
 # 1.1.0   | 2026-05-14 | Nitish Singh | Integrated MinGW-w64 for Windows cross-builds.
+# 1.2.0   | 2026-05-30 | Nitish Singh | Added Wine + Xvfb validation pipeline for
+#                                     | Windows GoogleTest execution inside Linux
+#                                     | containers with cross-platform verification.
 # -----------------------------------------------------------------------------
 # ARCHITECTURAL STRATEGY:
 # * Headless Build Vessel: Designed to output binaries, not to run as a service.
@@ -16,19 +19,24 @@
 # * Artifact Extraction: Exposes the build directory for host-side consumption.
 # -----------------------------------------------------------------------------
 
-# --- STAGE 1: Build Environment (Native Toolchains Only) ---
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+ARG TARGET_PLATFORM=linux/amd64
+FROM --platform=${TARGET_PLATFORM} mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 
-# Install C++ Native Toolchains (GCC for Linux, MinGW for Windows)
-RUN apt-get update && apt-get install -y \
+# Install C++ Native Toolchains, Wine, and Xvfb for testing
+RUN dpkg --add-architecture i386 && \
+    apt-get update && apt-get install -y \
     build-essential \
     cmake \
     mingw-w64 \
+    wine \
+    wine32 \
+    wine64 \
+    xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
 
-# Copy the entire repo context to preserve script and source paths
+# Copy the entire repo context
 COPY . .
 
 # Ensure orchestrator script is executable
@@ -40,14 +48,38 @@ RUN ./Backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native.sh ubuntu-late
 # --- STEP 2: Build Windows Artifacts (.dll via MinGW) ---
 RUN ./Backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native.sh windows-latest
 
+# --- STEP 3: Verification Layer (Internal Tests) ---
+WORKDIR /src/Backend/CaseConversionAPI/CppLib/build/windows-latest
+
+ENV WINEPREFIX=/root/.wine
+ENV WINEARCH=win64
+ENV WINEDEBUG=-all
+ENV WINEDLLOVERRIDES="mscoree,mshtml="
+
+# Run Windows test suite via Wine
+# Using absolute path to /usr/bin/xvfb-run ensures command execution
+RUN echo "===== Running Windows GoogleTests via Wine =====" && \
+    /usr/bin/xvfb-run --server-args="-screen 0 1024x768x24" \
+    /usr/lib/wine/wine64 ./runTests.exe --gtest_color=yes 2>&1 | tee gtest_internal.log && \
+    echo "===== Windows GoogleTests Passed =====" \
+    || { \
+        echo "=== WINDOWS GOOGLETEST CRASH LOG ==="; \
+        cat gtest_internal.log; \
+        exit 1; \
+    }
+    
+# Reset context for artifact extraction
+WORKDIR /src
+
 # -----------------------------------------------------------------------------
 # STAGE 2: Export Layer (Minimal Delivery Vessel)
 # -----------------------------------------------------------------------------
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# Re-import target architecture variable for the final runtime stage context
+ARG TARGET_PLATFORM=linux/amd64
+FROM --platform=${TARGET_PLATFORM} mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
 # Export the raw C++ build artifacts for the host to extract via 'docker cp'
-# This bypasses managed code publish to focus on native binary delivery.
 COPY --from=build-env /src/Backend/CaseConversionAPI/CppLib/build /src/Backend/CaseConversionAPI/CppLib/build
 
 # Note: No ENTRYPOINT defined as this container is utilized as an artifact source.

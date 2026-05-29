@@ -1,10 +1,19 @@
 #!/bin/bash
 #*********************************************************************/
 #  Utility Script - Local CLI App Runner (macOS Optimized)           */
-#  Version     : 1.3                                                 */
+#  Version     : 1.4                                                 */
 #                                                                    */
 # Purpose   : Temporarily swaps CMakeLists to build/run the CLI app  */
-#              without modifying the main project architecture.      */
+#             without modifying the main project architecture.       */
+#                                                                    */
+# Features  :                                                        */
+#             * Dynamic workspace synchronization                    */
+#             * Safe CMakeLists backup/restore workflow              */
+#             * Apple Silicon (M-Series) optimization                */
+#             * Automated clang-format integration                   */
+#             * Parallelized multi-core compilation                  */
+#             * Execution context validation + cleanup               */
+#                                                                    */
 # Location  : backend/CaseConversionAPI/CppLib/Scripts/run-local.sh  */
 #                                                                    */
 # Revision History:                                                  */
@@ -14,9 +23,14 @@
 # 1.0        2026-04-16  Nitish Singh    Initial Swap Logic Script   */
 # 1.1        2026-04-16  Nitish Singh    Added Absolute Path Trap    */
 # 1.2        2026-05-09  Nitish Singh    Optimized for M2 P-Cores    */
-#                                        and enhanced error cleanup. *
-# 1.3       2026-05-16  Nitish Singh     Added execution context     */
+#                                        and enhanced error cleanup. */
+# 1.3        2026-05-16  Nitish Singh    Added execution context     */
 #                                        validation and dynamic path */
+#                                        synchronization.            */
+# 1.4        2026-05-28  Nitish Singh    Added automated clang-format*/
+#                                        execution with isolated     */
+#                                        non-fatal formatter         */
+#                                        fallback handling.          */
 #*********************************************************************/
 
 set -euo pipefail
@@ -93,6 +107,17 @@ cmake -S "$CPP_ROOT" -B "$BUILD_DIR" \
       -DARCH_ARM64=ON \
       -DUSE_PCORES=ON \
       -DCMAKE_OSX_ARCHITECTURES=arm64
+
+# Temporarily disable strict exit-on-error for the formatter target
+set +e
+log_info "Executing source workspace auto-formatting via clang-format..."
+cmake --build "$BUILD_DIR" --target format
+if [ $? -eq 0 ]; then
+    log_success "Workspace formatting complete."
+else
+    log_warn "Formatting target encountered an initialization anomaly; proceeding to compilation."
+fi
+set -e # Re-enable strict error tracking for compilation safety
 
 log_info "Utilizing $NUM_CORES cores for parallel compilation..."
 cmake --build "$BUILD_DIR" --config Release --parallel "$NUM_CORES"

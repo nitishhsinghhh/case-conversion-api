@@ -1,9 +1,19 @@
 #!/bin/bash
 #*********************************************************************/
 #  Utility Script - C++ Core Orchestration (Monorepo)                */
-#  Version     : 1.5                                                 */
+#  Version     : 1.6                                                 */
 #                                                                    */
 # Purpose   : Configures, builds, and executes C++ logic & tests.    */
+#                                                                    */
+# Features  :                                                        */
+#             * Matrix OS orchestration                              */
+#             * Dynamic build path synchronization                   */
+#             * MinGW Windows cross-compilation                      */
+#             * Apple Silicon optimization support                   */
+#             * Automated GoogleTest execution                       */
+#             * Parallelized multi-core compilation                  */
+#             * Pre-build clang-format automation                    */
+#                                                                    */
 # Location  : CppLib/Scripts/orchestrate-native.sh                   */
 #                                                                    */
 # Revision History:                                                  */
@@ -19,6 +29,10 @@
 # 1.5        2026-05-16  Nitish Singh    Standardized logging,       */
 #                                        execution context validation*/
 #                                        and dynamic path handling.  */
+# 1.6        2026-05-28  Nitish Singh    Added automated pre-build   */
+#                                        clang-format execution with */
+#                                        controlled non-fatal        */
+#                                        formatting fallback logic.  */
 #*********************************************************************/
 
 set -euo pipefail
@@ -123,6 +137,17 @@ fi
 
 # Modern CMake build
 cmake -S "$CPP_ROOT" -B "$BUILD_DIR" "${CMAKE_ARGS[@]}"
+
+# Temporarily drop strict exit tracking to execute target code formatting safely
+set +e
+log_info "Executing shared framework auto-formatting via clang-format..."
+cmake --build "$BUILD_DIR" --target format
+if [ $? -eq 0 ]; then
+    log_success "Workspace formatting complete."
+else
+    log_warn "Formatting target encountered an initialization anomaly or was skipped; proceeding."
+fi
+set -e # Re-engage strict execution tracking for compilation safety
 
 log_info "Utilizing $NUM_CORES cores for parallel build..."
 cmake --build "$BUILD_DIR" --config Release --parallel "$NUM_CORES"
