@@ -187,9 +187,9 @@ jobs:
           file: ./Backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:v3.0.0
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/nitishhsinghhh/case-conversion-api:latest
+            ghcr.io/nitishhsinghhh/case-conversion-api:v3.0.0
+            ghcr.io/nitishhsinghhh/case-conversion-api:${{ github.sha }}
 
       - name: Finalize Status
         if: always()
