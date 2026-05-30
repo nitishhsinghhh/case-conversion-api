@@ -115,7 +115,7 @@ jobs:
 
             This release extends the platform's deployment and distribution capabilities through automated container publishing, improved release orchestration, and enhanced cross-platform delivery workflows.
 
-            ### Core Additions: GitHub Container Registry (GHCR)
+            ### Core Additions: GitHub Container Registry Publishing
 
             * **Automated Container Publishing:** Integrated GitHub Container Registry (GHCR) distribution directly into the CI/CD pipeline for immutable container delivery.
             * **Versioned Image Distribution:** Container images are automatically published using semantic version tags and rolling `latest` references.
