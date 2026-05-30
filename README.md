@@ -729,6 +729,8 @@ To support high-concurrency workloads and horizontal scalability, the platform u
 | v3.0.0 Release     | May 7, 2026     | Finalized 1.5M request stress test (7,067 RPS), ARM64 native releases, and automated staged deployment pipeline.            |
 | v3.1.0 Release     | May 15, 2026.   | Refactored CI with structured JSON logging, Apache 2.0 Licensing, and Security-Hardened NuGet dependencies.                 |
 | v3.2.0 Release     | May 26, 2026    | Added ManagedSpellCheckService with runtime OS-specific binary resolution (`.dll` / `.so` / `.dylib`),                      |
+| v3.3.0 Release     | May 30, 2026    | GitHub Container Registry (GHCR) publishing, automated Docker image, and release orchestration improvements.                |
+| v4.0.0 Release     | May 30, 2026    | Unified Deployment Release: Full GHCR + GitHub Release synchronization, multi-stage artifact pipeline                       |
 
 ---
 
