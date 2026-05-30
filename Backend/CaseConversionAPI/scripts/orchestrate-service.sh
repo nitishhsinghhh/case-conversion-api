@@ -1,27 +1,65 @@
 #!/bin/bash
 # SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
-#  Utility Script - .NET API Orchestration (Monorepo)                */
-#  Version     : 1.7                                                 */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Managed API Runtime Layer (.NET 8)                   */
+# COMPONENT   : run-dotnet                                           */
+# VERSION     : 1.8                                                  */
 #                                                                    */
-# Purpose   : Manages the lifecycle (Restore, Build, Publish, Run)   */
-#             of the .NET 8 REST API within the monorepo context.    */
-# Location  : backend/CaseConversionAPI/Scripts/run-dotnet.sh        */
+# DESCRIPTION : Orchestrates the complete lifecycle of the managed   */
+#               API gateway, including dependency restoration,       */
+#               compilation, native runtime synchronization,         */
+#               publication, and local execution.                    */
 #                                                                    */
-# Revision History:                                                  */
+#               Ensures ABI compatibility between the native C++     */
+#               conversion engine and the .NET P/Invoke layer by     */
+#               automatically resolving and injecting platform-      */
+#               specific shared libraries into the runtime context.  */
+#                                                                    */
+# FEATURES    :                                                      */
+#               * Automated dependency restoration                   */
+#               * Release-mode compilation                           */
+#               * Native library discovery and synchronization       */
+#               * Dynamic platform detection                         */
+#               * Publish artifact generation                        */
+#               * Runtime environment preparation                    */
+#               * Local API hosting and execution                    */
+#                                                                    */
+# SIDE EFFECTS: Terminates active listeners on port 5000.            */
+#               Creates publish artifacts and synchronizes native    */
+#               runtime binaries into execution directories.         */
+#                                                                    */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-14  Nitish Singh    Initial .NET build script   */
-# 1.1        2026-04-15  Nitish Singh    Added Dynamic Path Logic    */
-# 1.2        2026-04-16  Nitish Singh    Refactored exit/root logic  */
-# 1.3        2026-04-16  Nitish Singh    Added Native Dylib Sync     */
-# 1.4        2026-04-16  Nitish Singh    Fixed naming prefix mismatch*/
-# 1.5        2026-04-16  Nitish Singh    Added Port Cleanup logic    */
-# 1.6        2026-05-09  Nitish Singh    Added M2 P-Core DYLD path   */
-#                                        export and versioning.      */
-# 1.7        2026-05-09  Nitish Singh    Standardized logging,       */
-#                                        cross-platform lib sync.    */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-14  Nitish Singh     Initial .NET orchestration       */
+#                                   workflow.                        */
+# 1.1  2026-04-15  Nitish Singh     Added dynamic repository path    */
+#                                   resolution.                      */
+# 1.2  2026-04-16  Nitish Singh     Refactored execution flow and    */
+#                                   root context handling.           */
+# 1.3  2026-04-16  Nitish Singh     Added native library sync        */
+#                                   automation.                      */
+# 1.4  2026-04-16  Nitish Singh     Standardized native binary       */
+#                                   naming conventions.              */
+# 1.5  2026-04-16  Nitish Singh     Added port cleanup and runtime   */
+#                                   recovery logic.                  */
+# 1.6  2026-05-09  Nitish Singh     Added macOS dynamic linker       */
+#                                   environment support.             */
+# 1.7  2026-05-09  Nitish Singh     Standardized structured logging  */
+#                                   and cross-platform library sync. */
+# 1.8  2026-05-30  Nitish Singh     Enterprise header normalization, */
+#                                   infrastructure metadata, and     */
+#                                   lifecycle documentation.         */
 #*********************************************************************/
 
 set -euo pipefail

@@ -1,31 +1,56 @@
 #!/bin/bash
-# SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
-# File      : gh-automate.sh                                         */
-# Version   : 1.7                                                    */
+# SYSTEM      : GitHub Workflow Automation Framework                 */
+# SUBSYSTEM   : Pull Request Lifecycle Orchestrator                  */
+# COMPONENT   : gh-automate                                          */
+# VERSION     : 1.8                                                  */
 #                                                                    */
-# Purpose   : Local PR Automator for standardization and cleanup.    */
-#             Handles branch creation, PR submission, and merging.   */
+# DESCRIPTION : Automates Git branch lifecycle management and        */
+#               GitHub Pull Request operations. Performs branch      */
+#               preparation, commit orchestration, remote sync,      */
+#               PR creation, CI/CD monitoring, merge execution,      */
+#               and local repository synchronization.                */
 #                                                                    */
-# Revision History:                                                  */
+# FEATURES    :                                                      */
+#               * Branch creation and checkout                       */
+#               * Automated staging and commit management            */
+#               * Remote synchronization with lease protection       */
+#               * GitHub Pull Request creation and tracking          */
+#               * Live CI/CD monitoring via GitHub CLI               */
+#               * Administrative squash merge support                */
+#               * Automatic local main branch synchronization        */
+#                                                                    */
+# SIDE EFFECTS: Pushes commits to remote repositories, creates       */
+#               GitHub Pull Requests, merges approved changes,       */
+#               deletes merged branches, and updates local state.    */
+#                                                                    */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# DEPENDENCIES:                                                      */
+#               * Git                                                */
+#               * GitHub CLI (gh)                                    */
+#               * GitHub Authentication Session                      */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-14  Nitish Singh    Initial Automation Script.  */
-# 1.1        2026-05-09  Nitish Singh    Added architecture sync and */
-#                                        M2 cleanup verification.    */
-# 1.2        2026-05-09  Nitish Singh    Refined manual checkpoint   */
-#                                        and added final sync steps. */
-# 1.3        2026-05-09  Nitish Singh    Open PR in browser for CI   */
-#                                        monitoring                  */
-# 1.4        2026-05-09  Nitish Singh    Added local GitHub checks   */
-#                                        monitoring via gh CLI.      */
-# 1.5        2026-05-09  Nitish Singh    Added structured logging,   */
-#                                        timestamps, and colors.     */
-# 1.6        2026-05-09  Nitish Singh    Added dependency and        */
-#                                        authentication validation.  */
-# 1.7        2026-05-21  Nitish Singh    Added pre-flight fetch sync */
-#                                        and robust API 502 handling.*/
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-14  Nitish Singh     Initial Automation Workflow      */
+# 1.1  2026-05-09  Nitish Singh     Added Architecture Sync Checks   */
+# 1.2  2026-05-09  Nitish Singh     Added Manual Approval Gate       */
+# 1.3  2026-05-09  Nitish Singh     Added Browser PR Monitoring      */
+# 1.4  2026-05-09  Nitish Singh     Added GitHub Checks Tracking     */
+# 1.5  2026-05-09  Nitish Singh     Added Structured Logging         */
+# 1.6  2026-05-09  Nitish Singh     Added Auth & Dependency Checks   */
+# 1.7  2026-05-21  Nitish Singh     Added Retry & API Resilience     */
+# 1.8  2026-05-30  Nitish Singh     Standardized Header Format and   */
+#                                   Lifecycle Documentation          */
 #*********************************************************************/
 
 set -euo pipefail

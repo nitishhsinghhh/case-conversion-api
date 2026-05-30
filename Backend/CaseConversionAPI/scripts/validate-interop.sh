@@ -1,22 +1,58 @@
 #!/bin/bash
 # SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
-#  Utility Script - .NET Test Orchestration (Monorepo)               */
-#  Version     : 1.2                                                 */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Managed API Quality Assurance Layer                  */
+# COMPONENT   : run-tests                                            */
+# VERSION     : 1.4                                                  */
 #                                                                    */
-# Purpose   : Executes the .NET 8 Test Suite from the scripts folder.*/
-# Usage     : ./run-tests.sh                                         */
+# DESCRIPTION : Orchestrates execution of the .NET integration and   */
+#               unit testing suite within the monorepo ecosystem.    */
 #                                                                    */
-# Revision History:                                                  */
+#               Automatically discovers, synchronizes, and injects   */
+#               platform-specific native binaries required by the    */
+#               P/Invoke interoperability layer before executing     */
+#               managed test workloads.                              */
+#                                                                    */
+# FEATURES    :                                                      */
+#               * Automated workspace synchronization                */
+#               * Cross-platform native library discovery            */
+#               * Dynamic runtime path configuration                 */
+#               * Native ABI validation                              */
+#               * .NET Release-mode test execution                   */
+#               * Platform-aware dependency injection                */
+#               * Monorepo-relative path resolution                  */
+#                                                                    */
+# SIDE EFFECTS: Copies native runtime libraries into the test        */
+#               execution directory and exports dynamic linker       */
+#               search paths for the current shell session.          */
+#                                                                    */
+# USAGE       : backend/CaseConversionAPI/Scripts/run-tests.sh       */
+#                                                                    */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-16  Nitish Singh    Initial Test Script         */
-# 1.1        2026-04-30  Nitish Singh    Added Native Library Sync   */
-# 1.2        2026-05-09  Nitish Singh    Enhanced DYLD path resolution
-#                                        and M2 architecture checks. */
-# 1.3        2026-05-09  Nitish Singh    Standardized logging,       */
-#                                        cross-platform lib sync.    */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-16  Nitish Singh     Initial .NET test orchestration  */
+#                                   implementation.                  */
+# 1.1  2026-04-30  Nitish Singh     Added native library runtime     */
+#                                   synchronization.                 */
+# 1.2  2026-05-09  Nitish Singh     Enhanced dynamic linker path     */
+#                                   resolution and architecture      */
+#                                   validation support.              */
+# 1.3  2026-05-09  Nitish Singh     Standardized logging and         */
+#                                   cross-platform native sync.      */
+# 1.4  2026-05-30  Nitish Singh     Infrastructure header            */
+#                                   normalization and QA subsystem   */
+#                                   classification.                  */
 #*********************************************************************/
 
 set -euo pipefail

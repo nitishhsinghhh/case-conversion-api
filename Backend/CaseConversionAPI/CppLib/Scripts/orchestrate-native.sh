@@ -1,38 +1,68 @@
 #!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
-#  Utility Script - C++ Core Orchestration (Monorepo)                */
-#  Version     : 1.6                                                 */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Native Processing Engine                             */
+# COMPONENT   : orchestrate-native                                   */
+# VERSION     : 1.7                                                  */
 #                                                                    */
-# Purpose   : Configures, builds, and executes C++ logic & tests.    */
+# DESCRIPTION : Configures, builds, validates, and executes the      */
+#               native C++ conversion engine across supported        */
+#               target environments.                                 */
 #                                                                    */
-# Features  :                                                        */
-#             * Matrix OS orchestration                              */
-#             * Dynamic build path synchronization                   */
-#             * MinGW Windows cross-compilation                      */
-#             * Apple Silicon optimization support                   */
-#             * Automated GoogleTest execution                       */
-#             * Parallelized multi-core compilation                  */
-#             * Pre-build clang-format automation                    */
+#               Orchestrates platform-specific build configuration,  */
+#               automated source formatting, parallel compilation,   */
+#               GoogleTest validation, and artifact generation for   */
+#               local and CI/CD execution pipelines.                 */
 #                                                                    */
-# Location  : CppLib/Scripts/orchestrate-native.sh                   */
+# FEATURES    :                                                      */
+#               * Matrix OS orchestration                            */
+#               * Dynamic build path synchronization                 */
+#               * MinGW Windows cross-compilation                    */
+#               * Microsoft Visual Studio integration                */
+#               * Apple Silicon optimization support                 */
+#               * Automated GoogleTest execution                     */
+#               * Parallelized multi-core compilation                */
+#               * Pre-build clang-format automation                  */
+#               * Dynamic CMake generator selection                  */
+#               * Repository-aware workspace validation              */
 #                                                                    */
-# Revision History:                                                  */
+# SIDE EFFECTS: Creates and modifies build output directories.       */
+#               Generates platform-specific binaries and test        */
+#               executables within the configured build tree.        */
+#                                                                    */
+# LOCATION    : Backend/CaseConversionAPI/CppLib/Scripts/            */
+#               orchestrate-native.sh                                */
+#                                                                    */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-14  Nitish Singh    Initial C++ Run Script      */
-# 1.1        2026-04-15  Nitish Singh    Updated for /backend path   */
-# 1.2        2026-04-16  Nitish Singh    Added Dynamic Path Sync     */
-# 1.3        2026-05-02  Nitish Singh    Added Matrix OS Support     */
-# 1.4        2026-05-09  Nitish Singh    Enhanced M2 P-Core detection*/
-#                                        and script versioning.      */
-# 1.5        2026-05-16  Nitish Singh    Standardized logging,       */
-#                                        execution context validation*/
-#                                        and dynamic path handling.  */
-# 1.6        2026-05-28  Nitish Singh    Added automated pre-build   */
-#                                        clang-format execution with */
-#                                        controlled non-fatal        */
-#                                        formatting fallback logic.  */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-14  Nitish Singh     Initial C++ orchestration        */
+#                                   script implementation.           */
+# 1.1  2026-04-15  Nitish Singh     Updated backend path             */
+#                                   synchronization logic.           */
+# 1.2  2026-04-16  Nitish Singh     Added dynamic workspace          */
+#                                   context resolution.              */
+# 1.3  2026-05-02  Nitish Singh     Added matrix OS orchestration    */
+#                                   support.                         */
+# 1.4  2026-05-09  Nitish Singh     Enhanced Apple Silicon           */
+#                                   optimization and versioning.     */
+# 1.5  2026-05-16  Nitish Singh     Standardized logging and         */
+#                                   execution context validation.    */
+# 1.6  2026-05-28  Nitish Singh     Added automated clang-format     */
+#                                   integration and fallback logic.  */
+# 1.7  2026-05-30  Nitish Singh     Infrastructure header            */
+#                                   normalization and subsystem      */
+#                                   classification alignment.        */
 #*********************************************************************/
 
 set -euo pipefail
