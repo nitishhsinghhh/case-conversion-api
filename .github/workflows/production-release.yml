@@ -44,6 +44,7 @@ jobs:
     runs-on: macos-latest
     permissions:
       contents: write
+      packages: write
     
     steps:
       - name: "Checkout Code"
@@ -95,12 +96,27 @@ jobs:
       - name: "Package Assets"
         run: |
           zip -rj WordCaseEngine-ARM64.zip ./publish
-          
-          if [ -d "Backend/CaseConversionAPI/Database" ]; then
-            zip -r SourceCode-Metadata.zip Backend/CaseConversionAPI/Database README.md
-          else
-            zip -r SourceCode-Metadata.zip README.md
-          fi
+
+      # ------------------------------------------------------------
+      # GHCR PACKAGE PUBLISH
+      # ------------------------------------------------------------
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Backend/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+            ghcr.io/${{ github.repository }}:latest
 
       - name: "Release to GitHub"
         uses: softprops/action-gh-release@v1
@@ -109,19 +125,41 @@ jobs:
             WordCaseEngine-ARM64.zip
             SourceCode-Metadata.zip
           body: |
-            ## Word Case Conversion Engine v3.2.0
+            ## Word Case Conversion Engine v3.3.0
 
-            This release formalizes the production-grade deployment layout, focusing on high-throughput execution density, hardware-aligned memory guards, and cross-boundary interop stability.
+            This release extends the platform's deployment and distribution capabilities through automated container publishing, improved release orchestration, and enhanced cross-platform delivery workflows.
 
-            ### Core Additions: Managed Spellcheck Service
-            - **Dynamic Engine Interop:** Fully integrated `ManagedSpellCheckService` utilizing runtime OS-specific binary module resolution (`.dll` / `.so` / `.dylib`).
-            - **Defensive ABI Boundaries:** Implemented explicit `IntPtr` memory layouts and double-indirection pointer tracking (`ref IntPtr`) to guarantee faultless register execution on ARM64 calling topologies.
-            - **Deterministic Memory Sovereignty:** Enforced zero-leak operational metrics with complete RAII compliance and unmanaged allocations isolated within protected `finally` execution blocks.
-            - **Distributed Observability:** Embedded standard `ActivitySource` telemetry hooks to capture cross-boundary execution latency.
+            ### Core Additions: GitHub Container Registry (GHCR)
 
-            **Installation:**
+            * **Automated Container Publishing:** Integrated GitHub Container Registry (GHCR) distribution directly into the CI/CD pipeline for immutable container delivery.
+            * **Versioned Image Distribution:** Container images are automatically published using semantic version tags and rolling `latest` references.
+            * **Release Traceability:** Established alignment between Git tags, GitHub Releases, container images, and deployment artifacts.
+            * **Cross-Platform Artifact Synchronization:** Improved coordination between native C++ binaries and managed .NET runtime packaging workflows.
+            * **CI/CD Hardening:** Enhanced build reliability, artifact lifecycle management, and deployment reproducibility through standardized release automation.
+
+            ### Container Distribution
+
+            ```bash
+            docker pull ghcr.io/nitishhsinghhh/case-conversion-api:v3.3.0
+            ```
+
+            Or use the rolling release:
+
+            ```bash
+            docker pull ghcr.io/nitishhsinghhh/case-conversion-api:latest
+            ```
+
+            ### Installation
+
             1. Extract `WordCaseEngine-ARM64.zip`.
-            2. Native binaries are pre-linked—no external C++ dependencies required.
+            2. Native binaries are pre-linked and bundled with the managed runtime.
+            3. No external C++ runtime installation is required.
+            4. For containerized deployments, pull the corresponding GHCR image and run using Docker.
+
+            ### Engineering Focus
+
+            This release emphasizes deployment portability, container-based distribution, release automation, and operational consistency while preserving the platform's native-performance architecture and deterministic interoperability model.
+
           draft: false
           prerelease: false
         env:
