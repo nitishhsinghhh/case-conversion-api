@@ -9,7 +9,7 @@ This project is a high-concurrency, cross-platform string processing and spell-c
 ![.NET API Integration Tests](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/dotnet-integration-tests.yml?branch=main&label=Integration%20Tests&style=flat-square)
 ![Full Project Build](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/native-engine-ci_Non_DLL.yml?branch=main&label=Build%3A%20Multi-OS&style=flat-square)
 ![Docker Push](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/docker-hub-distribution.yml?branch=main&label=Registry%3A%20Image&style=flat-square)
-![Deployment](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/production-release.yml?label=Release%3A%20v3.1.0&style=flat-square)
+![Deployment](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/production-release.yml?label=Release%3A%20v4.0.0&style=flat-square)
 ![Quality](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/cpp-quality-guard.yml?branch=main&label=Quality%3A%20Clang&style=flat-square)
 ![Telemetry E2E](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/telemetry-e2e-verification.yml?branch=main&label=Observability%3A%20E2E&style=flat-square)
 ![Security Audit](https://img.shields.io/github/actions/workflow/status/nitishhsinghhh/case-conversion-api/security-analysis.yml?branch=main&label=Security%3A%20CodeQL&style=flat-square)
@@ -120,7 +120,7 @@ This project is built to safely expose high-performance C++ logic to a managed .
 
 * The Pipeline (Docker): A multi-stage orchestration pipeline supporting immutable deployments. We build the binary once and promote the same artifact from Development to Production, ensuring environmental consistency and deployment reproducibility.
 
-![alt text](Assets/Arch_V1.1.png)
+![alt text](Assets/Arch_V1.2.png)
 
 ---
 
@@ -418,9 +418,11 @@ Operational Endpoints:
 
 #### Managed-to-Native Latency Breakdown (Jaeger Trace)
 
-The trace below demonstrates the system boundary crossing during execution. The parent span captures the total HTTP request lifecycle inside the .NET gateway, while the nested internal child span captures the isolated compute duration inside the native C++ engine.
+The trace demonstrates a complete managed-to-native execution flow during a single HTTP request. The parent span captures the full lifecycle of the HTTP request inside the .NET gateway, while nested internal spans isolate key stages of execution, including native library loading and C++ computation.
 
-As shown in the trace visualization below, the nested `Native-C++-Process` child span maps directly under the gateway execution tree, proving seamless context propagation while confirming a pure native compute duration of just **222µs**.
+As shown in the trace, the request begins with the ASP.NET Core server span for POST /api/WordCase/convert with a total duration of 463.01ms. Within this lifecycle, the most significant overhead is observed in NativeLibrary.Load, which accounts for approximately 408.65ms, representing the initial dynamic loading cost of the native .dylib dependency.
+
+Following library resolution, the managed-to-native transition occurs via the native.processString span, which confirms successful context propagation across the boundary. The actual native C++ execution is extremely efficient, completing in approximately 61µs, with an internally measured execution time of ~0.033ms, indicating near-instantaneous compute performance once the library is loaded.
 
 ![Jaeger Distributed Trace](Assets/jagger_V1.3.png)
 
