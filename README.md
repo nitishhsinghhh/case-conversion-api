@@ -422,7 +422,7 @@ The trace below demonstrates the system boundary crossing during execution. The 
 
 As shown in the trace visualization below, the nested `Native-C++-Process` child span maps directly under the gateway execution tree, proving seamless context propagation while confirming a pure native compute duration of just **222µs**.
 
-![Jaeger Distributed Trace](Assets/jagger_V1.2.png)
+![Jaeger Distributed Trace](Assets/jagger_V1.3.png)
 
 ### 5. Hardware-Specific Optimization (Apple M2)
 
