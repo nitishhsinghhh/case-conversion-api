@@ -2,7 +2,7 @@
 # SYSTEM      : CaseConversionAPI Infrastructure                     */
 # SUBSYSTEM   : Production Release (ARM64 Optimized)                 */
 # COMPONENT   : production-release-workflow                          */
-# VERSION     : 3.1.0                                                */
+# VERSION     : 3.3.0                                                */
 #                                                                    */
 # DESCRIPTION : Packages high-performance binaries and metadata      */
 #               for official GitHub Releases. Targets Apple Silicon  */
@@ -29,6 +29,7 @@
 # 3.0.0  2026-05-06  Nitish Singh     1.5M Millionaire Milestone     */
 # 3.1.0  2026-05-12  Nitish Singh     Refactored Header & Log Logic  */
 # 3.2.0  2026-05-26  Nitish Singh     Added Spellcheck Interop Fixes */
+# 3.3.0  2026-06-10  Nitish Singh     GHCR Container Publishing      */
 #*********************************************************************/
 
 name: "Production Release"
@@ -101,12 +102,15 @@ jobs:
       # GHCR PACKAGE PUBLISH
       # ------------------------------------------------------------
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push
         uses: docker/build-push-action@v5
