@@ -1,36 +1,62 @@
 #!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
-#  Utility Script - Local CLI App Runner (macOS Optimized)           */
-#  Version     : 1.4                                                 */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Native Processing Engine                             */
+# COMPONENT   : run-local                                            */
+# VERSION     : 1.5                                                  */
 #                                                                    */
-# Purpose   : Temporarily swaps CMakeLists to build/run the CLI app  */
-#             without modifying the main project architecture.       */
+# DESCRIPTION : Builds and executes the standalone native CLI        */
+#               application without altering the primary library     */
+#               architecture or repository workflow.                 */
 #                                                                    */
-# Features  :                                                        */
-#             * Dynamic workspace synchronization                    */
-#             * Safe CMakeLists backup/restore workflow              */
-#             * Apple Silicon (M-Series) optimization                */
-#             * Automated clang-format integration                   */
-#             * Parallelized multi-core compilation                  */
-#             * Execution context validation + cleanup               */
+#               Performs temporary build-context substitution,       */
+#               automated source formatting, optimized Apple         */
+#               Silicon compilation, and controlled restoration      */
+#               of the native project configuration.                 */
 #                                                                    */
-# Location  : backend/CaseConversionAPI/CppLib/Scripts/run-local.sh  */
+# FEATURES    :                                                      */
+#               * Dynamic workspace synchronization                  */
+#               * Safe CMakeLists backup and restore workflow        */
+#               * Apple Silicon (M-Series) optimization             */
+#               * Automated clang-format integration                 */
+#               * Parallelized multi-core compilation                */
+#               * Execution context validation                       */
+#               * Automated cleanup and restoration                  */
+#               * Standalone CLI application execution               */
 #                                                                    */
-# Revision History:                                                  */
+# SIDE EFFECTS: Temporarily replaces the active CMakeLists.txt       */
+#               configuration during execution. Generates build      */
+#               artifacts and modifies local build directories.      */
+#                                                                    */
+# LOCATION    : Backend/CaseConversionAPI/CppLib/Scripts/            */
+#               run-local.sh                                         */
+#                                                                    */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author          Description                 */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-16  Nitish Singh    Initial Swap Logic Script   */
-# 1.1        2026-04-16  Nitish Singh    Added Absolute Path Trap    */
-# 1.2        2026-05-09  Nitish Singh    Optimized for M2 P-Cores    */
-#                                        and enhanced error cleanup. */
-# 1.3        2026-05-16  Nitish Singh    Added execution context     */
-#                                        validation and dynamic path */
-#                                        synchronization.            */
-# 1.4        2026-05-28  Nitish Singh    Added automated clang-format*/
-#                                        execution with isolated     */
-#                                        non-fatal formatter         */
-#                                        fallback handling.          */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-16  Nitish Singh     Initial local application        */
+#                                   runner implementation.           */
+# 1.1  2026-04-16  Nitish Singh     Added absolute path handling     */
+#                                   and restoration safeguards.      */
+# 1.2  2026-05-09  Nitish Singh     Added Apple Silicon              */
+#                                   optimizations and cleanup.       */
+# 1.3  2026-05-16  Nitish Singh     Added execution context          */
+#                                   validation and path sync.        */
+# 1.4  2026-05-28  Nitish Singh     Added automated clang-format     */
+#                                   execution and fallback logic.    */
+# 1.5  2026-05-30  Nitish Singh     Infrastructure header            */
+#                                   normalization and subsystem      */
+#                                   classification alignment.        */
 #*********************************************************************/
 
 set -euo pipefail

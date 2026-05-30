@@ -1,22 +1,56 @@
 #!/bin/bash
 # SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
-#  Utility Script - Frontend Scaffolding (Vite/TypeScript)           */
-#  Version     : 1.2                                                 */
+# SYSTEM      : CaseConversionAPI Frontend Infrastructure            */
+# SUBSYSTEM   : UI Workspace Bootstrap Framework                     */
+# COMPONENT   : scaffold-frontend                                    */
+# VERSION     : 1.3                                                  */
 #                                                                    */
-# Purpose   : Generates the directory hierarchy and boilerplate for  */
-#              the Vite-based TypeScript frontend application.       */
-# Location  : scripts/scaffold-frontend.sh                           */
+# DESCRIPTION : Generates a standardized Vite + TypeScript frontend  */
+#               workspace for the CaseConversionAPI platform.        */
+#               Creates directory hierarchy, boilerplate source      */
+#               files, styling assets, and development tooling       */
+#               configuration required for frontend initialization.  */
 #                                                                    */
-# Revision History:                                                  */
+# FEATURES    :                                                      */
+#               * Vite-based project scaffolding                     */
+#               * TypeScript model generation                        */
+#               * API client structure initialization                */
+#               * Stylesheet and asset provisioning                  */
+#               * Node.js package configuration                      */
+#               * Frontend architecture standardization              */
+#                                                                    */
+# SIDE EFFECTS: Creates project directories, generates source files, */
+#               overwrites scaffolded boilerplate assets, and        */
+#               initializes frontend development configuration.      */
+#                                                                    */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# DEPENDENCIES:                                                      */
+#               * Bash                                               */
+#               * Node.js                                            */
+#               * npm                                                */
+#               * Vite (post-install)                                */
+#               * TypeScript (post-install)                          */
+#                                                                    */
+# LOCATION    : scripts/scaffold-frontend.sh                         */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date         Author           Description               */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-28   Nitish Singh     Initial UI Template       */
-# 1.1        2026-05-09   Nitish Singh     Added explicit versioning */
-#                                          to match monorepo style.  */
-# 1.2        2026-05-09   Nitish Singh     Standardized logging,     */
-#                                          boilerplate injection.    */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-28  Nitish Singh     Initial UI Template              */
+# 1.1  2026-05-09  Nitish Singh     Added Explicit Versioning        */
+# 1.2  2026-05-09  Nitish Singh     Standardized Logging and         */
+#                                    Boilerplate Injection           */
+# 1.3  2026-05-30  Nitish Singh     Refactored Header Structure and  */
+#                                    Infrastructure Metadata         */
 #*********************************************************************/
 
 set -euo pipefail

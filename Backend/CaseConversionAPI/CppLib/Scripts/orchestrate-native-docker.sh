@@ -1,36 +1,62 @@
 #!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
-#  Master Native Orchestrator: C++ Core (The Big Three)              */
-#  Version     : 1.2                                                 */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Native Processing Engine                             */
+# COMPONENT   : orchestrate-native-docker                            */
+# VERSION     : 1.3                                                  */
 #                                                                    */
-# Purpose   : Coordinates Local (macOS) and Dockerized (Linux/Win)   */
-#             builds to generate a unified multi-platform binary     */
-#             set.                                                   */
+# DESCRIPTION : Coordinates local and containerized native build     */
+#               pipelines to produce a unified cross-platform        */
+#               binary distribution for the C++ conversion engine.   */
 #                                                                    */
-# Features  :                                                        */
-#             * Native macOS build + execution                       */
-#             * Linux cross-build orchestration                      */
-#             * Windows MinGW-w64 cross-compilation                  */
-#             * Dockerized GoogleTest validation                     */
-#             * Automated artifact extraction + synchronization      */
+#               Orchestrates native macOS compilation, Linux         */
+#               containerized validation, Windows cross-platform     */
+#               artifact extraction, and consolidated runtime        */
+#               synchronization for downstream consumers.            */
 #                                                                    */
-# Location  : Backend/CaseConversionAPI/CppLib/Scripts/              */
-#             orchestrate-native-docker.sh                           */
+# FEATURES    :                                                      */
+#               * Native macOS build orchestration                   */
+#               * Linux containerized compilation                    */
+#               * Windows cross-platform artifact generation         */
+#               * Dockerized GoogleTest execution                    */
+#               * Automated artifact extraction                      */
+#               * Cross-platform binary synchronization              */
+#               * Unified distribution directory generation          */
+#               * Repository-aware path normalization                */
 #                                                                    */
-# Revision History:                                                  */
+# SIDE EFFECTS: Creates Docker images and containers on the host.    */
+#               Generates platform-specific shared libraries and     */
+#               modifies build output directories during artifact    */
+#               synchronization and cleanup operations.              */
+#                                                                    */
+# LOCATION    : Backend/CaseConversionAPI/CppLib/Scripts/            */
+#               orchestrate-native-docker.sh                         */
+#                                                                    */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date        Author           Description                */
-# ------------------------------------------------------------------ */
-# 1.0        2026-05-14  Nitish Singh     Initial Master Orchestrator*/
-#                                         with Docker extraction.    */
-# 1.1        2026-05-16  Nitish Singh     Added backend root path    */
-#                                         normalization and improved */
-#                                         Docker context handling.   */
-# 1.2        2026-05-20  Nitish Singh     Added containerized        */
-#                                         GoogleTest execution for   */
-#                                         Linux runtime validation   */
-#                                         and automated artifact     */
-#                                         synchronization pipeline.  */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-05-14  Nitish Singh     Initial native orchestration     */
+#                                   workflow with Docker artifact    */
+#                                   extraction support.              */
+# 1.1  2026-05-16  Nitish Singh     Added backend root path          */
+#                                   normalization and improved       */
+#                                   Docker context handling.         */
+# 1.2  2026-05-20  Nitish Singh     Added containerized GoogleTest   */
+#                                   execution and automated binary   */
+#                                   synchronization pipeline.        */
+# 1.3  2026-05-30  Nitish Singh     Infrastructure header            */
+#                                   normalization and subsystem      */
+#                                   classification alignment.        */
 #*********************************************************************/
 
 set -euo pipefail

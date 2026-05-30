@@ -1,23 +1,61 @@
 #!/bin/bash
 # SPDX-License-Identifier: Apache-2.0
 #*********************************************************************/
-#  Utility Script - Telemetry Infrastructure (Jaeger/OTLP)           */
-#  Version     : 1.2                                                 */
+# SYSTEM      : CaseConversionAPI Infrastructure                     */
+# SUBSYSTEM   : Observability & Distributed Tracing                  */
+# COMPONENT   : provision-telemetry                                  */
+# VERSION     : 1.3                                                  */
 #                                                                    */
-# Purpose   : Manages the lifecycle of the Jaeger container for      */
-#             OpenTelemetry trace collection and visualization.      */
-# Usage     : backend/CaseConversionAPI/Scripts/provision-telemetry.sh 
-#             [start|stop|status]                                    */
+# DESCRIPTION : Provisions and manages the local telemetry stack     */
+#               using Jaeger All-In-One for OpenTelemetry trace      */
+#               ingestion, storage, and visualization.               */
 #                                                                    */
-# Revision History:                                                  */
+#               Provides lifecycle management for containerized      */
+#               tracing infrastructure used during development,      */
+#               integration testing, and platform diagnostics.       */
+#                                                                    */
+# FEATURES    :                                                      */
+#               * Automated Jaeger container provisioning            */
+#               * OTLP gRPC endpoint exposure (4317)                 */
+#               * OTLP HTTP endpoint exposure (4318)                 */
+#               * Trace visualization via Jaeger UI                  */
+#               * Container lifecycle management                     */
+#               * Runtime status inspection                          */
+#               * Live telemetry log streaming                       */
+#                                                                    */
+# SIDE EFFECTS: Creates and manages Docker containers on the host.   */
+#               Binds local telemetry ports and persists runtime     */
+#               state through Docker-managed resources.              */
+#                                                                    */
+# USAGE       : backend/CaseConversionAPI/Scripts/                   */
+#               provision-telemetry.sh                               */
+#                                                                    */
+#               Commands:                                            */
+#                 start   - Provision or start Jaeger                */
+#                 stop    - Stop active telemetry services           */
+#                 status  - Display container runtime status         */
+#                 logs    - Follow Jaeger container logs             */
+#                                                                    */
+# LICENSE     : Apache License, Version 2.0                          */
+#               Licensed under the Apache License, Version 2.0.      */
+#               You may obtain a copy of the License at              */
+#               http://www.apache.org/licenses/LICENSE-2.0           */
+#                                                                    */
+# AUTHOR      : Nitish Singh (nitishhsinghhh)                        */
+# CONTACT     : me.singhnitish@yandex.com                            */
+#                                                                    */
+# REVISION HISTORY:                                                  */
 # ------------------------------------------------------------------ */
-# Version    Date           Author           Description             */
-# ------------------------------------------------------------------ */
-# 1.0        2026-04-18     Nitish Singh     Initial implementation. */
-# 1.1        2026-05-09     Nitish Singh     Added explicit version  */
-#                                            tag to header.          */
-# 1.2        2026-05-09     Nitish Singh     Standardized log,       */
-#                                            added log follow cmd.   */
+# Ver  Date        Author           Description                      */
+# ---  ----------  --------------   -------------------------------- */
+# 1.0  2026-04-18  Nitish Singh     Initial telemetry provisioning   */
+#                                   implementation.                  */
+# 1.1  2026-05-09  Nitish Singh     Added explicit version metadata. */
+# 1.2  2026-05-09  Nitish Singh     Standardized logging and added   */
+#                                   live container log streaming.    */
+# 1.3  2026-05-30  Nitish Singh     Infrastructure header            */
+#                                   normalization and observability  */
+#                                   subsystem classification.        */
 #*********************************************************************/
 
 set -euo pipefail
