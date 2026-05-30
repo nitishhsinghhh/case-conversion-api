@@ -111,7 +111,7 @@ jobs:
             WordCaseEngine-ARM64.zip
             SourceCode-Metadata.zip
           body: |
-            ## Word Case Conversion Engine v3.3.0
+            ## Word Case Conversion Engine v4.0.0
 
             This release extends the platform's deployment and distribution capabilities through automated container publishing, improved release orchestration, and enhanced cross-platform delivery workflows.
 
@@ -126,7 +126,7 @@ jobs:
             ### Container Distribution
 
             ```bash
-            docker pull ghcr.io/nitishhsinghhh/case-conversion-api:v3.3.0
+            docker pull ghcr.io/nitishhsinghhh/case-conversion-api:v4.0.0
             ```
 
             Or use the rolling release:
