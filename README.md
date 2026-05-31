@@ -543,7 +543,7 @@ We solved this by using a Hybrid Orchestration Strategy. The Mac host handles th
 
 ### 10. Automated PR Workflow (Local Orchestration)
 
-To maintain architectural integrity and enforce standardizations across the polyglot codebase, the project utilizes a custom GitHub PR Automator ([gh-automate.sh](Scripts/gh-automate.sh)). This tool abstracts the complexity of branch management, CI/CD monitoring, and administrative merging into a single execution context.
+To maintain architectural integrity and enforce standardizations across the polyglot codebase, the project utilizes a custom GitHub PR Automator ([gh-automate.sh](Scripts/gh-automate.sh). This tool abstracts the complexity of branch management, CI/CD monitoring, and administrative merging into a single execution context.
 
 #### Workflow Features
 
