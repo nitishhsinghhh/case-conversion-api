@@ -282,11 +282,11 @@ The native engine serves as the high-performance execution core of the platform,
 
 To maintain deterministic CI/CD behavior across platforms, the project uses a centralized orchestration script. The workflow performs native compilation on macOS while delegating Linux and Windows builds to containerized toolchains.
 
-[Orchestrator Script](backend/CaseConversionAPI/scripts/orchestrate-native-docker.sh)
+[Orchestrator Script](Backend/CaseConversionAPI/scripts/orchestrate-native-docker.sh)
 
 ```Bash
 # LOCAL MACOS BUILD ---
-NATIVE_SCRIPT_REL="backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native.sh"
+NATIVE_SCRIPT_REL="Backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native.sh"
 ```
 
 #### Multi-Platform Docker Toolchain
@@ -295,7 +295,7 @@ The cross-compilation environment is encapsulated in a multi-stage Dockerfile. T
 
 ```Bash
 # DOCKER CROSS-BUILD (LINUX & WINDOWS) ---
-DOCKERFILE_PATH="backend/CaseConversionAPI/CppLib/Scripts/Dockerfile"
+DOCKERFILE_PATH="Backend/CaseConversionAPI/CppLib/Scripts/Dockerfile"
 ```
 
 | Target | Format   | Toolchain      | Environment          |
@@ -314,7 +314,7 @@ To maintain deterministic behavior and enforce environmental uniformity across p
 
 * Automated Lifecycle Extraction: Hooks into the container boundary post-build via virtual image layers, cleanly extracts target binaries directly into localized unmanaged workspace subdirectories (/build/*), and purges transient builder containers immediately to minimize disk footprints.
 
-[Master Orchestrator Script](backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native-docker.sh)
+[Master Orchestrator Script](Backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native-docker.sh)
 
 ### 2. Managed Gateway: .NET REST API
 
