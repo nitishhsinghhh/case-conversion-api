@@ -282,11 +282,11 @@ The native engine serves as the high-performance execution core of the platform,
 
 To maintain deterministic CI/CD behavior across platforms, the project uses a centralized orchestration script. The workflow performs native compilation on macOS while delegating Linux and Windows builds to containerized toolchains.
 
-[Orchestrator Script](Backend/CaseConversionAPI/scripts/orchestrate-native-docker.sh)
+[Orchestrator Script](Backend/CaseConversionAPI/Scripts/orchestrate-native-docker.sh)
 
 ```Bash
 # LOCAL MACOS BUILD ---
-NATIVE_SCRIPT_REL="Backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native.sh"
+NATIVE_SCRIPT_REL="Backend/CaseConversionAPI/Scripts/orchestrate-native-docker.sh"
 ```
 
 #### Multi-Platform Docker Toolchain
@@ -539,11 +539,11 @@ Building cross-platform native binaries on modern Apple Silicon systems (M1/M2/M
 **Architectural Solution:**
 We solved this by using a Hybrid Orchestration Strategy. The Mac host handles the .dylib (Native M2 P-Core optimization), while the Docker VM handles the Linux and Windows toolchains in an isolated, reproducible environment.
 
-[Native Build Orchestration](#native-build-orchestration)
+[Native Build Orchestration](Backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native-docker.sh)
 
 ### 10. Automated PR Workflow (Local Orchestration)
 
-To maintain architectural integrity and enforce standardizations across the polyglot codebase, the project utilizes a custom GitHub PR Automator ([gh-automate.sh](scripts/gh-automate.sh)). This tool abstracts the complexity of branch management, CI/CD monitoring, and administrative merging into a single execution context.
+To maintain architectural integrity and enforce standardizations across the polyglot codebase, the project utilizes a custom GitHub PR Automator ([gh-automate.sh](Scripts/gh-automate.sh)). This tool abstracts the complexity of branch management, CI/CD monitoring, and administrative merging into a single execution context.
 
 #### Workflow Features
 
@@ -564,7 +564,7 @@ The script automatically blocks upstream merging until all checks return healthy
 #### Usage
 
 ```Bash
-./scripts/gh-automate.sh <branch-name> "<message>"
+./Scripts/gh-automate.sh <branch-name> "<message>"
 ```
 
 ### 11. Cross-Platform Build Engineering and Validation
