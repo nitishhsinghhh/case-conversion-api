@@ -152,7 +152,7 @@ namespace StringConversionAPI.Services
             if (string.IsNullOrEmpty(input))
                 return input;
 
-            using var activity = _activitySource.StartActivity("string.convert", ActivityKind.Internal);
+            using var activity = _activitySource.StartActivity("Native-C++-Process", ActivityKind.Internal);
 
             if (activity != null)
             {
