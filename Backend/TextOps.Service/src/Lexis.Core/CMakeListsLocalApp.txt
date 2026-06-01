@@ -60,3 +60,38 @@ target_link_libraries(LexisApp PRIVATE
     ICU::uc
     ICU::data
 )
+
+# ---------------------------------------------------------
+# 5. GOOGLETEST INTEGRATION
+# ---------------------------------------------------------
+include(FetchContent)
+
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/main.zip
+)
+FetchContent_MakeAvailable(googletest)
+
+# ---------------------------------------------------------
+# 6. TEST EXECUTABLE
+# ---------------------------------------------------------
+add_executable(runLexisTests
+    "/Users/nitishsingh/projects/word-case-api/Backend/TextOps.Service/tests/Lexis.Core.Tests/SpellCheckerTests.cpp"
+)
+
+target_include_directories(runLexisTests PRIVATE 
+    "${PROJECT_SOURCE_DIR}/../../include"
+)
+
+# Explicitly link ICU to the test executable as well
+target_link_libraries(runLexisTests PRIVATE 
+    LexisCore 
+    gtest 
+    gtest_main 
+    ICU::uc 
+    ICU::data
+)
+
+add_test(NAME AllTests COMMAND runLexisTests)

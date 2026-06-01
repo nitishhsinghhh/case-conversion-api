@@ -89,11 +89,31 @@ cmake --build "$BUILD_DIR" --config Release --parallel "$NUM_CORES"
 log_success "Shared library built successfully."
 
 #*********************************************************************/
+# 3.5 Test Execution Phase                                           */
+#*********************************************************************/
+log_info "===== Executing Native Test Suites ====="
+
+cd "$BUILD_DIR"
+
+log_info "Running CTest with verbose output..."
+
+if ctest --output-on-failure --verbose; then
+    log_success "All native test suites passed successfully."
+else
+    log_error "One or more native test suites failed."
+    exit 1
+fi
+
+cd "$CPP_ROOT"
+
+#*********************************************************************/
 # 4. Deployment Phase (.NET Shared Binary Binding)                   */
 #*********************************************************************/
-echo -e "\n===== Deploying Shared Library (libLexisSpellCheckDLL.dylib) ====="
 
-DYLIB_BIN=$(find "$BUILD_DIR" -maxdepth 2 -name "libLexisSpellCheckDLL.dylib" | head -n 1)
+echo -e "\n===== Deploying Shared Library (libLexisCore.dylib) ====="
+
+DYLIB_BIN=$(find "$BUILD_DIR" -maxdepth 2 \
+    -name "libLexisCore.dylib" | head -n 1)
 
 if [[ -n "$DYLIB_BIN" && -f "$DYLIB_BIN" ]]; then
     if [ -d "$DOTNET_API_DIR" ]; then

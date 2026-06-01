@@ -95,20 +95,36 @@ cmake --build "$BUILD_DIR" --config Release --parallel "$NUM_CORES"
 log_success "CLI App built successfully."
 
 #*********************************************************************/
-# 4. Execution Phase                                                 */
+# 4. Execution Phase (Finalized) 
 #*********************************************************************/
 
-echo -e "\n===== Running CLI App (sourcecode.cpp) ====="
+# A. RUN TESTS FIRST
+echo -e "\n===== Running Test Suite ====="
+TEST_BIN=$(find "$BUILD_DIR" -name "runLexisTests" | head -n 1)
 
-# CHANGE THIS LINE: Change "app" to "LexisApp"
+if [[ -n "$TEST_BIN" ]]; then
+    # Execute the binary directly; GoogleTest handles the output formatting
+    if "$TEST_BIN"; then
+        log_success "All tests passed successfully."
+    else
+        log_error "Test suite failed. Please check the logs above."
+        exit 1
+    fi
+else
+    log_warn "Test binary 'runLexisTests' not found. Skipping tests."
+fi
+
+# B. RUN CLI APP SECOND
+echo -e "\n===== Running CLI App (LexisApp) ====="
 APP_BIN=$(find "$BUILD_DIR" -maxdepth 2 \( -name "LexisApp" -o -name "LexisApp.exe" \) | head -n 1)
 
 if [[ -n "$APP_BIN" && -f "$APP_BIN" ]]; then
+    # Navigate to binary folder to ensure it can locate its linked dylibs via @loader_path
     cd "$(dirname "$APP_BIN")"
     ./$(basename "$APP_BIN")
     log_success "Execution completed."
 else
-    log_error "Binary 'LexisApp' not found."
+    log_error "Binary 'LexisApp' not found in $BUILD_DIR."
     exit 1
 fi
 
