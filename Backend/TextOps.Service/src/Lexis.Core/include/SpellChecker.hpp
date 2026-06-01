@@ -29,17 +29,19 @@
 /* 1.0        2026-05-20  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
-#ifndef LEXIS_SPELLCHECKER_HPP
-#define LEXIS_SPELLCHECKER_HPP
+#ifndef SPELLCHECKER_HPP
+#define SPELLCHECKER_HPP
 
 /*********************************************************************/
 /* Dependencies                                                      */
 /*********************************************************************/
 
+#include <cstddef>
 #include <string>
 #include <vector>
 #include <memory>
 #include <unordered_map>
+
 #include <nuspell/dictionary.hxx>
 
 namespace Lexis::SpellCheck {
@@ -122,4 +124,4 @@ private:
 
 } // namespace Lexis::SpellCheck
 
-#endif // LEXIS_SPELLCHECKER_HPP
+#endif // SPELLCHECKER_HPP

@@ -3,35 +3,27 @@ project(LexisEngine)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+enable_testing()
 
-# Optional flag: Run `cmake -DBUILD_CLI=ON ...` to compile the local runner instead
-option(BUILD_CLI "Build the standalone CLI binary wrapper" OFF)
-
-# =========================================================
 # 1. SETUP EXTERNAL PATHS (ICU/Homebrew)
-# =========================================================
-if(APPLE)
-    set(ICU_ROOT "/opt/homebrew/opt/icu4c")
-    list(APPEND CMAKE_PREFIX_PATH "${ICU_ROOT}" "/opt/homebrew")
-endif()
+set(ICU_ROOT "/opt/homebrew/opt/icu4c")
+list(APPEND CMAKE_PREFIX_PATH "${ICU_ROOT}" "/opt/homebrew")
 
-# =========================================================
 # 2. FIND DEPENDENCIES
-# =========================================================
 find_package(ICU 78.3 REQUIRED COMPONENTS uc data)
 find_package(nuspell REQUIRED)
+find_package(GTest REQUIRED)
+include(GoogleTest)
 
-if(APPLE)
-    find_library(NUSPELL_LIB NAMES nuspell PATHS "/opt/homebrew/lib")
-else()
-    find_library(NUSPELL_LIB NAMES nuspell)
-endif()
+# Explicitly locate the absolute path to the nuspell binary
+find_library(NUSPELL_LIB NAMES nuspell PATHS "/opt/homebrew/lib")
 
-# =========================================================
-# 3. STATIC CORE LOGIC LIBRARY
-# =========================================================
-add_library(LexisCore STATIC 
+# ---------------------------------------------------------
+# 3. LIBRARY: LexisCore (Business Logic Only)
+# ---------------------------------------------------------
+add_library(LexisCore SHARED 
     src/SpellChecker.cpp
+    src/LexisSpellCheckDLL.cpp
 )
 
 target_compile_definitions(LexisCore PUBLIC 
@@ -40,67 +32,93 @@ target_compile_definitions(LexisCore PUBLIC
 
 target_include_directories(LexisCore PUBLIC 
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "/opt/homebrew/include"
+    "${ICU_ROOT}/include"
 )
 
-if(APPLE)
-    target_include_directories(LexisCore PUBLIC "/opt/homebrew/include" "${ICU_ROOT}/include")
-endif()
-
 target_link_libraries(LexisCore PRIVATE 
-    ${NUSPELL_LIB}
+    ${NUSPELL_LIB}  # Use the absolute path discovered above
     ICU::uc 
     ICU::data
 )
 
-# Ensure baseline vocabulary workspace structure exists
+# Ensure data directory exists for the library to use
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/vocabulary")
 
-# =========================================================
-# 4. CONDITIONAL TARGET COMPILATION SWITCH
-# =========================================================
-if(BUILD_CLI)
-    # Target A: Standalone CLI Application Context
-    add_executable(LexisApp src/Export.cpp)
+# ---------------------------------------------------------
+# 4. MAIN APPLICATION: LexisApp (The CLI Tool)
+# ---------------------------------------------------------
+add_executable(LexisApp src/Export.cpp)
 
-    set_target_properties(LexisApp PROPERTIES
-        BUILD_WITH_INSTALL_RPATH TRUE
-        INSTALL_RPATH "@loader_path"
-    )
+# Direct dyld to look for dependent dylibs inside the same directory as the binary
+set_target_properties(LexisApp PROPERTIES
+    BUILD_WITH_INSTALL_RPATH TRUE
+    INSTALL_RPATH "@loader_path"
+)
 
-    target_link_libraries(LexisApp PRIVATE 
-        LexisCore
-        ICU::uc
-        ICU::data
-    )
-    message(STATUS "Configured target compilation for: Local CLI Application (LexisApp)")
+target_link_libraries(LexisApp PRIVATE 
+    LexisCore
+    ICU::uc
+    ICU::data
+)
 
-else()
-    # Target B: Production Unmanaged Interop Dynamic Library (Default)
-    add_library(LexisSpellCheckDLL SHARED 
-        src/LexisSpellCheckDLL.cpp
-    )
+# ---------------------------------------------------------
+# 5. GOOGLETEST INTEGRATION
+# ---------------------------------------------------------
 
-    # Handles safe Windows dllexport scoping while keeping macOS symbol tables broad
-    target_compile_definitions(LexisSpellCheckDLL PRIVATE LEXISSPELLCHECK_EXPORTS)
-    
-    # Track includes across both the standard public API headers and localized source files
-    target_include_directories(LexisSpellCheckDLL PRIVATE 
-        "${CMAKE_CURRENT_SOURCE_DIR}/include"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src"
-    )
+include(FetchContent)
 
-    target_link_libraries(LexisSpellCheckDLL PRIVATE 
-        LexisCore
-        ICU::uc
-        ICU::data
-    )
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-    if(APPLE)
-        set_target_properties(LexisSpellCheckDLL PROPERTIES
-            BUILD_WITH_INSTALL_RPATH TRUE
-            INSTALL_RPATH "@loader_path"
-            MACOSX_RPATH TRUE
-        )
-    endif()
-    message(STATUS "Configured target compilation for: Shared Interop Layer (libLexisSpellCheckDLL)")
-endif()
+FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/main.zip
+)
+FetchContent_MakeAvailable(googletest)
+
+# ---------------------------------------------------------
+# 6. TEST EXECUTABLE
+# ---------------------------------------------------------
+add_executable(runLexisTests
+    "/Users/nitishsingh/projects/word-case-api/Backend/TextOps.Service/tests/Lexis.Core.Tests/SpellCheckerTests.cpp"
+)
+
+target_include_directories(runLexisTests PRIVATE 
+    "${PROJECT_SOURCE_DIR}/../../include"
+)
+
+# Explicitly link ICU to the test executable as well
+target_link_libraries(runLexisTests PRIVATE 
+    LexisCore 
+    gtest 
+    gtest_main 
+    ICU::uc 
+    ICU::data
+)
+
+add_test(NAME AllTests COMMAND runLexisTests)
+
+# ---------------------------------------------------------
+# 7. DLL ABI TEST EXECUTABLE
+# ---------------------------------------------------------
+
+add_executable(runLexisDLLTests
+    "/Users/nitishsingh/projects/word-case-api/Backend/TextOps.Service/tests/Lexis.Core.Tests/SpellCheckerTestDll.cpp"
+)
+
+target_include_directories(runLexisDLLTests PRIVATE
+    "${PROJECT_SOURCE_DIR}/../../include"
+)
+
+target_link_libraries(runLexisDLLTests PRIVATE
+    LexisCore
+    gtest
+    gtest_main
+    ICU::uc
+    ICU::data
+)
+
+add_test(
+    NAME LexisDLLTests
+    COMMAND runLexisDLLTests
+)
