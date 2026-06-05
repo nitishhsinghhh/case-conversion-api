@@ -282,7 +282,7 @@ The native engine serves as the high-performance execution core of the platform,
 
 To maintain deterministic CI/CD behavior across platforms, the project uses a centralized orchestration script. The workflow performs native compilation on macOS while delegating Linux and Windows builds to containerized toolchains.
 
-[Orchestrator Script](Backend/CaseConversionAPI/Scripts/orchestrate-native-docker.sh)
+[Orchestrator Script](Backend/CaseConversionAPI/CppLib/Scripts/orchestrate-native-docker.sh)
 
 ```Bash
 # LOCAL MACOS BUILD ---
