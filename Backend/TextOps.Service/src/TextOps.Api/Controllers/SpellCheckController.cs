@@ -87,40 +87,32 @@ namespace TextOps.Api.Controllers
                 var result = _spellCheckService.VerifyWord(word);
                 return Ok(result);
             }
-            catch (InvalidOperationException ex)
-            {
-                // Internal platform exception dropped across unmanaged boundaries mapped directly into standard ProblemDetails structure
-                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-                {
-                    Status = StatusCodes.Status500InternalServerError,
-                    Title = "Native Execution Boundary Fault Encountered",
-                    Detail = ex.Message,
-                    Instance = HttpContext.Request.Path,
-                    Extensions = { ["traceId"] = Activity.Current?.Id ?? HttpContext.TraceIdentifier }
-                });
-            }
+            // Most specific first
             catch (ObjectDisposedException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-                {
-                    Status = StatusCodes.Status500InternalServerError,
-                    Title = "Native Execution Boundary Fault Encountered",
-                    Detail = ex.Message,
-                    Instance = HttpContext.Request.Path,
-                    Extensions = { ["traceId"] = Activity.Current?.Id ?? HttpContext.TraceIdentifier }
-                });
+                return CreateProblemDetails(ex, StatusCodes.Status500InternalServerError);
             }
+            catch (InvalidOperationException ex)
+            {
+                return CreateProblemDetails(ex, StatusCodes.Status500InternalServerError);
+            }
+            // Most general (base interop exception) last
             catch (System.Runtime.InteropServices.ExternalException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-                {
-                    Status = StatusCodes.Status500InternalServerError,
-                    Title = "Native Execution Boundary Fault Encountered",
-                    Detail = ex.Message,
-                    Instance = HttpContext.Request.Path,
-                    Extensions = { ["traceId"] = Activity.Current?.Id ?? HttpContext.TraceIdentifier }
-                });
+                return CreateProblemDetails(ex, StatusCodes.Status500InternalServerError);
             }
+        }
+
+        private IActionResult CreateProblemDetails(Exception ex, int statusCode)
+        {
+            return StatusCode(statusCode, new ProblemDetails
+            {
+                Status = statusCode,
+                Title = "Native Execution Boundary Fault Encountered",
+                Detail = ex.Message,
+                Instance = HttpContext.Request.Path,
+                Extensions = { ["traceId"] = Activity.Current?.Id ?? HttpContext.TraceIdentifier }
+            });
         }
 
         /// <summary>
