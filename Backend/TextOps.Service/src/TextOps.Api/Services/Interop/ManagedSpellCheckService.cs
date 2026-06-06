@@ -115,7 +115,7 @@ namespace TextOps.Api.Services.Interop
                              RuntimeInformation.IsOSPlatform(OSPlatform.OSX)     ? "libLexisCore.dylib" :
                              throw new PlatformNotSupportedException("The executing operating system platform is not supported.");
 
-            string libraryPath = Path.Combine(AppContext.BaseDirectory, dllName);
+            string libraryPath = Path.Join(AppContext.BaseDirectory, dllName);
 
             _libraryHandle = NativeLibrary.Load(libraryPath);
 
