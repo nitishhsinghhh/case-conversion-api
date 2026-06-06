@@ -22,11 +22,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="libLexisSpellCheckDLL.dylib" CopyToOutputDirectory="Always" />
-    
-    <None Include="../CppLib/build_dll/Release/libLexisSpellCheckDLL.dll" CopyToOutputDirectory="Always" Condition=" '$(CI)' != 'true' AND '$(OS)' == 'Windows_NT' " />
-    <None Include="../CppLib/build_dll/lib/libLexisSpellCheckDLL.dylib" CopyToOutputDirectory="Always" Condition=" '$(CI)' != 'true' AND '$(OS)' == 'OSX' " />
-    <None Include="../CppLib/build_dll/lib/libLexisSpellCheckDLL.so" CopyToOutputDirectory="Always" Condition=" '$(CI)' != 'true' AND '$(OS)' == 'Linux' " />
+    <None Include="../Lexis.Core/build/windows-latest/libLexisCore.dll" 
+          CopyToOutputDirectory="PreserveNewest" 
+          Condition=" '$(CI)' != 'true' AND '$(OS)' == 'Windows_NT' " />
+
+    <None Include="../Lexis.Core/build/macos-latest/libLexisCore.dylib" 
+          CopyToOutputDirectory="PreserveNewest" 
+          Condition=" '$(CI)' != 'true' AND '$(OS)' == 'OSX' " />
+
+    <None Include="../Lexis.Core/build/linux-latest/libLexisCore.so" 
+          CopyToOutputDirectory="PreserveNewest" 
+          Condition=" '$(CI)' != 'true' AND '$(OS)' == 'Linux' " />
   </ItemGroup>
 
 </Project>

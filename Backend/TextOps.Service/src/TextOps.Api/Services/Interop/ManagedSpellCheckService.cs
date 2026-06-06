@@ -109,19 +109,21 @@ namespace TextOps.Api.Services.Interop
             }
 
             // 1. Resolve OS-Specific Binary Extensions
-            string dllName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "libLexisSpellCheckDLL.dll" :
-                             RuntimeInformation.IsOSPlatform(OSPlatform.Linux)   ? "libLexisSpellCheckDLL.so" :
-                             RuntimeInformation.IsOSPlatform(OSPlatform.OSX)     ? "libLexisSpellCheckDLL.dylib" :
+
+            string dllName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "libLexisCore.dll" :
+                             RuntimeInformation.IsOSPlatform(OSPlatform.Linux)   ? "libLexisCore.so" :
+                             RuntimeInformation.IsOSPlatform(OSPlatform.OSX)     ? "libLexisCore.dylib" :
                              throw new PlatformNotSupportedException("The executing operating system platform is not supported.");
 
-            string fullPath = Path.Join(AppContext.BaseDirectory, dllName);
+            string libraryPath = Path.Join(AppContext.BaseDirectory, dllName);
 
-            _libraryHandle = NativeLibrary.Load(fullPath);
+            _libraryHandle = NativeLibrary.Load(libraryPath);
+
             if (_libraryHandle == IntPtr.Zero)
             {
-                throw new DllNotFoundException($"Unable to load native boundary engine library at path resource: {fullPath}");
+                throw new DllNotFoundException($"Unable to load native boundary engine library at path resource: {libraryPath}");
             }
-
+ 
             // 2. Bind Unmanaged Function Exports to Delegates (Fixed entry-point strings match your exact C++ signatures)
             var createSpellChecker = Marshal.GetDelegateForFunctionPointer<CreateSpellCheckerDelegate>(NativeLibrary.GetExport(_libraryHandle, "createSpellChecker"));
             _freeSpellChecker = Marshal.GetDelegateForFunctionPointer<FreeSpellCheckerDelegate>(NativeLibrary.GetExport(_libraryHandle, "freeSpellChecker"));
@@ -160,6 +162,12 @@ namespace TextOps.Api.Services.Interop
                     Console.WriteLine("[WARN] Native SpellCheck engine initialized with baseline suggestions disabled (Main Dictionary not found).");
                 }
             }
+            catch (SEHException ex)
+            {
+                _freeSpellChecker(_rawEngineContext);
+                NativeLibrary.Free(_libraryHandle);
+                throw new ExternalException("Fatal pipeline exception during native engine bootstrapping initialization phase.", ex);
+            }
             catch (IOException ex)
             {
                 _freeSpellChecker(_rawEngineContext);
@@ -173,12 +181,6 @@ namespace TextOps.Api.Services.Interop
                 throw new ExternalException("Fatal pipeline exception during native engine bootstrapping initialization phase.", ex);
             }
             catch (ExternalException ex)
-            {
-                _freeSpellChecker(_rawEngineContext);
-                NativeLibrary.Free(_libraryHandle);
-                throw new ExternalException("Fatal pipeline exception during native engine bootstrapping initialization phase.", ex);
-            }
-            catch (SEHException ex)
             {
                 _freeSpellChecker(_rawEngineContext);
                 NativeLibrary.Free(_libraryHandle);

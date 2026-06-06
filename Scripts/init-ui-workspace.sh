@@ -48,9 +48,9 @@
 # 1.0  2026-04-28  Nitish Singh     Initial UI Template              */
 # 1.1  2026-05-09  Nitish Singh     Added Explicit Versioning        */
 # 1.2  2026-05-09  Nitish Singh     Standardized Logging and         */
-#                                    Boilerplate Injection           */
+#                                   Boilerplate Injection            */
 # 1.3  2026-05-30  Nitish Singh     Refactored Header Structure and  */
-#                                    Infrastructure Metadata         */
+#                                   Infrastructure Metadata          */
 #*********************************************************************/
 
 set -euo pipefail

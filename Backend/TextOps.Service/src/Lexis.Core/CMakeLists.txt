@@ -77,17 +77,17 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 # ---------------------------------------------------------
-# 6. TEST EXECUTABLE
+# 6. TEST EXECUTABLE (Primary Suite)
 # ---------------------------------------------------------
+
 add_executable(runLexisTests
-    "/Users/nitishsingh/projects/word-case-api/Backend/TextOps.Service/tests/Lexis.Core.Tests/SpellCheckerTests.cpp"
+    "${PROJECT_SOURCE_DIR}/../../tests/Lexis.Core.Tests/SpellCheckerTests.cpp"
 )
 
 target_include_directories(runLexisTests PRIVATE 
-    "${PROJECT_SOURCE_DIR}/../../include"
+    "${PROJECT_SOURCE_DIR}/include"
 )
 
-# Explicitly link ICU to the test executable as well
 target_link_libraries(runLexisTests PRIVATE 
     LexisCore 
     gtest 
@@ -97,28 +97,3 @@ target_link_libraries(runLexisTests PRIVATE
 )
 
 add_test(NAME AllTests COMMAND runLexisTests)
-
-# ---------------------------------------------------------
-# 7. DLL ABI TEST EXECUTABLE
-# ---------------------------------------------------------
-
-add_executable(runLexisDLLTests
-    "/Users/nitishsingh/projects/word-case-api/Backend/TextOps.Service/tests/Lexis.Core.Tests/SpellCheckerTestDll.cpp"
-)
-
-target_include_directories(runLexisDLLTests PRIVATE
-    "${PROJECT_SOURCE_DIR}/../../include"
-)
-
-target_link_libraries(runLexisDLLTests PRIVATE
-    LexisCore
-    gtest
-    gtest_main
-    ICU::uc
-    ICU::data
-)
-
-add_test(
-    NAME LexisDLLTests
-    COMMAND runLexisDLLTests
-)
