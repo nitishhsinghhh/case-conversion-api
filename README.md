@@ -357,27 +357,45 @@ The system applies multiple architectural and behavioral design patterns to main
 
 #### Architectural and Interop Patterns
 
-* Bridge Pattern (Interop Layer): Decouples the managed .NET abstraction from the native C++ implementation. This allows the high-level API service to evolve independently of the low-level ABI, enabling seamless swaps between different native engines (e.g., Clang vs. MSVC compiled binaries) without breaking the service contract.
+* Adapter Pattern (Interop Marshalling): The interoperability layer adapts managed .NET types into the stable C-style ABI exposed by the native engine. This isolates marshaling concerns and allows both runtimes to evolve independently while preserving a consistent integration contract.
 
-* Proxy Pattern (Service Orchestration): The ProcessStringService acts as a managed proxy for the unmanaged DLL. It encapsulates the complexity of platform-specific library loading, symbol resolution, and marshaling, providing a clean, idiomatic C# interface to external consumers.
+* Proxy Pattern (Native Service Access): The managed ProcessStringService acts as a proxy for the native execution engine, encapsulating dynamic library loading, symbol resolution, marshaling, and invocation details while exposing a clean service interface to consumers. Controls access to the native engine and hides native invocation details.
 
-* Circuit Breaker Pattern (Fault Tolerance): Implemented within the managed gateway to protect the ASP.NET Core host process. By monitoring native execution health, the circuit breaker can preemptively "trip" during native heap exhaustion or engine instability, preventing cascading failures and ensuring a deterministic fallback path.
+* Facade Pattern: The managed ProcessStringService acts as a proxy for the native processing engine. It encapsulates platform-specific library loading, symbol resolution, marshaling, and execution concerns while exposing a clean, idiomatic C# interface to application consumers. Provides a unified interface over validation, telemetry, native execution, and error handling.
 
-#### Native Execution Core (C++17)
+* Ports and Adapters (Hexagonal Architecture): The managed service layer defines stable application contracts while native processing engines, telemetry providers, and API endpoints act as interchangeable adapters around the core business workflow.
+
+* Dependency Injection Pattern: ASP.NET Core's built-in IoC container is used to manage service lifetimes, dependency graphs, and runtime composition of telemetry, configuration, authentication, and native orchestration services.
+
+#### Behavioral and Execution Patterns
 
 * Strategy Pattern: Encapsulates individual string transformation algorithms behind a common interface, enabling runtime selection of conversion behaviors without modifying the execution pipeline.
 
 * Factory Pattern: Centralizes strategy creation and decouples the client layer from concrete implementation details, simplifying extensibility and reducing dependency coupling.
 
+* Template Method Pattern: Request execution follows a predefined workflow while allowing validation, telemetry, and processing stages to evolve independently.
+
+* Request Dispatcher: The managed orchestration layer coordinates validation, strategy selection, execution, and response generation between managed and unmanaged runtimes.
+
+* Circuit Breaker Pattern (Fault Tolerance): Implemented within the managed gateway to protect the ASP.NET Core host process. By monitoring native execution health, the circuit breaker can preemptively "trip" during native heap exhaustion or engine instability, preventing cascading failures and ensuring a deterministic fallback path.
+
+#### Resource Ownership & Memory Management
+
 * RAII (Resource Acquisition Is Initialization): Applied throughout the C++17 engine to guarantee deterministic cleanup of unmanaged resources through scoped object lifetimes and automatic destructor execution.
 
-#### Managed Infrastructure (.NET 8)
+* Rule of Five / Move Semantics: The native engine implements ownership-aware resource management through the Rule of Five. Classes such as `ConversionResult`, which manage dynamically allocated buffers, explicitly define copy constructors, move constructors, copy assignment operators, move assignment operators, and destructors to maintain deterministic ownership semantics. Deep-copy operations ensure safe duplication of unmanaged memory when ownership must be shared, while move operations transfer buffer ownership without additional allocations or memory copies. This reduces heap overhead during high-frequency processing, prevents double-free conditions, and guarantees predictable resource lifecycles across the native-to-managed interoperability boundary.
 
-* Singleton Pattern (.NET 8): Shared infrastructure services such as telemetry providers, configuration loaders, native library managers, and orchestration services are registered as Singleton instances within the ASP.NET Core dependency injection container to ensure centralized lifecycle control and reduced allocation overhead.
+* Ownership Wrapper: ConversionResult encapsulates unmanaged buffer ownership behind a deterministic RAII interface, preventing raw pointer propagation throughout the native execution pipeline.
 
 * IDisposable / SafeHandle Pattern (.NET): The managed layer uses IDisposable, try/finally, and SafeHandle-oriented cleanup semantics to ensure deterministic release of unmanaged buffers and native library handles acquired through P/Invoke.
 
-* Client Dispatcher: Coordinates request execution, strategy lifecycle management, validation flow, and dispatch orchestration between managed and unmanaged layers.
+#### ABI Stability & Deployment Architecture
+
+* Symbol Visibility Control (ABI Boundary Management): Platform-specific export controls expose only the intended public ABI surface while hiding internal implementation details. Combined with extern "C" exports, this ensures stable symbol resolution and cross-platform interoperability across Windows, Linux, and macOS.
+
+* Replica Isolation Architecture: Service replicas operate independently behind the load balancer, preventing localized failures from propagating across the wider system.
+
+* Singleton Pattern (.NET 8): Shared infrastructure services such as telemetry providers, configuration loaders, native library managers, and orchestration services are registered as Singleton instances within the ASP.NET Core dependency injection container to ensure centralized lifecycle control and reduced allocation overhead.
 
 ### 3. Defensive Interop Design
 
