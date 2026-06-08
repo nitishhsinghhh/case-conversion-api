@@ -105,7 +105,7 @@ namespace StringConversionAPI.Services.Rust
                              RuntimeInformation.IsOSPlatform(OSPlatform.OSX)     ? "librust_lib.dylib" :
                              throw new PlatformNotSupportedException("The executing operating system platform is not supported.");
 
-            string fullPath = Path.Combine(AppContext.BaseDirectory, subDir, dllName);
+            string fullPath = Path.Join(AppContext.BaseDirectory, subDir, dllName);
 
             _libraryHandle = LoadLibraryWithRetry(fullPath); 
 
