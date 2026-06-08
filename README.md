@@ -278,6 +278,29 @@ The native engine serves as the high-performance execution core of the platform,
   * macOS → `libProcessStringDLL.dylib`
   * Linux → `libProcessStringDLL.so`
 
+#### Multi-Engine Execution Architecture
+
+The native processing layer now supports multiple interchangeable execution engines.
+
+| Engine           | Language | ABI Layer          | Shared Library            |
+|--------          |----------|----------          |----------                 |
+| Native Engine V1 | C++17    | C ABI              | `.dll` / `.so` / `.dylib` |
+| Native Engine V2 | Rust     | FFI (`extern "C"`) | `.dll` / `.so` / `.dylib` |
+
+Both engines implement equivalent processing contracts and are executed through the same managed orchestration pipeline.
+
+```text
+HTTP Request
+    ↓
+.NET Gateway
+    ↓
+Engine Selection Layer
+    ↓
+C++ Engine OR Rust Engine
+    ↓
+Response
+```
+
 #### Native Build Orchestration
 
 To maintain deterministic CI/CD behavior across platforms, the project uses a centralized orchestration script. The workflow performs native compilation on macOS while delegating Linux and Windows builds to containerized toolchains.
@@ -363,13 +386,20 @@ The system applies multiple architectural and behavioral design patterns to main
 
 * Facade Pattern: The managed ProcessStringService acts as a proxy for the native processing engine. It encapsulates platform-specific library loading, symbol resolution, marshaling, and execution concerns while exposing a clean, idiomatic C# interface to application consumers. Provides a unified interface over validation, telemetry, native execution, and error handling.
 
-* Ports and Adapters (Hexagonal Architecture): The managed service layer defines stable application contracts while native processing engines, telemetry providers, and API endpoints act as interchangeable adapters around the core business workflow.
+* Ports and Adapters (Hexagonal Architecture): Native processing engines act as interchangeable adapters behind a stable application boundary. Both Rust and C++ implementations satisfy the same contract, allowing engine substitution without modifying API consumers.
 
 * Dependency Injection Pattern: ASP.NET Core's built-in IoC container is used to manage service lifetimes, dependency graphs, and runtime composition of telemetry, configuration, authentication, and native orchestration services.
 
+* Polyglot Adapter Architecture:
+Rust and C++ engines act as interchangeable adapters behind a stable ABI boundary, enabling engine substitution, benchmarking, and incremental migration.
+
 #### Behavioral and Execution Patterns
 
-* Strategy Pattern: Encapsulates individual string transformation algorithms behind a common interface, enabling runtime selection of conversion behaviors without modifying the execution pipeline.
+* Strategy Pattern: Encapsulates interchangeable processing strategies behind a common contract. This pattern is used at two levels:
+  * Conversion strategies for string transformation behavior
+  * Runtime engine selection between Rust and C++ implementations
+
+The managed orchestration layer dynamically selects implementations without modifying API consumers.
 
 * Factory Pattern: Centralizes strategy creation and decouples the client layer from concrete implementation details, simplifying extensibility and reducing dependency coupling.
 
@@ -525,6 +555,79 @@ This engine is engineered for high-density concurrent processing and long-durati
 | Baseline        | 1,000      | 4   | 4,526 RPS     | 1.82ms       | Perfect P-Core alignment        |
 | Peak Efficiency | 1,000,000  | 8   | 7,242 RPS     | 2.66ms       | Full Hardware Saturation        |
 | Endurance       | 1,500,000  | 100 | 7,067 RPS     | 41.0ms       | Long-duration stability         |
+
+---
+
+### Native Engine Performance Comparison
+
+To validate the polyglot execution architecture, identical workloads were executed through both native engines using the same managed orchestration layer and equivalent API workflows.
+
+#### Benchmark Results
+
+| Engine     | Execution Time (s) | Relative Performance |
+|--------    |--------            |--------              |
+| RustEngine | 0.0012545          | Baseline (Fastest)   |
+| CppEngine  | 0.0023065          | ~1.84x slower        |
+
+#### Observations
+
+* RustEngine completed execution in approximately **54% of the time required by the CppEngine**.
+* Under this benchmark scenario, the Rust implementation demonstrated approximately **1.8× higher throughput efficiency**.
+* Both engines executed identical logical workflows through the same managed orchestration pipeline, ensuring functional parity during measurement.
+
+#### Performance Interpretation
+
+These benchmark results suggest several contributing factors:
+
+##### Memory Management Characteristics
+
+Rust's ownership model and deterministic memory safety mechanisms may reduce runtime overhead associated with allocation patterns and buffer handling across the FFI boundary.
+
+##### String Processing Efficiency
+
+The Rust standard library provides highly optimized UTF-8 string handling and iterator pipelines which may provide advantages for transformation-heavy workloads.
+
+##### Compiler Optimization Pipeline
+
+Differences in compiler optimization strategies may contribute to performance variation:
+
+* Rust optimizations:
+  * `opt-level=3`
+  * Link Time Optimization (LTO)
+  * Aggressive inlining
+
+* C++ optimizations:
+  * Dependent on compiler flags
+  * STL allocation patterns
+  * Build configuration differences
+
+##### ABI Boundary Cost
+
+Since both engines are invoked through the same .NET orchestration layer, benchmark differences primarily reflect native execution characteristics rather than API overhead.
+
+#### Important Benchmark Notes
+
+These measurements represent workload-specific observations rather than universal language comparisons.
+
+Variables influencing future benchmark outcomes include:
+
+* Input size distribution
+* Allocation patterns
+* Compiler configuration
+* CPU architecture
+* Native library loading behavior
+* String encoding complexity
+
+#### Architectural Outcome
+
+The benchmark validates one of the primary goals of the multi-engine architecture:
+
+* Compare interchangeable native engines
+* Evaluate runtime performance characteristics
+* Preserve API compatibility across implementations
+* Enable future engine selection strategies
+
+---
 
 #### Key Performance Drivers
 

@@ -41,6 +41,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StringConversionAPI.Models;
 using StringConversionAPI.Services;
+using StringConversionAPI.Services.Rust;
+using StringConversionAPI.Services.Native;
 
 namespace StringConversionAPI.Controllers
 {
@@ -65,6 +67,8 @@ namespace StringConversionAPI.Controllers
         /// Gets or sets the transformation routine routine index matching unmanaged engine structures.
         /// </summary>
         public int Choice { get; set; }
+
+        public string? EngineType { get; set; }
     }
 
     /// <summary>
@@ -121,15 +125,17 @@ namespace StringConversionAPI.Controllers
     [Produces("application/json")]
     public sealed class WordCaseController : ControllerBase
     {
-        private readonly ProcessStringService _service;
+        private readonly IEnumerable<INativeStringEngine> _engines;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WordCaseController"/> class.
         /// </summary>
-        /// <param name="service">The business service broker handling platform interop layers.</param>
-        public WordCaseController(ProcessStringService service)
+        /// <param name="service">Consolidate into a single constructor that resolves the strategy dynamically.</param>
+        /// <returns>Service name.</return>
+       
+        public WordCaseController(IEnumerable<INativeStringEngine> engines)
         {
-            _service = service ?? throw new ArgumentNullException(nameof(service));
+            _engines = engines;
         }
 
         /// <summary>
@@ -144,9 +150,14 @@ namespace StringConversionAPI.Controllers
         public IActionResult Convert([FromBody] ConvertRequest request)
         {
             if (request == null)
-            {
                 return BadRequest("The incoming conversion request structural instance cannot be null.");
-            }
+
+            // Resolve engine dynamically: Defaults to "cpp" if EngineType is not provided
+            var engine = _engines.FirstOrDefault(e => 
+            e.Name.Equals(request.EngineType ?? "cpp", StringComparison.OrdinalIgnoreCase));
+
+            if (engine == null) 
+                return BadRequest($"Engine '{request.EngineType}' not found.");
 
             try
             {
@@ -161,7 +172,7 @@ namespace StringConversionAPI.Controllers
                 }
 
                 // Process across the unmanaged barrier interface routine
-                string result = _service.Convert(request.Text, request.Choice);
+                string result = engine.Convert(request.Text, request.Choice);
 
                 // Check for predefined error strings indicating a failure at the security gate
                 if (string.Equals(result, "ERROR_BUFFER_OVERFLOW_LIMIT_5MB", StringComparison.Ordinal))
@@ -207,7 +218,13 @@ namespace StringConversionAPI.Controllers
             try
             {
                 // Delegate downstream to the underlying parallelization management framework
-                IEnumerable<string> results = await _service.ConvertBatchAsync(request.Texts, request.Choice);
+                var engine = _engines.FirstOrDefault(e => e.Name.Equals(request.EngineType ?? "cpp", StringComparison.OrdinalIgnoreCase));
+
+                if (engine == null) 
+                    return BadRequest("Engine not found.");
+
+                IEnumerable<string> results = await engine.ConvertBatchAsync(request.Texts, request.Choice);
+                
                 return Ok(results);
             }
             catch (ArgumentException ex)
@@ -220,6 +237,47 @@ namespace StringConversionAPI.Controllers
                 Debug.WriteLine($"Unexpected parallel engine batch anomaly intercepted: {ex}");
                 return StatusCode(StatusCodes.Status500InternalServerError, "Internal parallel pipeline task orchestration error.");
             }
+        }        
+    }
+    [ApiController]
+    [Route("api/benchmark")]
+    public sealed class BenchmarkController : ControllerBase
+    {
+        private readonly IEnumerable<INativeStringEngine> _engines;
+
+        // The DI container automatically provides all registered INativeStringEngine services
+        public BenchmarkController(IEnumerable<INativeStringEngine> engines)
+        {
+            _engines = engines;
+        }
+
+        [HttpPost("compare")]
+        public IActionResult Compare([FromBody] string input, [FromQuery] int choice)
+        {
+            var results = new Dictionary<string, double>();
+            const int iterations = 1000;
+
+            foreach (var engine in _engines)
+            {
+                // 1. Warm-up: Essential for JIT and native library initialization
+                for (int i = 0; i < 50; i++) 
+                { 
+                    engine.Convert(input, choice); 
+                }
+
+                // 2. Measurement: Use a high-resolution loop
+                var sw = Stopwatch.StartNew();
+                for (int i = 0; i < iterations; i++)
+                {
+                    engine.Convert(input, choice);
+                }
+                sw.Stop();
+
+                // Calculate average latency (in milliseconds) for this specific engine
+                results[engine.Name] = sw.Elapsed.TotalMilliseconds / iterations;
+            }
+
+            return Ok(results);
         }
     }
 }

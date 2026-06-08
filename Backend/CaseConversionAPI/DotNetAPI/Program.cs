@@ -53,6 +53,8 @@ using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using StringConversionAPI.Services;
+using StringConversionAPI.Services.Native;
+using StringConversionAPI.Services.Rust; 
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -169,7 +171,26 @@ builder.Services.AddCors(options =>
 
 // Register Core Components within Stateless Lifetime Boundaries
 builder.Services.AddSingleton<ITokenService, TokenService>();
-builder.Services.AddSingleton<ProcessStringService>();
+
+// 1. To register specific implementations as themselves
+builder.Services.AddSingleton<CppEngineService>();
+builder.Services.AddSingleton<RustEngineService>();
+
+// 2. To register all implementations as the interface to support IEnumerable injection
+builder.Services.AddSingleton<INativeStringEngine, CppEngineService>();
+builder.Services.AddSingleton<INativeStringEngine, RustEngineService>();
+
+// 3. To keep your factory logic if you still need to resolve a default "provider"
+// You can keep this if your WordCaseController needs to know which one is the "primary"
+builder.Services.AddScoped<INativeStringEngine>(serviceProvider => 
+{
+    var config = serviceProvider.GetRequiredService<IConfiguration>();
+    var provider = config["NativeEngineSettings:Provider"] ?? "cpp";
+    
+    return provider.ToLower() == "rust" 
+        ? serviceProvider.GetRequiredService<RustEngineService>() 
+        : serviceProvider.GetRequiredService<CppEngineService>();
+});
 
 WebApplication app = builder.Build();
 

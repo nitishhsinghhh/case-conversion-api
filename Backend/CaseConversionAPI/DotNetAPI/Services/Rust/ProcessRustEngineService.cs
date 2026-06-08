@@ -24,23 +24,8 @@
  * ------------------------------------------------------------------------------------------------
  * Version     Date           Author           Description
  * ------------------------------------------------------------------------------------------------
- * 1.0         2026-04-11     Nitish Singh     Initial implementation of native interop layer using P/Invoke.
- * 1.1         2026-04-13     Nitish Singh     Introduced explicit unmanaged memory safety architecture via
- *                                             the Callee-Allocates, Caller-Frees pattern and IDisposable.
- * 1.2         2026-04-18     Nitish Singh     Integrated OpenTelemetry ActivitySource instrumentation and
- *                                             distributed tracing traceId contextual propagation across
- *                                             runtime boundaries.
- * 1.3         2026-04-19     Nitish Singh     Engineered Apple M2 P-Core targeted parallel batch processing
- *                                             routines.
- * 1.4         2026-04-19     Nitish Singh     Hardened concurrency using pre-allocated collections and
- *                                             added systemic aggregate unmanaged memory heap exhaustion guards.
- * 1.5         2026-05-05     Nitish Singh     Resolved data truncation bug by fixing multi-byte UTF-8
- *                                             ByteCount mismatches and refactored parallel orchestration
- *                                             routines for strict element order preservation.
- * 1.6         2026-05-30     Nitish Singh     Introduced NativeLibraryLoader singleton with caching,
- *                                             retry with exponential backoff, circuit breaker protection,
- *                                             and runtime health validation for robust native dependency
- *                                             lifecycle management across cross-platform deployments.
+ * 1.0         2026-04-11     Nitish Singh     Initial implementation of rust service
+ *
  **************************************************************************************************/
 
 using System;
@@ -50,15 +35,16 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using StringConversionAPI.Services;
 
-namespace StringConversionAPI.Services.Native
+namespace StringConversionAPI.Services.Rust
 {
     /// <summary>
     /// Provides low-latency, hardware-optimized orchestration between the managed .NET runtime and 
     /// the unmanaged native C++ execution layer. Implements automated garbage collection disposal patterns 
     /// for native system descriptors and locks parallel work to specific performance-core limits.
     /// </summary>
-    public class CppEngineService : INativeStringEngine, IDisposable
+    public class RustEngineService : INativeStringEngine, IDisposable
     {
         #region Performance & Security Constants
 
@@ -101,39 +87,41 @@ namespace StringConversionAPI.Services.Native
 
         #endregion
 
-        public string Name => "CppEngine";
+        public string Name => "RustEngine";
 
         #region Constructors / Finalizers
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CppEngineService"/> class.
+        /// Initializes a new instance of the <see cref="RustEngineService"/> class.
         /// Dynamically resolves and links OS-specific binary dependencies at application runtime.
         /// </summary>
         /// <exception cref="PlatformNotSupportedException">Thrown when operating on unmapped OS environments.</exception>
         /// <exception cref="DllNotFoundException">Thrown when the target unmanaged module cannot be resolved within path scopes.</exception>
-        public CppEngineService()
+        public RustEngineService()
         {
-            string dllName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "libProcessStringDLL.dll" :
-                             RuntimeInformation.IsOSPlatform(OSPlatform.Linux)   ? "libProcessStringDLL.so" :
-                             RuntimeInformation.IsOSPlatform(OSPlatform.OSX)     ? "libProcessStringDLL.dylib" :
+            string subDir = "rust";
+            string dllName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "librust_lib.dll" :
+                             RuntimeInformation.IsOSPlatform(OSPlatform.Linux)   ? "librust_lib.so" :
+                             RuntimeInformation.IsOSPlatform(OSPlatform.OSX)     ? "librust_lib.dylib" :
                              throw new PlatformNotSupportedException("The executing operating system platform is not supported.");
 
-            string fullPath = Path.Combine(AppContext.BaseDirectory, dllName);
+            string fullPath = Path.Combine(AppContext.BaseDirectory, subDir, dllName);
 
             _libraryHandle = LoadLibraryWithRetry(fullPath); 
 
-            IntPtr procAddr = NativeLibrary.GetExport(_libraryHandle, "processStringDLL");
-            IntPtr freeProcAddr = NativeLibrary.GetExport(_libraryHandle, "freeString");
+            string prefix = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "_" : "";
+            IntPtr procAddr = NativeLibrary.GetExport(_libraryHandle, "process_string_dll");
+            IntPtr freeProcAddr = NativeLibrary.GetExport(_libraryHandle, "free_string");
 
             _processString = Marshal.GetDelegateForFunctionPointer<ProcessStringDelegate>(procAddr);
             _freeStringDelegate = Marshal.GetDelegateForFunctionPointer<FreeStringDelegate>(freeProcAddr);
         }
 
         /// <summary>
-        /// Finalizes an instance of the <see cref="CppEngineService"/> class.
+        /// Finalizes an instance of the <see cref="RustEngineService"/> class.
         /// Acts as a safety net fallback to guarantee that unmanaged system handles are reclaimed.
         /// </summary>
-        ~CppEngineService()
+        ~RustEngineService()
         {
             Dispose(false);
         }

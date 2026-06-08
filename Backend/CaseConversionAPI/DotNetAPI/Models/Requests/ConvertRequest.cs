@@ -67,5 +67,7 @@ namespace StringConversionAPI.Models
         /// </remarks>
         [Required]
         public int Choice { get; set; }
+
+        public string? EngineType { get; set; }
     }
 }
