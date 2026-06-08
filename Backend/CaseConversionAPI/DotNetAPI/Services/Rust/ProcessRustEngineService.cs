@@ -109,7 +109,6 @@ namespace StringConversionAPI.Services.Rust
 
             _libraryHandle = LoadLibraryWithRetry(fullPath); 
 
-            string prefix = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "_" : "";
             IntPtr procAddr = NativeLibrary.GetExport(_libraryHandle, "process_string_dll");
             IntPtr freeProcAddr = NativeLibrary.GetExport(_libraryHandle, "free_string");
 
