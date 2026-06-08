@@ -346,7 +346,31 @@ namespace StringConversionAPI.Services.Rust
                         return handle;
                     }
                 }
-                catch (Exception ex)
+                catch (DllNotFoundException ex)
+                {
+                    lastException = ex;
+
+                    activity?.AddEvent(new ActivityEvent(
+                        $"Native load failed on attempt {attempt}: {ex.Message}"
+                    ));
+                }
+                catch (BadImageFormatException ex)
+                {
+                    lastException = ex;
+
+                    activity?.AddEvent(new ActivityEvent(
+                        $"Native load failed on attempt {attempt}: {ex.Message}"
+                    ));
+                }
+                catch (FileNotFoundException ex)
+                {
+                    lastException = ex;
+
+                    activity?.AddEvent(new ActivityEvent(
+                        $"Native load failed on attempt {attempt}: {ex.Message}"
+                    ));
+                }
+                catch (EntryPointNotFoundException ex)
                 {
                     lastException = ex;
 
