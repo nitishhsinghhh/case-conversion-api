@@ -108,10 +108,31 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore & Publish .NET API
+      - name: Clean .NET Build
         run: |
-          dotnet restore Backend/CaseConversionAPI/DotNetAPI
-          dotnet publish Backend/CaseConversionAPI/DotNetAPI -c Release -o ./publish
+          dotnet clean Backend/CaseConversionAPI/DotNetAPI -c Release
+
+      - name: Remove Build Artifacts
+        shell: bash
+        run: |
+          find Backend/CaseConversionAPI -type d \( -name bin -o -name obj \) -exec rm -rf {} + || true
+
+      - name: Restore .NET Dependencies
+        run: |
+          dotnet restore Backend/CaseConversionAPI/DotNetAPI --force
+
+      - name: Build .NET API
+        run: |
+          dotnet build Backend/CaseConversionAPI/DotNetAPI \
+            -c Release \
+            --no-restore
+
+      - name: Publish .NET API
+        run: |
+          dotnet publish Backend/CaseConversionAPI/DotNetAPI \
+            -c Release \
+            --no-build \
+            -o ./publish
 
       # ABI Bridge (Artifact Injection)
       - name: Inject Native Artifacts
@@ -131,6 +152,42 @@ jobs:
         with:
           name: DotNetAPI-${{ matrix.os }}
           path: ./publish/
+
+      # ------------------------------------------------------------
+      # RUST NATIVE ENGINE and dotnet PUBLISH
+      # ------------------------------------------------------------
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Rust Library
+        working-directory: Backend/CaseConversionAPI/RustLib
+        run: cargo build --release
+
+      - name: Create Rust Runtime Directory
+        shell: bash
+        run: |
+          mkdir -p ./publish/rust
+
+      - name: Copy Rust Library (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cp Backend/CaseConversionAPI/RustLib/target/release/librust_lib.so \
+            ./publish/rust/
+
+      - name: Copy Rust Library (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cp Backend/CaseConversionAPI/RustLib/target/release/librust_lib.dylib \
+            ./publish/rust/
+
+      - name: Copy Rust Library (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Copy-Item `
+            Backend/CaseConversionAPI/RustLib/target/release/rust_lib.dll `
+            ./publish/rust/
 
   # ------------------------------------------------------------
   # JOB 2: FRONTEND VALIDATION

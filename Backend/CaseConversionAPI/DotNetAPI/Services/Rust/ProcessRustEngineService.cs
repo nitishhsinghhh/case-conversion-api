@@ -281,6 +281,10 @@ namespace StringConversionAPI.Services.Rust
         {
             if (!_disposed)
             {
+                if (disposing)
+                {
+                    // Dispose managed resources here (e.g., managed timers, event handlers)
+                }
                 if (_libraryHandle != IntPtr.Zero)
                 {
                     NativeLibrary.Free(_libraryHandle);
