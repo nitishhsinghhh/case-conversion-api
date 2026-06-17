@@ -90,13 +90,16 @@ jobs:
                 -B Backend/CaseConversionAPI/CppLib/build_dll \
                 -DCMAKE_BUILD_TYPE=Release
 
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Configure DLL (Windows)
         if: runner.os == 'Windows'
         run: |
             cmake -S Backend/CaseConversionAPI/CppLib `
             -B Backend/CaseConversionAPI/CppLib/build_dll `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DPROCESSSTRING_EXPORTS=ON
+            -G "NMake Makefiles" `
+            -DCMAKE_BUILD_TYPE=Release
 
       - name: Build DLL
         run: cmake --build Backend/CaseConversionAPI/CppLib/build_dll --config Release --parallel
