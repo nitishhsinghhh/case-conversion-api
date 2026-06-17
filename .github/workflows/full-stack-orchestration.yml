@@ -93,11 +93,10 @@ jobs:
       - name: Configure DLL (Windows)
         if: runner.os == 'Windows'
         run: |
-          cmake -S Backend/CaseConversionAPI/CppLib `
-                -B Backend/CaseConversionAPI/CppLib/build_dll `
-                -DCMAKE_BUILD_TYPE=Release `
-                -DPROCESSSTRING_EXPORTS=ON `
-                -G "Visual Studio 17 2022" -A x64
+            cmake -S Backend/CaseConversionAPI/CppLib `
+            -B Backend/CaseConversionAPI/CppLib/build_dll `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DPROCESSSTRING_EXPORTS=ON
 
       - name: Build DLL
         run: cmake --build Backend/CaseConversionAPI/CppLib/build_dll --config Release --parallel
