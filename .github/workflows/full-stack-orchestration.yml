@@ -124,17 +124,10 @@ jobs:
           dotnet restore Backend/CaseConversionAPI/DotNetAPI --force
 
       - name: Build .NET API
-        run: |
-          dotnet build Backend/CaseConversionAPI/DotNetAPI \
-            -c Release \
-            --no-restore
+        run: dotnet build Backend/CaseConversionAPI/DotNetAPI -c Release --no-restore
 
       - name: Publish .NET API
-        run: |
-          dotnet publish Backend/CaseConversionAPI/DotNetAPI \
-            -c Release \
-            --no-build \
-            -o ./publish
+        run: dotnet publish Backend/CaseConversionAPI/DotNetAPI -c Release --no-build -o ./publish
 
       # ABI Bridge (Artifact Injection)
       - name: Inject Native Artifacts
