@@ -122,7 +122,7 @@ namespace StringConversionAPI.Services.Rust
         /// </summary>
         ~RustEngineService()
         {
-            DisposeCore(false);
+            Dispose(false);
         }
 
         #endregion
