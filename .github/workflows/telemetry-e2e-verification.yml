@@ -96,6 +96,11 @@ jobs:
           echo "=== Build Directory Contents ==="
           find ../CppLib/build -type f
 
+          - name: Debug Native Build
+          run: |
+            echo "=== Native Artifacts ==="
+            find Backend/CaseConversionAPI/CppLib/build -type f | sort
+
           LIB_PATH=$(find ../CppLib/build -type f -name "*.so" | head -n 1)
 
           echo "LIB_PATH=$LIB_PATH"
