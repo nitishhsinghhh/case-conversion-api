@@ -93,9 +93,9 @@ jobs:
           cd Backend/CaseConversionAPI/DotNetAPI
           dotnet build -c Release
           
-          # Synchronize Native Binary with API Runtime
-          cp ../CppLib/build/libProcessStringDLL.so .
-          cp ../CppLib/build/libProcessStringDLL.so ./bin/Release/net8.0/
+          LIB_PATH=$(find ../CppLib/build -name "libProcessStringDLL.so" | head -n 1)
+          cp "$LIB_PATH" .
+          cp "$LIB_PATH" ./bin/Release/net8.0/
           
           # Background Execution for Trace Capture
           dotnet ./bin/Release/net8.0/DotNetAPI.dll > api.log 2>&1 & 
