@@ -93,7 +93,18 @@ jobs:
           cd Backend/CaseConversionAPI/DotNetAPI
           dotnet build -c Release
           
-          LIB_PATH=$(find ../CppLib/build -name "libProcessStringDLL.so" | head -n 1)
+          echo "=== Build Directory Contents ==="
+          find ../CppLib/build -type f
+
+          LIB_PATH=$(find ../CppLib/build -type f -name "*.so" | head -n 1)
+
+          echo "LIB_PATH=$LIB_PATH"
+
+          if [ -z "$LIB_PATH" ]; then
+            echo "ERROR: No shared library found"
+            exit 1
+          fi
+
           cp "$LIB_PATH" .
           cp "$LIB_PATH" ./bin/Release/net8.0/
           
