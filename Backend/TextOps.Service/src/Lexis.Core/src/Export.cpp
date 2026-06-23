@@ -36,8 +36,8 @@
 
 #include "SpellChecker.hpp"
 #include <iostream>
-#include <string>
 #include <limits>
+#include <string>
 
 int main() {
   using namespace Lexis::SpellCheck;
@@ -46,7 +46,9 @@ int main() {
   checker.LoadFromFile();
 
   if (!checker.LoadDictionary("/usr/share/hunspell/en_US")) {
-    std::cout << "Warning: Could not load Nuspell dictionary. Suggestions disabled." << std::endl;
+    std::cout
+        << "Warning: Could not load Nuspell dictionary. Suggestions disabled."
+        << std::endl;
   }
 
   std::string input;
@@ -55,20 +57,20 @@ int main() {
     std::cin >> input;
 
     if (input == "exit") {
-      break; 
+      break;
     }
 
     SpellResult result = checker.Check(input);
 
     if (result.isCorrect) {
-      std::cout << "  [✓] '" << input << "' is spelled correctly (Nuspell)." << std::endl;
-    } 
-    else if (checker.Contains(input)) {
-      std::cout << "  [✓] '" << input << "' found in your personal dictionary." << std::endl;
-    }
-    else {
+      std::cout << "  [✓] '" << input << "' is spelled correctly (Nuspell)."
+                << std::endl;
+    } else if (checker.Contains(input)) {
+      std::cout << "  [✓] '" << input << "' found in your personal dictionary."
+                << std::endl;
+    } else {
       std::cout << "  [✗] '" << input << "' is misspelled!" << std::endl;
-      
+
       if (!result.suggestions.empty()) {
         std::cout << "  Suggestions: ";
         for (size_t i = 0; i < result.suggestions.size() && i < 5; ++i) {
@@ -77,20 +79,22 @@ int main() {
         std::cout << std::endl;
       }
 
-      std::cout << "  Add '" << input << "' to your personal dictionary? (y/n): ";
+      std::cout << "  Add '" << input
+                << "' to your personal dictionary? (y/n): ";
       char choice;
       std::cin >> choice;
-      
+
       if (choice == 'y' || choice == 'Y') {
-        checker.Insert(input); 
+        checker.Insert(input);
         std::cout << "  [+] Saved to Personal Dictionary " << std::endl;
       }
-      
+
       std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
   }
 
-  std::cout << "\n[Exiting Lexis Engine... All changes saved. Goodbye!]" << std::endl;
-  
+  std::cout << "\n[Exiting Lexis Engine... All changes saved. Goodbye!]"
+            << std::endl;
+
   return 0;
 }
