@@ -67,7 +67,7 @@
 #include <string>
 
 /*********************************************************************/
-/* Constants: 5 MB Buffer Limit: Hardcoded 
+/* Constants: 5 MB Buffer Limit: Hardcoded
 /*********************************************************************/
 
 namespace {
@@ -83,7 +83,7 @@ static char *allocateCString(const std::string &str) {
   if (!output) {
     return nullptr;
   }
-  
+
   std::memcpy(output, str.c_str(), str.size() + 1);
   return output;
 }

@@ -55,8 +55,7 @@ CapitalizeWordsConversion::convert(const std::string &input) const {
       result += " ";
     }
 
-    word = ConversionResult(lowerConv.convert(word))
-               .get_c_str(); 
+    word = ConversionResult(lowerConv.convert(word)).get_c_str();
 
     std::string firstChar(1, word[0]);
     firstChar = ConversionResult(upperConv.convert(firstChar)).get_c_str();

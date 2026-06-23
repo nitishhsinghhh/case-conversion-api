@@ -58,9 +58,7 @@ ConversionResult::ConversionResult(const char *input) {
 /* Destructor                                                        */
 /*********************************************************************/
 
-ConversionResult::~ConversionResult() { 
-    delete[] data; 
-}
+ConversionResult::~ConversionResult() { delete[] data; }
 
 /*********************************************************************/
 /* Copy Constructor                                                  */

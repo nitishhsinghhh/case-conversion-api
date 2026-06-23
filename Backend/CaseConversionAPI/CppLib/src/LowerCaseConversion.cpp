@@ -41,7 +41,7 @@ ConversionResult LowerCaseConversion::convert(const std::string &input) const {
 
   for (char &c : result) {
     if (c >= 'A' && c <= 'Z') {
-      c = c + ('a' - 'A'); 
+      c = c + ('a' - 'A');
     }
   }
 
