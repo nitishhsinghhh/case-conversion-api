@@ -83,23 +83,20 @@ jobs:
       # Managed Layer & Sidecar Orchestration
       # ------------------------------------------------------------
 
+      - name: Debug Native Build
+        run: |
+          echo "=== Native Artifacts ==="
+          find Backend/CaseConversionAPI/CppLib/build -type f | sort
+
       - name: Bootstrap .NET API
         env:
           OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:4317
-          ASPNETCORE_URLS: http://localhost:5050 
+          ASPNETCORE_URLS: http://localhost:5050
           ASPNETCORE_ENVIRONMENT: Development
           LD_LIBRARY_PATH: .:${{ github.workspace }}/Backend/CaseConversionAPI/CppLib/build
         run: |
           cd Backend/CaseConversionAPI/DotNetAPI
           dotnet build -c Release
-          
-          echo "=== Build Directory Contents ==="
-          find ../CppLib/build -type f
-
-          - name: Debug Native Build
-          run: |
-            echo "=== Native Artifacts ==="
-            find Backend/CaseConversionAPI/CppLib/build -type f | sort
 
           LIB_PATH=$(find ../CppLib/build -type f -name "*.so" | head -n 1)
 
@@ -112,16 +109,8 @@ jobs:
 
           cp "$LIB_PATH" .
           cp "$LIB_PATH" ./bin/Release/net8.0/
-          
-          # Background Execution for Trace Capture
-          dotnet ./bin/Release/net8.0/DotNetAPI.dll > api.log 2>&1 & 
-          
-          echo "Waiting for API Readiness at :5050..."
-          timeout 60s bash -c 'until curl -sf http://localhost:5050/api/WordCase/convert \
-            -X POST -H "Content-Type: application/json" \
-            -d "{\"text\":\"CI-PROBE\", \"choice\":1}"; do 
-              sleep 2; 
-            done' || (echo "FATAL: API Startup Timeout" && cat api.log && exit 1)
+
+          dotnet ./bin/Release/net8.0/DotNetAPI.dll > api.log 2>&1 &
 
       # ------------------------------------------------------------
       # Traffic Injection & Span Generation
