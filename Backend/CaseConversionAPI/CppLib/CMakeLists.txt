@@ -29,14 +29,18 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 enable_testing()
 
-# ---------------------------
+# -----------------------------------------------------------------------------
 # Include directories
-# ---------------------------
+# -----------------------------------------------------------------------------
+
 include_directories(include)
 
-# ---------------------------
+# -----------------------------------------------------------------------------
 # Library: StringConversionLib
-# ---------------------------
+# -----------------------------------------------------------------------------
+
+set(BUILD_SHARED_LIBS ON)
+
 add_library(StringConversionLib
     src/AlternatingCaseConversion.cpp
     src/CapitalizeWordsConversion.cpp
@@ -59,15 +63,16 @@ add_library(StringConversionLib
 
 target_include_directories(StringConversionLib PUBLIC include)
 
-# ---------------------------
+# -----------------------------------------------------------------------------
 # Main Application
-# ---------------------------
+# -----------------------------------------------------------------------------
+
 add_executable(app src/sourcecode.cpp)
 target_link_libraries(app StringConversionLib)
 
-# ---------------------------
+# -----------------------------------------------------------------------------
 # GoogleTest Setup
-# ---------------------------
+# -----------------------------------------------------------------------------
 include(FetchContent)
 
 # Force GoogleTest to use the same runtime on Windows
@@ -82,9 +87,9 @@ FetchContent_Declare(
 # Make GoogleTest available
 FetchContent_MakeAvailable(googletest)
 
-# ---------------------------
+# -----------------------------------------------------------------------------
 # Test Executable
-# ---------------------------
+# -----------------------------------------------------------------------------
 add_executable(runTests
     ${PROJECT_SOURCE_DIR}/../Tests/CppTests/StringConversionTests.cpp
     ${PROJECT_SOURCE_DIR}/../Tests/CppTests/AdvancedStringConversionTests.cpp
@@ -93,14 +98,16 @@ add_executable(runTests
 # Link the library and GoogleTest
 target_link_libraries(runTests StringConversionLib gtest gtest_main)
 
-# ---------------------------
+# -----------------------------------------------------------------------------
 # Register Tests with CTest
-# ---------------------------
+# -----------------------------------------------------------------------------
+
 add_test(NAME AllTests COMMAND runTests)
 
-# ===================================================================
+# -----------------------------------------------------------------------------
 # 6. Code Formatting (Clang-Format Automation)
-# ===================================================================
+# -----------------------------------------------------------------------------
+
 find_program(CLANG_FORMAT_EXE 
     NAMES clang-format
     HINTS /opt/homebrew/bin /usr/local/bin
