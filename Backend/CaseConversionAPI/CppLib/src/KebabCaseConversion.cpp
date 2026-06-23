@@ -20,9 +20,9 @@
 /*               replacing spaces with hyphens and converting all    */
 /*               characters to lowercase.                            */
 /*                                                                   */
-/* Notes       : - Reuses LowerCaseConversion implementation          */
+/* Notes       : - Reuses LowerCaseConversion implementation         */
 /*             : - Converts spaces into hyphens                      */
-/*             : - Preserves multiple consecutive separators          */
+/*             : - Preserves multiple consecutive separators         */
 /*                                                                   */
 /* Revision History:                                                 */
 /* ----------------------------------------------------------------- */

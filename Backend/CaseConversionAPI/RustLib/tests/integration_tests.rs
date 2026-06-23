@@ -84,11 +84,6 @@ fn call_dll(input: &str, choice: i32) -> String {
 // ======================================================
 
 #[test]
-fn alternating_case() {
-    assert_eq!(call_dll("hello", 1), "HeLlO");
-}
-
-#[test]
 fn lowercase() {
     assert_eq!(call_dll("HELLO", 3), "hello");
 }
@@ -99,8 +94,18 @@ fn uppercase() {
 }
 
 #[test]
+fn capitalize() {
+    assert_eq!(call_dll("hello world", 2), "Hello World")
+}
+
+#[test]
 fn sentence_case() {
     assert_eq!(call_dll("hello world.", 5), "Hello world.");
+}
+
+#[test]
+fn alternating_case() {
+    assert_eq!(call_dll("hello", 1), "HeLlO");
 }
 
 #[test]

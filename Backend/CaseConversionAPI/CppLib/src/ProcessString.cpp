@@ -79,7 +79,6 @@ ConversionResult processString(const std::string &input, int choiceInt) {
 
   ConversionChoice choice = static_cast<ConversionChoice>(choiceInt);
 
-  // Map enum to ConversionType
   ConversionType type = mapChoiceToType(choice);
 
   client.setStrategy(StringConversionFactory::create(type));

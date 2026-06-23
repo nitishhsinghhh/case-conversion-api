@@ -29,6 +29,12 @@
 /*                                                                   */
 /* Notes       : Cleans filesystem state 'dictionary.txt' during     */
 /*               test setup to guarantee isolated executions.         */
+/*                                                                   */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-11  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 /*********************************************************************/

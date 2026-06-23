@@ -40,9 +40,6 @@
 
 #include <gtest/gtest.h>
 
-// ---------------------------
-// Core Includes
-// ---------------------------
 #include "AlternatingCaseConversion.hpp"
 #include "CapitalizeWordsConversion.hpp"
 #include "ConversionResult.hpp"
@@ -54,9 +51,6 @@
 #include "ToggleCaseConversion.hpp"
 #include "UpperCaseConversion.hpp"
 
-// ---------------------------
-// Design Pattern / Framework
-// ---------------------------
 #include "Client.hpp"
 #include "ProcessString.hpp"
 #include "StringConversionFactory.hpp"

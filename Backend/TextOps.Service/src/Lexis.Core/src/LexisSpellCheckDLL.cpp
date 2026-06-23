@@ -4,15 +4,17 @@
 /* File         : LexisSpellCheckDLL.cpp                             */
 /* Author       : Nitish Singh                                       */
 /* Created      : 2026-05-25                                         */
-/* */
+/*                                                                   */
 /* Copyright (c) 2016-2026 Nitish Singh                              */
 /* Licensed under the Apache License, Version 2.0                    */
-/* See LICENSE file in project root for license information           */
-/* */
+/* See LICENSE file in project root for license information          */
+/*                                                                   */
 /* Module       : Core/Interop                                       */
 /* Component    : Spell Check Engine Boundary                        */
-/* Thread Safe  : No (Requires external locking if shared across threads) */
-/* Complexity   : Mutation/Search matches underlying engine complexities*/
+/* Thread Safe  : No (Requires external locking if shared across     */
+/*                threads)                                           */
+/* Complexity   : Mutation/Search matches underlying engine          */
+/*                complexities                                       */
 /* API Status   : Stable                                             */
 /* Exception Safety : Strong Guarantee (Catch-all standard guards)   */
 /*********************************************************************/
@@ -25,16 +27,18 @@
 #include <sstream>
 #include <algorithm>
 
-//===================================================================
-// Constants: Security Bounds Gate
-//===================================================================
+/*********************************************************************/
+/* Constants: Security Bounds Gate: 1 MB
+/*********************************************************************/
+
 namespace {
-constexpr size_t MAX_WORD_LEN = 1024; // Blocks malicious input string injections
+constexpr size_t MAX_WORD_LEN = 1024; 
 }
 
-//===================================================================
-// Internal Helpers for Unmanaged String Lifecycles
-//===================================================================
+/*********************************************************************/
+/* Internal Helpers for Unmanaged String Lifecycles
+/*********************************************************************/
+
 static char* copyToMallocatedBuffer(const std::string& str) {
     char* output = static_cast<char*>(std::malloc(str.size() + 1));
     if (!output) {
@@ -44,9 +48,9 @@ static char* copyToMallocatedBuffer(const std::string& str) {
     return output;
 }
 
-//===================================================================
-// Exported DLL Implementation (Extern "C")
-//===================================================================
+/*********************************************************************/
+/* Exported DLL Implementation (Extern "C")
+/*********************************************************************/
 
 extern "C" {
 
@@ -110,7 +114,6 @@ SPELL_API int checkWordABI(SpellCheckerHandle handle, const char* word, const ch
         auto instance = reinterpret_cast<Lexis::SpellCheck::SpellChecker*>(handle);
         std::string search_word(word);
 
-        // Tier 1: Check primary Nuspell baseline dictionary mappings
         Lexis::SpellCheck::SpellResult result = instance->Check(search_word);
 
         if (result.isCorrect) {
@@ -118,13 +121,11 @@ SPELL_API int checkWordABI(SpellCheckerHandle handle, const char* word, const ch
             return 1;
         }
 
-        // Tier 2: Check auxiliary runtime user overrides (Trie structure cache)
         if (instance->Contains(search_word)) {
             *outSuggestions = nullptr;
             return 1;
         }
 
-        // Tier 3: Word is verified misspelled. Serialize suggestion vectors to unmanaged layer.
         if (result.suggestions.empty()) {
             *outSuggestions = nullptr;
         } else {
@@ -134,20 +135,20 @@ SPELL_API int checkWordABI(SpellCheckerHandle handle, const char* word, const ch
             for (size_t i = 0; i < max_items; ++i) {
                 ss << result.suggestions[i];
                 if (i + 1 < max_items) {
-                    ss << "|"; // Character delimiter maps cleanly to managed String.Split pipelines
+                    ss << "|";
                 }
             }
             
             *outSuggestions = copyToMallocatedBuffer(ss.str());
             if (!*outSuggestions) {
-                return -1; // Allocation fault context protection
+                return -1; 
             }
         }
 
-        return 0; // Operational success: Return indicates token is ready for user substitution
+        return 0; 
 
     } catch (...) {
-        return -1; // Catch-all guard handles thread termination or hardware anomalies safely
+        return -1; 
     }
 }
 

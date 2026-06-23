@@ -203,12 +203,12 @@ Test summary: total: 46, failed: 0, succeeded: 46
 
 ### Hardware Summary Table
 
-| Component        | Role in 300K Test        | Technical Outcome                                                                 |
+| Component        | Role in 300K Test        | Technical Outcome                                                                  |
 |------------------|--------------------------|------------------------------------------------------------------------------------|
-| CPU (P-Cores)    | Native C++ Logic         | Best performance/thermal balance at 4 threads.                                    |
-| CPU (E-Cores)    | Managed Runtime / IO     | Fully utilized at 2.4GHz to shield P-cores from OS tax.                           |
-| GPU              | Passive                 | Power draw < 4mW; preserves thermal headroom for CPU logic.                       |
-| Unified RAM      | ABI Data Bridge         | Stable RSS < 25MB; zero-leak performance across 300,000 calls.                    |
+| CPU (P-Cores)    | Native C++ Logic         | Best performance/thermal balance at 4 threads.                                     |
+| CPU (E-Cores)    | Managed Runtime / IO     | Fully utilized at 2.4GHz to shield P-cores from OS tax.                            |
+| GPU              | Passive                  | Power draw < 4mW; preserves thermal headroom for CPU logic.                        |
+| Unified RAM      | ABI Data Bridge          | Stable RSS < 25MB; zero-leak performance across 300,000 calls.                     |
 
 ---
 

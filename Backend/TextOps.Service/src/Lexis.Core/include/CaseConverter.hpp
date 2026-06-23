@@ -7,18 +7,18 @@
 /*                                                                   */
 /* Copyright (c) 2016-2026 Nitish Singh                              */
 /* Licensed under the Apache License, Version 2.0                    */
-/* See LICENSE file in project root for license information           */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
 /* Module      : Core/Text                                           */
 /* Component   : Case Conversion                                     */
-/* Thread Safe : No (Concurrent reads safe, writes mutating trie not) */
+/* Thread Safe : No (Concurrent reads safe, writes mutating trie not)*/
 /* Complexity  : O(m) for lookup where m is word length              */
 /* API Status  : Stable                                              */
 /* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description : Provides a unified hybrid case conversion engine matching */
-/*               an internal character Trie against external Nuspell */
-/*               dictionary modules.                                 */
+/* Description : Provides a unified hybrid case conversion engine    */
+/*               matching an internal character Trie against         */
+/*               external Nuspell dictionary modules.                */
 /*                                                                   */
 /* Notes       : None.                                               */
 /*                                                                   */

@@ -168,14 +168,12 @@ SpellResult SpellChecker::Check(const std::string& word) const
 {
     SpellResult result{false, {}};
 
-    // Fast path: local Trie lookup
     if (Contains(word))
     {
         result.isCorrect = true;
         return result;
     }
 
-    // Fallback: Nuspell dictionary
     if (m_dict)
     {
         result.isCorrect = m_dict->spell(word);

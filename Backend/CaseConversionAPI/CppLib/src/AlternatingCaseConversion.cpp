@@ -45,11 +45,10 @@ AlternatingCaseConversion::convert(const std::string &input) const {
   LowerCaseConversion lowerConv;
   UpperCaseConversion upperConv;
 
-  std::string finalResult; // Renamed for clarity
+  std::string finalResult;
   bool upper = true;
 
   for (char c : input) {
-    // Standardize check using isalpha for better practice
     if (std::isalpha(static_cast<unsigned char>(c))) {
       std::string temp(1, c);
 
@@ -69,6 +68,5 @@ AlternatingCaseConversion::convert(const std::string &input) const {
       }
     }
   }
-
   return ConversionResult(finalResult.c_str());
 }
