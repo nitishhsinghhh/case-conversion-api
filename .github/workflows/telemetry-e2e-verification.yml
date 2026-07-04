@@ -83,12 +83,12 @@ jobs:
       # Managed Layer & Sidecar Orchestration
       # ------------------------------------------------------------
 
-      - name: Debug Native Build
+      - name: Build and Start .NET API
         run: |
           echo "=== Native Artifacts ==="
           find Backend/CaseConversionAPI/CppLib/build -type f | sort
 
-      - name: Bootstrap .NET API
+      - name: Start API
         env:
           OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:4317
           ASPNETCORE_URLS: http://localhost:5050
@@ -96,21 +96,29 @@ jobs:
           LD_LIBRARY_PATH: .:${{ github.workspace }}/Backend/CaseConversionAPI/CppLib/build
         run: |
           cd Backend/CaseConversionAPI/DotNetAPI
+
           dotnet build -c Release
 
-          LIB_PATH=$(find ../CppLib/build -type f -name "*.so" | head -n 1)
+          LIB_PATH=$(find ../CppLib/build -name "*.so" | head -n1)
 
-          echo "LIB_PATH=$LIB_PATH"
-
-          if [ -z "$LIB_PATH" ]; then
-            echo "ERROR: No shared library found"
-            exit 1
-          fi
-
-          cp "$LIB_PATH" .
           cp "$LIB_PATH" ./bin/Release/net8.0/
 
-          dotnet ./bin/Release/net8.0/DotNetAPI.dll > api.log 2>&1 &
+          nohup dotnet ./bin/Release/net8.0/DotNetAPI.dll > api.log 2>&1 &
+
+          echo "Waiting for API..."
+
+          for i in {1..30}; do
+            if curl -s http://localhost:5050/ >/dev/null; then
+              echo "API started."
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "API failed to start"
+          cat api.log
+          exit 1
 
       # ------------------------------------------------------------
       # Traffic Injection & Span Generation
