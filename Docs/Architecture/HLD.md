@@ -42,7 +42,6 @@ The primary design goals are:
                 ┌──────────────┼──────────────┐
                 │              │              │
                 ▼              ▼              ▼
-
       ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
       │ ASP.NET API #1 │ │ ASP.NET API #2 │ │ ASP.NET API #N │
       └───────┬────────┘ └───────┬────────┘ └───────┬────────┘
@@ -257,19 +256,19 @@ The platform integrates distributed tracing using OpenTelemetry.
 #### Trace Flow
 
 ```text
-Client Request
-      │
-      ▼
-ASP.NET Core
-      │
-      ▼
-Native Interop
-      │
-      ▼
-C++ Execution
-      │
-      ▼
-Jaeger Trace
+  Client Request
+        │
+        ▼
+  ASP.NET Core
+        │
+        ▼
+  Native Interop
+        │
+        ▼
+  C++ Execution
+        │
+        ▼
+  Jaeger Trace
 ```
 
 This provides complete visibility across managed and unmanaged execution paths.
@@ -298,37 +297,37 @@ Artifacts are generated a single time during CI/CD execution and promoted unchan
 ## Request Lifecycle
 
 ```text
-Client
-  │
-  ▼
-React UI
-  │
-  ▼
-NGINX
-  │
-  ▼
-ASP.NET Core
-  │
-  ▼
-Validation
-  │
-  ▼
-Native P/Invoke
-  │
-  ▼
-C++ Engine
-  │
-  ▼
-Processing Strategy
-  │
-  ▼
-Result
-  │
-  ▼
-JSON Response
-  │
-  ▼
-Client
+    Client
+      │
+      ▼
+    React UI
+      │
+      ▼
+    NGINX
+      │
+      ▼
+    ASP.NET Core
+      │
+      ▼
+    Validation
+      │
+      ▼
+    Native P/Invoke
+      │
+      ▼
+    C++ Engine
+      │
+      ▼
+    Processing Strategy
+      │
+      ▼
+    Result
+      │
+      ▼
+    JSON Response
+      │
+      ▼
+    Client
 ```
 
 ---
