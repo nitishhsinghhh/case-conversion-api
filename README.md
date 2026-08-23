@@ -110,7 +110,7 @@ Rather than optimizing specifically for simple case conversion, the project focu
 
 This project is built to safely expose high-performance C++ logic to a managed .NET web stack. We focus on a clear separation between native processing, API orchestration, and frontend delivery to keep the native code fast and the web layer stable.
 
-* The Engine (C++17): This is our performance core. It uses Strategy and Factory patterns so we can add new processing logic without touching the core engine.
+* The Engine (C++17): This is our performance core. It uses Strategy and Factory Patterns so we can add new processing logic without touching the core engine.
 
 * The Bridge (C-style ABI): Since .NET cannot communicate directly with C++ classes, we built a custom wrapper. It defines a clear memory contract (who allocates, who frees) to prevent memory leaks across the native-managed boundary.
 

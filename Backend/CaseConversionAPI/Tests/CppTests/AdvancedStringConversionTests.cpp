@@ -63,6 +63,43 @@
 // 1. ADVANCED CONVERSION TESTS (WITH LOGGING)
 // ============================================================
 
+TEST(AdvancedConversionTest, MixedCaseInputWithLogNew) {
+  std::string input = "hElLo WoRLd!";
+
+  LowerCaseConversion lower;
+  UpperCaseConversion upper;
+  CapitalizeWordsConversion cap;
+  SentenceCaseConversion sentence;
+  ToggleCaseConversion toggle;
+  AlternatingCaseConversion alternating;
+
+  std::string result;
+
+  result = ConversionResult(lower.convert(input)).get_c_str();
+  logConversion("LowerCase", input, result);
+  EXPECT_EQ(result, "hello world!");
+
+  result = ConversionResult(upper.convert(input)).get_c_str();
+  logConversion("UpperCase", input, result);
+  EXPECT_EQ(result, "HELLO WORLD!");
+
+  result = ConversionResult(cap.convert(input)).get_c_str();
+  logConversion("CapitalizeWords", input, result);
+  EXPECT_EQ(result, "Hello World!");
+
+  result = ConversionResult(sentence.convert(input)).get_c_str();
+  logConversion("SentenceCase", input, result);
+  EXPECT_EQ(result, "Hello world!");
+
+  result = ConversionResult(toggle.convert(input)).get_c_str();
+  logConversion("ToggleCase", input, result);
+  EXPECT_EQ(result, "HeLlO wOrlD!");
+
+  result = ConversionResult(alternating.convert(input)).get_c_str();
+  logConversion("AlternatingCase", input, result);
+  EXPECT_EQ(result, "HeLlO WoRlD!");
+}
+
 TEST(AdvancedConversionTest, MixedCaseInputWithLog) {
   std::string input = "hElLo WoRLd!";
 

@@ -219,6 +219,9 @@ TEST(ClientTest, ExecutesStrategy) {
   client.setStrategy(StringConversionFactory::create(ConversionType::Lower));
   EXPECT_STREQ(client.execute("HELLO").get_c_str(), "hello");
 
+  client.setStrategy(StringConversionFactory::create(ConversionType::Lower));
+  EXPECT_STREQ(client.execute("HeLlO").get_c_str(), "hello");
+
   client.setStrategy(StringConversionFactory::create(ConversionType::Toggle));
   EXPECT_STREQ(client.execute("AbC").get_c_str(), "aBc");
 

@@ -14,8 +14,8 @@
  *                See the License for the specific language governing permissions and
  *                limitations under the License.
  *
- * Description  : REST API controllers exposing authentication and high-performance string 
- *                case conversion operations. Integrates unmanaged execution architectures 
+ * Description  : REST API controllers exposing authentication and high-performance string
+ *                case conversion operations. Integrates unmanaged execution architectures
  *                with managed .NET infrastructure components.
  *
  * Author       : Nitish Singh <me.singhnitish@yandex.com>
@@ -27,22 +27,25 @@
  * 1.0         2026-04-11     Nitish Singh     Initial implementation of web API controllers.
  * 1.1         2026-04-19     Nitish Singh     Engineered parallel batch endpoint utilizing async
  *                                             orchestration designed for Apple M2 core topologies.
- * 1.2         2026-04-20     Nitish Singh     Consolidated routing structures, resolved compilation 
- *                                             failures CS0111 and CS0117, and pruned dead execution 
+ * 1.2         2026-04-20     Nitish Singh     Consolidated routing structures, resolved compilation
+ *                                             failures CS0111 and CS0117, and pruned dead execution
  *                                             branches.
+ * 1.3         2026-08-23     Nitish Singh     Unified native-engine resolution for C++ and Rust
+ *                                             implementations, added public engine aliases,
+ *                                             standardized validation, and hardened controller
+ *                                             dependency handling.
  **************************************************************************************************/
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StringConversionAPI.Models;
 using StringConversionAPI.Services;
-using StringConversionAPI.Services.Rust;
-using StringConversionAPI.Services.Native;
 
 namespace StringConversionAPI.Controllers
 {
@@ -64,10 +67,14 @@ namespace StringConversionAPI.Controllers
         public IEnumerable<string> Texts { get; set; } = new List<string>();
 
         /// <summary>
-        /// Gets or sets the transformation routine routine index matching unmanaged engine structures.
+        /// Gets or sets the transformation routine index matching unmanaged engine structures.
         /// </summary>
         public int Choice { get; set; }
 
+        /// <summary>
+        /// Gets or sets the optional native engine identifier.
+        /// Supported values are <c>cpp</c> and <c>rust</c>.
+        /// </summary>
         public string? EngineType { get; set; }
     }
 
@@ -87,32 +94,44 @@ namespace StringConversionAPI.Controllers
         /// <param name="tokenService">The identity token handling service instance.</param>
         public AuthController(ITokenService tokenService)
         {
-            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            _tokenService = tokenService
+                ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         /// <summary>
         /// Validates authorization metadata and generates an identity context bearer string.
         /// </summary>
         /// <param name="request">The target identity request payload.</param>
-        /// <returns>An <see cref="IActionResult"/> containing a validated token block or unauthorized markers.</returns>
+        /// <returns>An action result containing a validated token block or unauthorized markers.</returns>
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult Login([FromBody] LoginRequest request)
         {
             if (request == null)
             {
-                return BadRequest(new { Message = "The login payload structure cannot be parsed as a valid model." });
+                return BadRequest(new
+                {
+                    Message = "The login payload structure cannot be parsed as a valid model."
+                });
             }
 
-            // Standard credential screening setup for base-line operational testing
-            if (request.Username == "admin" && request.Password == "password")
+            // Standard credential screening setup for baseline operational testing.
+            if (request.Username == "admin" &&
+                request.Password == "password")
             {
-                string token = _tokenService.GenerateToken(request.Username, new[] { "Admin", "User" });
+                string token = _tokenService.GenerateToken(
+                    request.Username,
+                    new[] { "Admin", "User" });
+
                 return Ok(new { Token = token });
             }
 
-            return Unauthorized(new { Message = "Invalid authentication credentials supplied." });
+            return Unauthorized(new
+            {
+                Message = "Invalid authentication credentials supplied."
+            });
         }
     }
 
@@ -130,19 +149,62 @@ namespace StringConversionAPI.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="WordCaseController"/> class.
         /// </summary>
-        /// <param name="service">Consolidate into a single constructor that resolves the strategy dynamically.</param>
-        /// <returns>Service name.</return>
-       
+        /// <param name="engines">
+        /// All registered native string processing engines.
+        /// </param>
         public WordCaseController(IEnumerable<INativeStringEngine> engines)
         {
-            _engines = engines;
+            _engines = engines
+                ?? throw new ArgumentNullException(nameof(engines));
         }
 
         /// <summary>
-        /// Transforms a single input sequence through synchronous unmanaged compilation frames.
+        /// Resolves the requested native engine.
+        ///
+        /// Public identifiers:
+        ///     cpp  -> CppEngine
+        ///     rust -> RustEngine
+        ///
+        /// Registered implementation names are also accepted.
+        ///
+        /// If no engine is specified, C++ is selected for backward compatibility.
         /// </summary>
-        /// <param name="request">The data structure containing the text string and strategy identifier.</param>
-        /// <returns>A structured response carrying the mutation payload.</returns>
+        /// <param name="engineType">
+        /// Requested engine identifier.
+        /// </param>
+        /// <returns>
+        /// The resolved native string engine, or <c>null</c> when unavailable.
+        /// </returns>
+        private INativeStringEngine? ResolveEngine(string? engineType)
+        {
+            string requestedEngine = string.IsNullOrWhiteSpace(engineType)
+                ? "cpp"
+                : engineType.Trim();
+
+            string normalizedEngine = requestedEngine.ToLowerInvariant() switch
+            {
+                "cpp" => "CppEngine",
+                "cppengine" => "CppEngine",
+
+                "rust" => "RustEngine",
+                "rustengine" => "RustEngine",
+
+                _ => requestedEngine
+            };
+
+            return _engines.FirstOrDefault(engine =>
+                engine.Name.Equals(
+                    normalizedEngine,
+                    StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Transforms a single input sequence through the selected native engine.
+        /// </summary>
+        /// <param name="request">
+        /// The request containing text, conversion choice and optional engine.
+        /// </param>
+        /// <returns>A structured response carrying the converted payload.</returns>
         [HttpPost("convert")]
         [ProducesResponseType(typeof(ConvertResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -150,38 +212,61 @@ namespace StringConversionAPI.Controllers
         public IActionResult Convert([FromBody] ConvertRequest request)
         {
             if (request == null)
-                return BadRequest("The incoming conversion request structural instance cannot be null.");
+            {
+                return BadRequest(
+                    "The incoming conversion request structural instance cannot be null.");
+            }
 
-            // Resolve engine dynamically: Defaults to "cpp" if EngineType is not provided
-            var engine = _engines.FirstOrDefault(e => 
-            e.Name.Equals(request.EngineType ?? "cpp", StringComparison.OrdinalIgnoreCase));
+            string requestedEngine = string.IsNullOrWhiteSpace(request.EngineType)
+                ? "cpp"
+                : request.EngineType.Trim();
 
-            if (engine == null) 
-                return BadRequest($"Engine '{request.EngineType}' not found.");
+            INativeStringEngine? engine =
+                ResolveEngine(request.EngineType);
+
+            if (engine == null)
+            {
+                return BadRequest(
+                    $"Engine '{requestedEngine}' not found.");
+            }
 
             try
             {
                 if (request.Text == null)
                 {
-                    return Ok(new ConvertResponse { ConvertedText = null! });
+                    return Ok(new ConvertResponse
+                    {
+                        Input = null,
+                        Choice = request.Choice,
+                        ConvertedText = null!
+                    });
                 }
 
-                if (request.Text == string.Empty)
+                if (request.Text.Length == 0)
                 {
-                    return Ok(new ConvertResponse { ConvertedText = string.Empty });
-                }
-
-                // Process across the unmanaged barrier interface routine
-                string result = engine.Convert(request.Text, request.Choice);
-
-                // Check for predefined error strings indicating a failure at the security gate
-                if (string.Equals(result, "ERROR_BUFFER_OVERFLOW_LIMIT_5MB", StringComparison.Ordinal))
-                {
-                    return Ok(new ConvertResponse 
-                    { 
+                    return Ok(new ConvertResponse
+                    {
                         Input = request.Text,
                         Choice = request.Choice,
-                        ConvertedText = "ERROR_BUFFER_OVERFLOW_LIMIT_5MB" 
+                        ConvertedText = string.Empty
+                    });
+                }
+
+                string result = engine.Convert(
+                    request.Text,
+                    request.Choice);
+
+                // Preserve the native security sentinel.
+                if (string.Equals(
+                        result,
+                        "ERROR_BUFFER_OVERFLOW_LIMIT_5MB",
+                        StringComparison.Ordinal))
+                {
+                    return Ok(new ConvertResponse
+                    {
+                        Input = request.Text,
+                        Choice = request.Choice,
+                        ConvertedText = "ERROR_BUFFER_OVERFLOW_LIMIT_5MB"
                     });
                 }
 
@@ -194,87 +279,141 @@ namespace StringConversionAPI.Controllers
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Unexpected conversion pipeline runtime error occurred: {ex}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected anomaly interrupted core conversion processing steps.");
+                Debug.WriteLine(
+                    $"Unexpected conversion pipeline runtime error occurred: {ex}");
+
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    "An unexpected anomaly interrupted core conversion processing steps.");
             }
         }
 
         /// <summary>
-        /// Orchestrates concurrent conversions for an array of payloads, optimizing performance on specific CPU layouts.
+        /// Orchestrates concurrent conversions for an array of payloads.
         /// </summary>
-        /// <param name="request">The request payload containing multiple target items.</param>
-        /// <returns>An ordered collection listing processed transformations.</returns>
+        /// <param name="request">
+        /// The request containing multiple text items, conversion choice
+        /// and optional engine.
+        /// </param>
+        /// <returns>An ordered collection containing processed transformations.</returns>
         [HttpPost("convert-batch")]
         [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ConvertBatchAsync([FromBody] BatchRequest request)
+        public async Task<IActionResult> ConvertBatchAsync(
+            [FromBody] BatchRequest request)
         {
             if (request == null || request.Texts == null)
             {
-                return BadRequest("The batch conversion structural payload or input sequence context cannot be null values.");
+                return BadRequest(
+                    "The batch conversion structural payload or input sequence context cannot be null values.");
+            }
+
+            string requestedEngine = string.IsNullOrWhiteSpace(request.EngineType)
+                ? "cpp"
+                : request.EngineType.Trim();
+
+            INativeStringEngine? engine =
+                ResolveEngine(request.EngineType);
+
+            if (engine == null)
+            {
+                return BadRequest(
+                    $"Engine '{requestedEngine}' not found.");
             }
 
             try
             {
-                // Delegate downstream to the underlying parallelization management framework
-                var engine = _engines.FirstOrDefault(e => e.Name.Equals(request.EngineType ?? "cpp", StringComparison.OrdinalIgnoreCase));
+                IEnumerable<string> results =
+                    await engine.ConvertBatchAsync(
+                        request.Texts,
+                        request.Choice);
 
-                if (engine == null) 
-                    return BadRequest("Engine not found.");
-
-                IEnumerable<string> results = await engine.ConvertBatchAsync(request.Texts, request.Choice);
-                
                 return Ok(results);
             }
             catch (ArgumentException ex)
             {
-                // Catch payload security size violations emitted during initial structural calculation steps
+                // Preserve payload/security validation failures.
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Unexpected parallel engine batch anomaly intercepted: {ex}");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal parallel pipeline task orchestration error.");
+                Debug.WriteLine(
+                    $"Unexpected parallel engine batch anomaly intercepted: {ex}");
+
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    "Internal parallel pipeline task orchestration error.");
             }
-        }        
+        }
     }
+
+    /// <summary>
+    /// Provides native-engine performance comparison capabilities.
+    /// </summary>
     [ApiController]
     [Route("api/benchmark")]
     public sealed class BenchmarkController : ControllerBase
     {
         private readonly IEnumerable<INativeStringEngine> _engines;
 
-        // The DI container automatically provides all registered INativeStringEngine services
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BenchmarkController"/> class.
+        /// </summary>
+        /// <param name="engines">All registered native string processing engines.</param>
         public BenchmarkController(IEnumerable<INativeStringEngine> engines)
         {
-            _engines = engines;
+            _engines = engines
+                ?? throw new ArgumentNullException(nameof(engines));
         }
 
+        /// <summary>
+        /// Compares the average conversion latency of all registered native engines.
+        /// </summary>
+        /// <param name="input">Input text used for benchmarking.</param>
+        /// <param name="choice">Conversion operation identifier.</param>
+        /// <returns>Average conversion latency in milliseconds per engine.</returns>
         [HttpPost("compare")]
-        public IActionResult Compare([FromBody] string input, [FromQuery] int choice)
+        [ProducesResponseType(typeof(Dictionary<string, double>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult Compare(
+            [FromBody] string input,
+            [FromQuery] int choice)
         {
-            var results = new Dictionary<string, double>();
-            const int iterations = 1000;
-
-            foreach (var engine in _engines)
+            if (input == null)
             {
-                // 1. Warm-up: Essential for JIT and native library initialization
-                for (int i = 0; i < 50; i++) 
-                { 
-                    engine.Convert(input, choice); 
-                }
+                return BadRequest("Benchmark input cannot be null.");
+            }
 
-                // 2. Measurement: Use a high-resolution loop
-                var sw = Stopwatch.StartNew();
-                for (int i = 0; i < iterations; i++)
+            var results = new Dictionary<string, double>(
+                StringComparer.OrdinalIgnoreCase);
+
+            const int warmupIterations = 50;
+            const int measurementIterations = 1000;
+
+            foreach (INativeStringEngine engine in _engines)
+            {
+                // Warm-up: Essential for JIT and native library initialization.
+                for (int i = 0; i < warmupIterations; i++)
                 {
                     engine.Convert(input, choice);
                 }
-                sw.Stop();
 
-                // Calculate average latency (in milliseconds) for this specific engine
-                results[engine.Name] = sw.Elapsed.TotalMilliseconds / iterations;
+                // Measurement: Use a high-resolution stopwatch.
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
+                for (int i = 0; i < measurementIterations; i++)
+                {
+                    engine.Convert(input, choice);
+                }
+
+                stopwatch.Stop();
+
+                double averageMilliseconds =
+                    stopwatch.Elapsed.TotalMilliseconds /
+                    measurementIterations;
+
+                results[engine.Name] = averageMilliseconds;
             }
 
             return Ok(results);

@@ -38,7 +38,7 @@ on:
     paths: &shared_paths
       - 'Backend/CaseConversionAPI/CppLib/**'
       - 'Backend/CaseConversionAPI/DotNetAPI/**'
-      - 'Backend/CaseConversionAPI/Tests/DotNetTests/**' # <-- FIXED: tests to Tests
+      - 'Backend/CaseConversionAPI/Tests/DotNetTests/**'
       - '.github/workflows/dotnet-tests.yml'
   pull_request:
     branches: ["main"]
@@ -66,9 +66,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ------------------------------------------------------------
+      # ------------------------------------------------------------------
       # Resource Initialization & Structured Logging
-      # ------------------------------------------------------------
+      # ------------------------------------------------------------------
 
       - name: Initialize Workflow Logs
         shell: bash
@@ -89,9 +89,9 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      # ------------------------------------------------------------
+      # ------------------------------------------------------------------
       # Native Layer Build (C++17)
-      # ------------------------------------------------------------
+      # ------------------------------------------------------------------
 
       - name: Build C++ Library (Unix)
         if: runner.os != 'Windows'
@@ -111,12 +111,12 @@ jobs:
                 -G "Visual Studio 17 2022" -A x64
           cmake --build build --config Release --parallel
 
-      # ------------------------------------------------------------
+      # ------------------------------------------------------------------
       # Managed Layer Build & ABI Bridge Preparation
-      # ------------------------------------------------------------
+      # ------------------------------------------------------------------
 
       - name: Build .NET Tests
-        working-directory: Backend/CaseConversionAPI/Tests/DotNetTests # <-- FIXED: tests to Tests
+        working-directory: Backend/CaseConversionAPI/Tests/DotNetTests 
         run: |
           dotnet restore
           dotnet build --configuration Release
@@ -124,7 +124,7 @@ jobs:
       - name: Inject Native Library (Artifact Injection)
         shell: bash
         run: |
-          DEST_PATH="Backend/CaseConversionAPI/Tests/DotNetTests/bin/Release/net8.0/" # <-- FIXED: tests to Tests
+          DEST_PATH="Backend/CaseConversionAPI/Tests/DotNetTests/bin/Release/net8.0/" 
           mkdir -p "$DEST_PATH"
 
           if [ "${{ runner.os }}" == "Windows" ]; then
@@ -139,16 +139,16 @@ jobs:
           fi
 
           cp "$LIB_FILE" "$DEST_PATH$TARGET_NAME"
-          cp "$LIB_FILE" "Backend/CaseConversionAPI/Tests/DotNetTests/$TARGET_NAME" # <-- FIXED: tests to Tests
+          cp "$LIB_FILE" "Backend/CaseConversionAPI/Tests/DotNetTests/$TARGET_NAME" 
           
           echo "{\"event\": \"BRIDGE_READY\", \"lib\": \"$TARGET_NAME\", \"os\": \"${{ matrix.os }}\"}"
 
-      # ------------------------------------------------------------
+      # ------------------------------------------------------------------
       # Test Execution (With Telemetry Context)
-      # ------------------------------------------------------------
+      # --------------------------------------------------------------------
         
       - name: Run Integration Tests
-        working-directory: Backend/CaseConversionAPI/Tests/DotNetTests # <-- FIXED: tests to Tests
+        working-directory: Backend/CaseConversionAPI/Tests/DotNetTests 
         shell: bash
         env:
           OTEL_EXPORTER_OTLP_ENDPOINT: ${{ runner.os == 'Linux' && 'http://localhost:4317' || 'http://localhost:9999' }}

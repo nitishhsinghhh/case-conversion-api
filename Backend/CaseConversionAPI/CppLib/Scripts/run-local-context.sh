@@ -18,7 +18,7 @@
 # FEATURES    :                                                      */
 #               * Dynamic workspace synchronization                  */
 #               * Safe CMakeLists backup and restore workflow        */
-#               * Apple Silicon (M-Series) optimization             */
+#               * Apple Silicon (M-Series) optimization              */
 #               * Automated clang-format integration                 */
 #               * Parallelized multi-core compilation                */
 #               * Execution context validation                       */

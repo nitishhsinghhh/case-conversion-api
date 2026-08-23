@@ -6,6 +6,16 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+
+    <AnalysisLevel>latest</AnalysisLevel>
+    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+
+    <!-- Force UTF-8 -->
+    <OutputEncoding>UTF-8</OutputEncoding>
+    <CodePage>65001</CodePage>
+    <CompilerGeneratedFilesOutputPath>
+      $(IntermediateOutputPath)GeneratedFiles
+    </CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +30,8 @@
     <ProjectReference Include="..\..\..\..\Backend\CaseConversionAPI\DotNetAPI\DotNetAPI.csproj" />
   </ItemGroup>
 
-  <!-- Robust Native Library Inclusion -->
-  <ItemGroup>
+  <!-- Windows native library -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
     <Content Include="$(MSBuildProjectDirectory)\..\..\CppLib\build\**\libProcessStringDLL.dll">
       <Link>libProcessStringDLL.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -29,24 +39,27 @@
     </Content>
   </ItemGroup>
 
+  <!-- Linux native library -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <Content Include="$(MSBuildProjectDirectory)\..\..\CppLib\build\**\libProcessStringDLL.so">
+      <Link>libProcessStringDLL.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+
+  <!-- macOS native library -->
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <Content Include="$(MSBuildProjectDirectory)\..\..\CppLib\build\**\libProcessStringDLL.dylib">
+      <Link>libProcessStringDLL.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+
   <PropertyGroup>
-    <!-- Signal over Noise: Suppress specific warnings we have already audited -->
-    <!-- NU1902: OpenTelemetry Vulnerability (Audited) -->
-    <!-- CS8625: Null literal to non-nullable (Handled via logic) -->
+    <!-- Audited warnings -->
     <NoWarn>$(NoWarn);NU1902;CS8625</NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup>
-  <AnalysisLevel>latest</AnalysisLevel>
-  <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
-  <!-- Force UTF-8 -->
-  <CompilerGeneratedFilesOutputPath>$(IntermediateOutputPath)GeneratedFiles</CompilerGeneratedFilesOutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup>
-  <!-- Forces the compiler to use UTF-8 for all source files -->
-  <OutputEncoding>UTF-8</OutputEncoding>
-  <CodePage>65001</CodePage>
   </PropertyGroup>
 
 </Project>
