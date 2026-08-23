@@ -83,29 +83,42 @@ jobs:
       # Managed Layer & Sidecar Orchestration
       # ------------------------------------------------------------
 
-      - name: Bootstrap .NET API
+      - name: Build and Start .NET API
+        run: |
+          echo "=== Native Artifacts ==="
+          find Backend/CaseConversionAPI/CppLib/build -type f | sort
+
+      - name: Start API
         env:
           OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:4317
-          ASPNETCORE_URLS: http://localhost:5050 
+          ASPNETCORE_URLS: http://localhost:5050
           ASPNETCORE_ENVIRONMENT: Development
           LD_LIBRARY_PATH: .:${{ github.workspace }}/Backend/CaseConversionAPI/CppLib/build
         run: |
           cd Backend/CaseConversionAPI/DotNetAPI
+
           dotnet build -c Release
-          
-          # Synchronize Native Binary with API Runtime
-          cp ../CppLib/build/libProcessStringDLL.so .
-          cp ../CppLib/build/libProcessStringDLL.so ./bin/Release/net8.0/
-          
-          # Background Execution for Trace Capture
-          dotnet ./bin/Release/net8.0/DotNetAPI.dll > api.log 2>&1 & 
-          
-          echo "Waiting for API Readiness at :5050..."
-          timeout 60s bash -c 'until curl -sf http://localhost:5050/api/WordCase/convert \
-            -X POST -H "Content-Type: application/json" \
-            -d "{\"text\":\"CI-PROBE\", \"choice\":1}"; do 
-              sleep 2; 
-            done' || (echo "FATAL: API Startup Timeout" && cat api.log && exit 1)
+
+          LIB_PATH=$(find ../CppLib/build -name "*.so" | head -n1)
+
+          cp "$LIB_PATH" ./bin/Release/net8.0/
+
+          nohup dotnet ./bin/Release/net8.0/DotNetAPI.dll > api.log 2>&1 &
+
+          echo "Waiting for API..."
+
+          for i in {1..30}; do
+            if curl -s http://localhost:5050/ >/dev/null; then
+              echo "API started."
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "API failed to start"
+          cat api.log
+          exit 1
 
       # ------------------------------------------------------------
       # Traffic Injection & Span Generation

@@ -23,7 +23,7 @@
 /*                                                                   */
 /* Notes       : - Uses ProcessString dispatcher                     */
 /*             : - Demonstrates runtime selection of conversions     */
-/*             : - Simple CLI driver for validation/testing         */
+/*             : - Simple CLI driver for validation/testing          */
 /*                                                                   */
 /* Revision History:                                                 */
 /* ----------------------------------------------------------------- */

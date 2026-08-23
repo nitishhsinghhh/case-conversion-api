@@ -4,21 +4,22 @@
 /* File         : LexisSpellCheckDLL.hpp                             */
 /* Author       : Nitish Singh                                       */
 /* Created      : 2026-05-25                                         */
-/* */
+/*                                                                   */
 /* Copyright (c) 2016-2026 Nitish Singh                              */
 /* Licensed under the Apache License, Version 2.0                    */
-/* See LICENSE file in project root for license information           */
-/* */
+/* See LICENSE file in project root for license information          */
+/*                                                                   */
 /* Module       : Interop/Native                                     */
 /* Component    : Spell Check Engine Boundary                        */
-/* Thread Safe  : No (Trie and Nuspell configurations are instance bound) */
-/* Complexity   : O(1) for layer dispatch                             */
+/* Thread Safe  : No (Trie and Nuspell configurations are instance   */
+/*                bound)                                             */
+/* Complexity   : O(1) for layer dispatch                            */
 /* API Status   : Stable                                             */
 /* Exception Safety : Strong Guarantee                               */
-/* */
-/* Description  : Declares exported native DLL interface used for     */
-/* unmanaged and C# P/Invoke-based interactive spell   */
-/* checking, lifecycle validation, and trie mutations. */
+/*                                                                   */
+/* Description  : Declares exported native DLL interface used for    */
+/* unmanaged and C# P/Invoke-based interactive spell                 */
+/* checking, lifecycle validation, and trie mutations.               */
 /*********************************************************************/
 
 #ifndef LEXIS_SPELLCHECK_DLL_HPP

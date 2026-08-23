@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-/*********************************************************************/
+// *********************************************************************/
 /* File        : ProcessStringDLL.cpp                                */
 /* Author      : Nitish Singh                                        */
 /* Created     : 2026-04-11                                          */
@@ -50,11 +50,11 @@
 /* 1.3        2026-04-18  Nitish Singh    Applied clang-format       */
 /* 1.4        2026-04-18  Nitish Singh    Added traceId support      */
 /* 1.5        2026-04-28  Nitish Singh    Hardened memory safety     */
-/*********************************************************************/
+// *********************************************************************/
 
-/*********************************************************************/
+// *********************************************************************/
 /* Dependencies                                                      */
-/*********************************************************************/
+// *********************************************************************/
 
 #include "ProcessStringDLL.hpp"
 #include "Client.hpp"
@@ -66,21 +66,23 @@
 #include <iostream>
 #include <string>
 
-//===================================================================
-// Constants: 5 MB Buffer Limit
-//===================================================================
+// *******************************************************************
+// Constants: 5 MB Buffer Limit: Hardcoded
+// *******************************************************************
+
 namespace {
 constexpr size_t MAX_INPUT_SIZE = 5 * 1024 * 1024;
 }
 
-//===================================================================
-// Helper Utilities (internal, not exported - C++ only)
-//===================================================================
+// *********************************************************************/
+/* Helper Utilities (internal, not exported - C++ only)
+// *********************************************************************/
 
 static char *allocateCString(const std::string &str) {
   char *output = static_cast<char *>(std::malloc(str.size() + 1));
-  if (!output)
+  if (!output) {
     return nullptr;
+  }
 
   std::memcpy(output, str.c_str(), str.size() + 1);
   return output;
@@ -91,9 +93,9 @@ static const char *safeError(const char *msg) {
   return err ? err : "FATAL_ALLOCATION_FAILURE";
 }
 
-//===================================================================
-// Conversion Mapping (Internal - C++ only)
-//===================================================================
+// *********************************************************************/
+/* Conversion Mapping (Internal - C++ only)
+// *********************************************************************/
 
 static bool mapConversionType(ConversionChoice choice,
                               ConversionType &type) noexcept {
@@ -142,9 +144,9 @@ static bool mapConversionType(ConversionChoice choice,
   }
 }
 
-//===================================================================
-// Exported DLL API (Extern "C" for C# interop)
-//===================================================================
+// *********************************************************************/
+/* Exported DLL API (Extern "C" for C# interop)
+// *********************************************************************/
 
 extern "C" {
 

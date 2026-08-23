@@ -55,11 +55,8 @@ CapitalizeWordsConversion::convert(const std::string &input) const {
       result += " ";
     }
 
-    // Convert whole word to lowercase first
-    word = ConversionResult(lowerConv.convert(word))
-               .get_c_str(); // Get C-string from ConversionResult
+    word = ConversionResult(lowerConv.convert(word)).get_c_str();
 
-    // Capitalize first letter using UpperCaseConversion
     std::string firstChar(1, word[0]);
     firstChar = ConversionResult(upperConv.convert(firstChar)).get_c_str();
     word[0] = firstChar[0];

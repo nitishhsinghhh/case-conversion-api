@@ -5,14 +5,14 @@
 /* Author       : [AUTHOR_NAME]                                      */
 /* Created      : [YYYY-MM-DD]                                       */
 /*                                                                   */
-/* Copyright (c) 2016-2026 [ORGANIZATION_OR_PROJECT]                      */
+/* Copyright (c) 2016-2026 [ORGANIZATION_OR_PROJECT]                 */
 /* Licensed under the Apache License, Version 2.0                    */
 /* See LICENSE file in project root for license information          */
 /*                                                                   */
 /* Module       : Core/String                                        */
 /* Component    : Case Conversion Engine                             */
 /* Thread Safe  : Yes                                                */
-/* Complexity   : O(n)                                                */
+/* Complexity   : O(n)                                               */
 /* API Status   : Stable                                             */
 /* Exception Safety : Basic Guarantee                                */
 /*                                                                   */

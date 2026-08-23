@@ -8,33 +8,77 @@
     <UserSecretsId>01a5a7b3-b364-42b2-9f4c-bbab55de8d89</UserSecretsId>
   </PropertyGroup>
 
+  <!-- NuGet Packages -->
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.80.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
   </ItemGroup>
 
+  <!-- OpenTelemetry -->
   <ItemGroup>
-  <!-- Windows DLL -->
-  <None Include="../CppLib/build_dll/Release/libProcessStringDLL.dll" CopyToOutputDirectory="Always" Condition=" '$(CI)' != 'true' AND '$(OS)' == 'Windows_NT' " />
+    <PackageReference Include="OpenTelemetry" Version="1.15.3" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
+  </ItemGroup>
 
-  <!-- macOS DLL -->
-  <None Include="../CppLib/build_dll/lib/libProcessStringDLL.dylib" CopyToOutputDirectory="Always" Condition=" '$(CI)' != 'true' AND  '$(OS)' == 'OSX' " />
 
-  <!-- Linux DLL -->
-  <None Include="../CppLib/build_dll/lib/libProcessStringDLL.so" CopyToOutputDirectory="Always" Condition=" '$(CI)' != 'true' AND '$(OS)' == 'Linux' " />
-</ItemGroup>
+  <!-- ========================================================= -->
+  <!-- C++ Native Library                                        -->
+  <!-- ========================================================= -->
 
-<ItemGroup>
-  <PackageReference Include="OpenTelemetry" Version="1.15.3" />
-  <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
-  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
-  <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
-  <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
-</ItemGroup>
+  <ItemGroup>
 
-<ItemGroup>
-  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
-</ItemGroup>
+    <!-- Windows -->
+    <None Include="../CppLib/build/windows/libProcessStringDLL.dll"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest"
+          Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+
+    <!-- macOS -->
+    <None Include="../CppLib/build/macos/libProcessStringDLL.dylib"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest"
+          Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+
+    <!-- Linux -->
+    <None Include="../CppLib/build/linux/libProcessStringDLL.so"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest"
+          Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+
+  </ItemGroup>
+
+  <!-- ========================================================= -->
+  <!-- Rust Native Library                                       -->
+  <!-- ========================================================= -->
+
+  <ItemGroup>
+
+    <!-- Windows -->
+    <None Include="../RustLib/target/release/rust_lib.dll"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest"
+          TargetPath="rust/rust_lib.dll"
+          Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+
+    <!-- macOS -->
+    <None Include="../RustLib/target/release/librust_lib.dylib"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest"
+          TargetPath="rust/librust_lib.dylib"
+          Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+
+    <!-- Linux -->
+    <None Include="../RustLib/target/release/librust_lib.so"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest"
+          TargetPath="rust/librust_lib.so"
+          Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+
+  </ItemGroup>
 
 </Project>

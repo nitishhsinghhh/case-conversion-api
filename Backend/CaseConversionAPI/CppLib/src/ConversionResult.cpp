@@ -21,9 +21,10 @@
 /*               Provides deep copy and move semantics for safe      */
 /*               transfer across ABI boundaries.                     */
 /*                                                                   */
-/* Notes       : - Ensures deterministic memory cleanup via delete[]  */
-/*             : - Designed for interoperability with managed runtimes*/
-/*             : - Null-safe handling across all operations           */
+/* Notes       : - Ensures deterministic memory cleanup via delete[] */
+/*             : - Designed for interoperability with managed        */
+/*                 runtimes                                          */
+/*             : - Null-safe handling across all operations          */
 /*             : - Implements Rule of Five                           */
 /*                                                                   */
 /* Revision History:                                                 */
@@ -86,7 +87,6 @@ ConversionResult &ConversionResult::operator=(const ConversionResult &other) {
       std::memcpy(new_data, other.data, length + 1);
     }
 
-    // Clean up old data and assign new
     delete[] data;
     data = new_data;
   }

@@ -14,6 +14,12 @@
 /* Description : Google Test suite validating exported DLL ABI       */
 /*               behavior, lifecycle management, persistence,        */
 /*               marshaling, and Nuspell integration.                */
+/*                                                                   */
+/* Revision History:                                                 */
+/* ----------------------------------------------------------------- */
+/* Version    Date        Author          Description                */
+/* ----------------------------------------------------------------- */
+/* 1.0        2026-04-17  Nitish Singh    Initial implementation     */
 /*********************************************************************/
 
 #include <gtest/gtest.h>

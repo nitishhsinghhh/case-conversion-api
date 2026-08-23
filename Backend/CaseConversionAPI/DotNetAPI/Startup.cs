@@ -34,6 +34,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StringConversionAPI.Services;
+using StringConversionAPI.Services.Native;
+using StringConversionAPI.Services.Rust;  
 
 namespace StringConversionAPI
 {
@@ -68,7 +70,7 @@ namespace StringConversionAPI
             }
 
             // Register core high-performance unmanaged boundary service handler
-            services.AddSingleton<ProcessStringService>();
+            //services.AddSingleton<ProcessStringService>();
             
             services.AddControllers();
             services.AddEndpointsApiExplorer();

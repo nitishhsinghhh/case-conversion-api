@@ -20,7 +20,7 @@
 /*               uppercase format using ASCII conversion.            */
 /*                                                                   */
 /* Notes       : - ASCII difference between upper and lower is 32    */
-/*             : - Preserves non-alphabetic characters              */
+/*             : - Preserves non-alphabetic characters               */
 /*             : - Character-wise transformation in linear time      */
 /*                                                                   */
 /* Revision History:                                                 */
@@ -41,7 +41,7 @@ ConversionResult UpperCaseConversion::convert(const std::string &input) const {
 
   for (char &c : result) {
     if (c >= 'a' && c <= 'z') {
-      c = c - ('a' - 'A'); // ASCII conversion
+      c = c - ('a' - 'A');
     }
   }
 

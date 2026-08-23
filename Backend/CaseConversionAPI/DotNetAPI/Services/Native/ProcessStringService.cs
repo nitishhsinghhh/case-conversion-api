@@ -51,14 +51,14 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace StringConversionAPI.Services
+namespace StringConversionAPI.Services.Native
 {
     /// <summary>
     /// Provides low-latency, hardware-optimized orchestration between the managed .NET runtime and 
     /// the unmanaged native C++ execution layer. Implements automated garbage collection disposal patterns 
     /// for native system descriptors and locks parallel work to specific performance-core limits.
     /// </summary>
-    public class ProcessStringService : IDisposable
+    public class CppEngineService : INativeStringEngine, IDisposable
     {
         #region Performance & Security Constants
 
@@ -101,15 +101,17 @@ namespace StringConversionAPI.Services
 
         #endregion
 
+        public string Name => "CppEngine";
+
         #region Constructors / Finalizers
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessStringService"/> class.
+        /// Initializes a new instance of the <see cref="CppEngineService"/> class.
         /// Dynamically resolves and links OS-specific binary dependencies at application runtime.
         /// </summary>
         /// <exception cref="PlatformNotSupportedException">Thrown when operating on unmapped OS environments.</exception>
         /// <exception cref="DllNotFoundException">Thrown when the target unmanaged module cannot be resolved within path scopes.</exception>
-        public ProcessStringService()
+        public CppEngineService()
         {
             string dllName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "libProcessStringDLL.dll" :
                              RuntimeInformation.IsOSPlatform(OSPlatform.Linux)   ? "libProcessStringDLL.so" :
@@ -128,10 +130,10 @@ namespace StringConversionAPI.Services
         }
 
         /// <summary>
-        /// Finalizes an instance of the <see cref="ProcessStringService"/> class.
+        /// Finalizes an instance of the <see cref="CppEngineService"/> class.
         /// Acts as a safety net fallback to guarantee that unmanaged system handles are reclaimed.
         /// </summary>
-        ~ProcessStringService()
+        ~CppEngineService()
         {
             Dispose(false);
         }

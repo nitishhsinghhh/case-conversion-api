@@ -2,15 +2,18 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 export const options = {
-  vus:100,
-  iterations: 2000000, 
+  vus:8,
+  iterations: 100000, 
 };
+
+const engineType = __ENV.ENGINE || "RustEngine";
 
 const payload = JSON.stringify({
   // Verify if your backend needs "Text" or "text"
   text: "Hello",
   // Ensure 4 is the correct ID for Uppercase in your C++ Enum
-  choice: 4
+  choice: 4,
+  engineType: engineType
 });
 
 const params = {
@@ -19,8 +22,8 @@ const params = {
 
 export default function () {
   // Use localhost if running k6 from your Mac; host.docker.internal if in a container
-  //const url = 'http://loadbalancer/api/WordCase/convert';
-  const url = 'http://host.docker.internal:80/api/WordCase/convert';
+  const url = 'http://loadbalancer/api/WordCase/convert';
+  //const url = 'http://host.docker.internal:80/api/WordCase/convert';
   const res = http.post(url, payload, params);
 
   check(res, {

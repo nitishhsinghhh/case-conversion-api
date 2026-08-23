@@ -53,6 +53,8 @@ using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using StringConversionAPI.Services;
+using StringConversionAPI.Services.Native;
+using StringConversionAPI.Services.Rust; 
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -167,9 +169,22 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Register Core Components within Stateless Lifetime Boundaries
+
 builder.Services.AddSingleton<ITokenService, TokenService>();
-builder.Services.AddSingleton<ProcessStringService>();
+builder.Services.AddSingleton<CppEngineService>();
+builder.Services.AddSingleton<RustEngineService>();
+builder.Services.AddSingleton<INativeStringEngine, CppEngineService>();
+builder.Services.AddSingleton<INativeStringEngine, RustEngineService>();
+
+builder.Services.AddScoped<INativeStringEngine>(serviceProvider => 
+{
+    var config = serviceProvider.GetRequiredService<IConfiguration>();
+    var provider = config["NativeEngineSettings:Provider"] ?? "cpp";
+    
+    return provider.ToLower() == "rust" 
+        ? serviceProvider.GetRequiredService<RustEngineService>() 
+        : serviceProvider.GetRequiredService<CppEngineService>();
+});
 
 WebApplication app = builder.Build();
 

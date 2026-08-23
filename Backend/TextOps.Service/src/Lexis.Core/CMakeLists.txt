@@ -21,6 +21,7 @@ find_library(NUSPELL_LIB NAMES nuspell PATHS "/opt/homebrew/lib")
 # ---------------------------------------------------------
 # 3. LIBRARY: LexisCore (Business Logic Only)
 # ---------------------------------------------------------
+
 add_library(LexisCore SHARED 
     src/SpellChecker.cpp
     src/LexisSpellCheckDLL.cpp
@@ -48,6 +49,7 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/vocabulary")
 # ---------------------------------------------------------
 # 4. MAIN APPLICATION: LexisApp (The CLI Tool)
 # ---------------------------------------------------------
+
 add_executable(LexisApp src/Export.cpp)
 
 # Direct dyld to look for dependent dylibs inside the same directory as the binary

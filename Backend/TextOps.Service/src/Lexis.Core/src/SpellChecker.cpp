@@ -38,155 +38,120 @@
 /*********************************************************************/
 
 #include "SpellChecker.hpp"
-#include <fstream>
 #include <algorithm>
 #include <cctype>
+#include <fstream>
 
 namespace Lexis::SpellCheck {
 
-SpellChecker::SpellChecker() 
-  : root(std::make_shared<TrieNode>())
-  , m_dict(nullptr) 
-{
+SpellChecker::SpellChecker()
+    : root(std::make_shared<TrieNode>()), m_dict(nullptr) {}
+
+void SpellChecker::Insert(const std::string &word) {
+  std::string normalized = word;
+
+  std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                 ::tolower);
+
+  auto curr = root;
+
+  for (char ch : normalized) {
+    if (curr->children.find(ch) == curr->children.end()) {
+      curr->children[ch] = std::make_shared<TrieNode>();
+    }
+
+    curr = curr->children[ch];
+  }
+
+  if (!curr->isEndOfWord) {
+    curr->isEndOfWord = true;
+
+    std::ofstream outfile(DICTIONARY_PATH, std::ios_base::app);
+
+    if (outfile.is_open()) {
+      outfile << normalized << '\n';
+    }
+  }
 }
 
-void SpellChecker::Insert(const std::string& word)
-{
-    std::string normalized = word;
+bool SpellChecker::Contains(const std::string &word) const {
+  if (word.empty()) {
+    return false;
+  }
 
-    std::transform(
-        normalized.begin(),
-        normalized.end(),
-        normalized.begin(),
-        ::tolower);
+  std::string normalized = word;
 
+  std::transform(normalized.begin(), normalized.end(), normalized.begin(),
+                 ::tolower);
+
+  auto curr = root;
+
+  for (char ch : normalized) {
+    if (curr->children.find(ch) == curr->children.end()) {
+      return false;
+    }
+
+    curr = curr->children[ch];
+  }
+
+  return curr->isEndOfWord;
+}
+
+void SpellChecker::LoadFromFile() {
+  std::ifstream infile(DICTIONARY_PATH);
+
+  std::string word;
+
+  while (infile >> word) {
     auto curr = root;
 
-    for (char ch : normalized)
-    {
-        if (curr->children.find(ch) == curr->children.end())
-        {
-            curr->children[ch] = std::make_shared<TrieNode>();
-        }
+    for (char ch : word) {
+      if (curr->children.find(ch) == curr->children.end()) {
+        curr->children[ch] = std::make_shared<TrieNode>();
+      }
 
-        curr = curr->children[ch];
+      curr = curr->children[ch];
     }
 
-    if (!curr->isEndOfWord)
-    {
-        curr->isEndOfWord = true;
-
-        std::ofstream outfile(DICTIONARY_PATH, std::ios_base::app);
-
-        if (outfile.is_open())
-        {
-            outfile << normalized << '\n';
-        }
-    }
+    curr->isEndOfWord = true;
+  }
 }
 
-bool SpellChecker::Contains(const std::string& word) const
-{
-    if (word.empty())
-    {
-        return false;
-    }
-
-    std::string normalized = word;
-
-    std::transform(
-        normalized.begin(),
-        normalized.end(),
-        normalized.begin(),
-        ::tolower);
-
-    auto curr = root;
-
-    for (char ch : normalized)
-    {
-        if (curr->children.find(ch) == curr->children.end())
-        {
-            return false;
-        }
-
-        curr = curr->children[ch];
-    }
-
-    return curr->isEndOfWord;
+void SpellChecker::LoadSampleDictionary() {
+  for (const auto &word : {"apple", "native"}) {
+    Insert(word);
+  }
 }
 
-void SpellChecker::LoadFromFile()
-{
-    std::ifstream infile(DICTIONARY_PATH);
+bool SpellChecker::LoadDictionary(const std::string &path) {
+  try {
+    auto dictObj = nuspell::Dictionary::load_from_path(path);
 
-    std::string word;
+    m_dict = std::make_unique<nuspell::Dictionary>(std::move(dictObj));
 
-    while (infile >> word)
-    {
-        auto curr = root;
-
-        for (char ch : word)
-        {
-            if (curr->children.find(ch) == curr->children.end())
-            {
-                curr->children[ch] = std::make_shared<TrieNode>();
-            }
-
-            curr = curr->children[ch];
-        }
-
-        curr->isEndOfWord = true;
-    }
+    return m_dict != nullptr;
+  } catch (...) {
+    return false;
+  }
 }
 
-void SpellChecker::LoadSampleDictionary()
-{
-    for (const auto& word : {"apple", "native"})
-    {
-        Insert(word);
-    }
-}
+SpellResult SpellChecker::Check(const std::string &word) const {
+  SpellResult result{false, {}};
 
-bool SpellChecker::LoadDictionary(const std::string& path)
-{
-    try
-    {
-        auto dictObj = nuspell::Dictionary::load_from_path(path);
-
-        m_dict =
-            std::make_unique<nuspell::Dictionary>(std::move(dictObj));
-
-        return m_dict != nullptr;
-    }
-    catch (...)
-    {
-        return false;
-    }
-}
-
-SpellResult SpellChecker::Check(const std::string& word) const
-{
-    SpellResult result{false, {}};
-
-    // Fast path: local Trie lookup
-    if (Contains(word))
-    {
-        result.isCorrect = true;
-        return result;
-    }
-
-    // Fallback: Nuspell dictionary
-    if (m_dict)
-    {
-        result.isCorrect = m_dict->spell(word);
-
-        if (!result.isCorrect)
-        {
-            m_dict->suggest(word, result.suggestions);
-        }
-    }
-
+  if (Contains(word)) {
+    result.isCorrect = true;
     return result;
+  }
+
+  if (m_dict) {
+    result.isCorrect = m_dict->spell(word);
+
+    if (!result.isCorrect) {
+      m_dict->suggest(word, result.suggestions);
+    }
+  }
+
+  return result;
 }
 
 } // namespace Lexis::SpellCheck

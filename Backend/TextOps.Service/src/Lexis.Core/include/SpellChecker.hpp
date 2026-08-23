@@ -7,17 +7,17 @@
 /*                                                                   */
 /* Copyright (c) 2016-2026 Nitish Singh                              */
 /* Licensed under the Apache License, Version 2.0                    */
-/* See LICENSE file in project root for license information           */
+/* See LICENSE file in project root for license information          */
 /*                                                                   */
 /* Module      : Core/Text                                           */
 /* Component   : Spell Check Engine                                  */
-/* Thread Safe : No (Concurrent reads safe, writes mutating trie not) */
+/* Thread Safe : No (Concurrent reads safe, writes mutating trie not)*/
 /* Complexity  : O(m) for lookup where m is word length              */
 /* API Status  : Stable                                              */
 /* Exception Safety : Basic Guarantee                                */
 /*                                                                   */
-/* Description : Provides hybrid spellchecking capabilities using a   */
-/*               fast local Trie fallback alongside an advanced       */
+/* Description : Provides hybrid spellchecking capabilities using a  */
+/*               fast local Trie fallback alongside an advanced      */
 /*               Nuspell dictionary backend.                         */
 /*                                                                   */
 /* Notes       : Relies on external .aff and .dic Nuspell assets.    */

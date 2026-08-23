@@ -29,13 +29,18 @@
 # 1.4  2026-05-12  Nitish Singh     Refactored Header & Log Logic    */
 #*********************************************************************/
 
-name: C++ CI CaseConversionAPI - All Platforms (Local App)
+name: C++ CI CaseConversionAPI - All Platforms 
 
 on:
   push:
     branches: ["main"]
+    paths: &shared
+    - 'Backend/CaseConversionAPI/CppLib/'
+    - 'Backend/CaseConversionAPI/RustLib/'
+    - '.github/workflows/cpp-local-app-validation.yml'
   pull_request:
     branches: ["main"]
+    paths: *shared
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -44,6 +49,7 @@ concurrency:
 jobs:
   build-and-test:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
@@ -52,31 +58,51 @@ jobs:
     env:
       BUILD_DIR: Backend/CaseConversionAPI/CppLib/build
       CPP_ROOT: Backend/CaseConversionAPI/CppLib
+      RUST_ROOT: Backend/CaseConversionAPI/RustLib
 
     steps:
+
+      # ------------------------------------------------------------ 
+      # SOURCE ACQUISITION 
+      # ------------------------------------------------------------
+      
       - name: Checkout repository
         uses: actions/checkout@v4
 
       # ------------------------------------------------------------
-      # Resource Initialization & Toolchain Setup
+      # Workflow Initialization
       # ------------------------------------------------------------
+      
       - name: Initialize Workflow Logs
         shell: bash
         run: |
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           echo "{\"timestamp\": \"$TIMESTAMP\", \"event\": \"MATRIX_INIT\", \"os\": \"${{ matrix.os }}\"}"
+      
+      # ------------------------------------------------------------
+      # Toolchain Setup 
+      # ------------------------------------------------------------
+        
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.14
+        with:
+          cmake-version: "3.26.4"
 
       - name: Install compiler & CMake (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake jq
+        run: sudo apt-get update 
+             sudo apt-get install -y build-essential cmake jq
 
       - name: Install CMake (macOS)
         if: runner.os == 'macOS'
         run: brew install cmake
 
-      - name: Install CMake (Windows)
-        if: runner.os == 'Windows'
-        run: choco install cmake ninja --installargs 'ADD_CMAKE_TO_PATH=System' --yes
+      - name: Setup MSVC Environment 
+        if: runner.os == 'Windows' 
+        uses: ilammy/msvc-dev-cmd@v1 
+        
+      - name: Install Rust Toolchain 
+        uses: dtolnay/rust-toolchain@stable
 
       # ------------------------------------------------------------
       # Workspace Cleanup & Config Injection
@@ -116,6 +142,7 @@ jobs:
       # ------------------------------------------------------------
       # Native Test Execution (CTEST Matrix)
       # ------------------------------------------------------------
+        
       - name: Run tests (Linux/macOS)
         if: runner.os != 'Windows'
         run: ctest -V --output-on-failure --test-dir ${{ env.BUILD_DIR }}

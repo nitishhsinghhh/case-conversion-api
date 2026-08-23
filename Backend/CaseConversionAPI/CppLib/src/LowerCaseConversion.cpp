@@ -41,9 +41,8 @@ ConversionResult LowerCaseConversion::convert(const std::string &input) const {
 
   for (char &c : result) {
     if (c >= 'A' && c <= 'Z') {
-      c = c + ('a' - 'A'); // ASCII conversion
+      c = c + ('a' - 'A');
     }
-    // Non-alphabetic characters are unchanged
   }
 
   return ConversionResult(result.c_str());
