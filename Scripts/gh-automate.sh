@@ -56,7 +56,7 @@
 set -euo pipefail
 
 #*********************************************************************/
-# Logging Utilities                                                   */
+# Logging Utilities                                                  */
 #*********************************************************************/
 
 RED='\033[0;31m'
@@ -86,7 +86,7 @@ log_success() {
 }
 
 #*********************************************************************/
-# Dependency Validation                                               */
+# Dependency Validation                                              */
 #*********************************************************************/
 
 log_info "Validating required dependencies..."
@@ -118,7 +118,7 @@ fi
 log_success "GitHub CLI authentication verified."
 
 #*********************************************************************/
-# Git Remote Validation                                               */
+# Git Remote Validation                                              */
 #*********************************************************************/
 
 log_info "Validating git remote configuration..."
@@ -131,7 +131,7 @@ fi
 log_success "Git remote configuration verified."
 
 #*********************************************************************/
-# Input Validation                                                    */
+# Input Validation                                                   */
 #*********************************************************************/
 
 BRANCH=$1
@@ -146,7 +146,7 @@ fi
 log_info "Starting PR Workflow: $BRANCH"
 
 #*********************************************************************/
-# 1. Prepare Branch                                                   */
+# 1. Prepare Branch                                                  */
 #*********************************************************************/
 
 log_info "Preparing branch..."
@@ -166,7 +166,7 @@ log_info "Creating commit..."
 git commit -m "$MESSAGE" || log_warn "No changes to commit."
 
 #*********************************************************************/
-# 2. Push & Create PR                                                 */
+# 2. Push & Create PR                                                */
 #*********************************************************************/
 
 # CRITICAL AUTOMATION FIX: Sync the specific remote tracking reference to local
@@ -238,13 +238,13 @@ gh pr checks "$PR_NUMBER" --watch || log_warn "Live stream interrupted. Please c
 
 echo
 log_info "Review the final status above."
-log_info "Ensure all required checks are GREEN or safely bypassable."
+log_info "Required checks must satisfy the repository's merge policy."
 echo
 
 read -p "Press [Enter] to execute administrative squash merge..." RunCommand
 
 #*********************************************************************/
-# 4. Merge & Cleanup                                                  */
+# 4. Merge & Cleanup                                                 */
 #*********************************************************************/
 
 log_info "Merging PR #$PR_NUMBER..."
@@ -257,7 +257,7 @@ gh pr merge "$PR_NUMBER" \
 log_success "Pull Request merged successfully."
 
 #*********************************************************************/
-# 5. Sync Main                                                        */
+# 5. Sync Main                                                       */
 #*********************************************************************/
 
 log_info "Synchronizing local main branch..."
