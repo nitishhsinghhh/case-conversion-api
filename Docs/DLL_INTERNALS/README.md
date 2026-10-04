@@ -8,23 +8,23 @@ By using a DLL, the Windows OS can map the same physical memory pages of our lib
 
 - Static Linking: Copies object code into every executable (Wasteful).
 
-- Dynamic Linking: One copy in memory, shared across the system (Optimized).
+- Dynamic Linking: Dynamic linking allows multiple processes to map the same DLL image, enabling Windows to share eligible read-only/code pages between processes. Each process still receives its own virtual address mapping and process-specific writable state.
 
 ## 2. The Loading Lifecycle
 
 The project supports both Implicit and Explicit linking:
 
-- Implicit (Load-time): The Windows loader uses the generated Import Library (.lib) to resolve symbols as soon as the .NET Gateway starts.
+- Implicit (Load-time): A native executable can declare DLL dependencies through its PE import table. The Windows loader resolves those dependencies during process initialization.
 
-- Explicit (Run-time): Allows for "Hot-Swapping" logic or loading the DLL only when a specific high-performance request hits the API.
+- Explicit (Run-time): The application can load the DLL at runtime using APIs such as LoadLibrary/GetProcAddress (or .NET's NativeLibrary.Load/function-resolution mechanisms). This gives the application control over when the library is loaded and which exported symbols are resolved.
 
 ## 3. Application vs. DLL Ownership
 
 A key architectural constraint we respect is that a DLL does not own its own process space.
 
-- The DLL operates within the stack and thread context of the .NET 8 host.
+- A DLL loaded into a process executes in the host process's address space. Its functions execute on the calling thread and share the process's virtual memory, heap environment, handles, and process lifetime.
 
-- Thread Safety: Because the DLL shares the host's memory, we implemented Stateless Execution to ensure that concurrent calls from the .NET ThreadPool do not cause race conditions.
+- Thread Safety: The native conversion path is designed to be reentrant: request-specific state is kept local to each invocation, while shared process-wide state is immutable or explicitly synchronized. This allows concurrent .NET ThreadPool calls to enter the native engine without request-level shared mutable state.
 
 ## 4. Language Agnosticism (Polyglot Bridge)
 
